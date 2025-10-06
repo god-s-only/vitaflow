@@ -5,14 +5,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.common.Routes.SIGNUPSCREEN
 import com.vitaflow.app.common.UIEvent
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SignInViewModel: ViewModel() {
+@HiltViewModel
+class SignInViewModel @Inject constructor(): ViewModel() {
     var email = mutableStateOf("")
         private set
     var password = mutableStateOf("")
+        private set
+    var isPasswordVisible = mutableStateOf(false)
         private set
 
     private val _uiEvent = MutableSharedFlow<UIEvent>()
@@ -34,6 +39,9 @@ class SignInViewModel: ViewModel() {
 
             is SignInScreenEvent.OnEmailChanged -> {
                 email.value = event.email
+            }
+            is SignInScreenEvent.OnPasswordVisibilityChanged -> {
+                isPasswordVisible.value = !isPasswordVisible.value
             }
         }
     }

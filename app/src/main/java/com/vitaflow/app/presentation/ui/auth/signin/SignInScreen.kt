@@ -23,13 +23,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.vitaflow.app.R
 
 @Composable
-fun SignInScreen() {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
+fun SignInScreen(
+    viewModel: SignInViewModel = hiltViewModel()
+) {
+    var email = remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -84,8 +85,8 @@ fun SignInScreen() {
             )
 
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = viewModel.email.value,
+                onValueChange = {viewModel.onEvent(SignInScreenEvent.OnEmailChanged(it))},
                 placeholder = {
                     Text(
                         text = "ex: jon.smith@email.com",
@@ -103,6 +104,7 @@ fun SignInScreen() {
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
+
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -121,8 +123,8 @@ fun SignInScreen() {
             )
 
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = viewModel.password.value,
+                onValueChange = { viewModel.onEvent(SignInScreenEvent.OnPasswordChanged(it)) },
                 placeholder = {
                     Text(
                         text = "••••••••••",
@@ -138,15 +140,15 @@ fun SignInScreen() {
                     unfocusedContainerColor = Color(0xFFF8F9FA),
                     focusedContainerColor = Color(0xFFF8F9FA)
                 ),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (viewModel.isPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    if (passwordVisible)
+                    if (viewModel.isPasswordVisible.value)
                         Image(
                             painter = painterResource(id = R.drawable.protected_eye),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(25.dp)
-                                .clickable{ passwordVisible = !passwordVisible }
+                                .clickable{ viewModel.isPasswordVisible.value = !viewModel.isPasswordVisible.value }
                         )
                     else
                         Image(
@@ -154,7 +156,7 @@ fun SignInScreen() {
                             contentDescription = null,
                             modifier = Modifier
                                 .size(25.dp)
-                                .clickable{ passwordVisible = !passwordVisible }
+                                .clickable{ viewModel.isPasswordVisible.value = !viewModel.isPasswordVisible.value }
                         )
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)

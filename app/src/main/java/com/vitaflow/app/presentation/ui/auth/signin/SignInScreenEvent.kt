@@ -5,4 +5,5 @@ sealed class SignInScreenEvent {
     object OnSignUpButtonClicked : SignInScreenEvent()
     data class OnEmailChanged(val email: String) : SignInScreenEvent()
     data class OnPasswordChanged(val password: String) : SignInScreenEvent()
+    data object OnPasswordVisibilityChanged : SignInScreenEvent()
 }

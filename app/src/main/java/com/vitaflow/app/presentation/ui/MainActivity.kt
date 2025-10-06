@@ -12,7 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHost
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.vitaflow.app.common.Routes
+import com.vitaflow.app.presentation.ui.auth.signin.SignInScreen
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,6 +27,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             VitaFlowTheme {
                 val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = Routes.SIGNINSCREEN){
+                    composable(Routes.SIGNINSCREEN) {
+                        SignInScreen()
+                    }
+                }
             }
         }
     }

@@ -2,8 +2,11 @@ package com.vitaflow.app.presentation.ui.auth.signup
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class SignUpViewModel: ViewModel() {
+@HiltViewModel
+class SignUpViewModel @Inject constructor(): ViewModel() {
     var name = mutableStateOf("")
         private set
     var email = mutableStateOf("")
