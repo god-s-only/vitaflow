@@ -1,5 +1,6 @@
 package com.vitaflow.app.presentation.ui.auth.signin
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,221 +31,235 @@ import com.vitaflow.app.R
 fun SignInScreen(
     viewModel: SignInViewModel = hiltViewModel()
 ) {
-    var email = remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
     ) {
-        Spacer(modifier = Modifier.height(80.dp))
-
-        // Logo
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .border(2.dp, Color(0xFF00C853), RoundedCornerShape(16.dp))
-                .background(Color.White),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "V",
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF00C853)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        // Title
-        Text(
-            text = "Sign in your account",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Black,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Email Field
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text(
-                text = "Email",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            OutlinedTextField(
-                value = viewModel.email.value,
-                onValueChange = {viewModel.onEvent(SignInScreenEvent.OnEmailChanged(it))},
-                placeholder = {
-                    Text(
-                        text = "ex: jon.smith@email.com",
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color(0xFFE0E0E0),
-                    focusedBorderColor = Color(0xFF00C853),
-                    unfocusedContainerColor = Color(0xFFF8F9FA),
-                    focusedContainerColor = Color(0xFFF8F9FA)
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-            )
-
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Password Field
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text(
-                text = "Password",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            OutlinedTextField(
-                value = viewModel.password.value,
-                onValueChange = { viewModel.onEvent(SignInScreenEvent.OnPasswordChanged(it)) },
-                placeholder = {
-                    Text(
-                        text = "••••••••••",
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color(0xFFE0E0E0),
-                    focusedBorderColor = Color(0xFF00C853),
-                    unfocusedContainerColor = Color(0xFFF8F9FA),
-                    focusedContainerColor = Color(0xFFF8F9FA)
-                ),
-                visualTransformation = if (viewModel.isPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    if (viewModel.isPasswordVisible.value)
-                        Image(
-                            painter = painterResource(id = R.drawable.protected_eye),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(25.dp)
-                                .clickable{ viewModel.isPasswordVisible.value = !viewModel.isPasswordVisible.value }
-                        )
-                    else
-                        Image(
-                            painter = painterResource(id = R.drawable.eye),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(25.dp)
-                                .clickable{ viewModel.isPasswordVisible.value = !viewModel.isPasswordVisible.value }
-                        )
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Sign In Button
-        Button(
-            onClick = { /* Handle sign in */ },
             modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF00C853)
-            )
+                .fillMaxSize()
+                .padding(it)
+                .background(Color.White)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "SIGN IN",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White
-            )
-        }
+            Spacer(modifier = Modifier.height(80.dp))
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Or sign in with
-        Text(
-            text = "or sign in with",
-            fontSize = 14.sp,
-            color = Color.Gray,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Social Login Buttons
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Google
+            // Logo
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
-                    .background(Color.White)
-                    .clickable { /* Handle Google sign in */ },
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(2.dp, Color(0xFF00C853), RoundedCornerShape(16.dp))
+                    .background(Color.White),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "G",
-                    fontSize = 20.sp,
+                    text = "V",
+                    fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4285F4)
+                    color = Color(0xFF00C853)
                 )
             }
-        }
 
-        Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(48.dp))
 
-        // Sign Up Link
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+            // Title
             Text(
-                text = "Don't have an account? ",
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
-            Text(
-                text = "SIGN UP",
-                fontSize = 14.sp,
+                text = "Sign in your account",
+                fontSize = 24.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF00C853),
-                modifier = Modifier.clickable { /* Handle sign up navigation */ }
+                color = Color.Black,
+                textAlign = TextAlign.Center
             )
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // Email Field
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = "Email",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                OutlinedTextField(
+                    value = viewModel.email.value,
+                    onValueChange = {viewModel.onEvent(SignInScreenEvent.OnEmailChanged(it))},
+                    placeholder = {
+                        Text(
+                            text = "ex: jon.smith@email.com",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedBorderColor = Color(0xFF00C853),
+                        unfocusedContainerColor = Color(0xFFF8F9FA),
+                        focusedContainerColor = Color(0xFFF8F9FA)
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                )
+
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Password Field
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = "Password",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                OutlinedTextField(
+                    value = viewModel.password.value,
+                    onValueChange = { viewModel.onEvent(SignInScreenEvent.OnPasswordChanged(it)) },
+                    placeholder = {
+                        Text(
+                            text = "••••••••••",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedBorderColor = Color(0xFF00C853),
+                        unfocusedContainerColor = Color(0xFFF8F9FA),
+                        focusedContainerColor = Color(0xFFF8F9FA)
+                    ),
+                    visualTransformation = if (viewModel.isPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        if (viewModel.isPasswordVisible.value)
+                            Image(
+                                painter = painterResource(id = R.drawable.protected_eye),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(25.dp)
+                                    .clickable{ viewModel.isPasswordVisible.value = !viewModel.isPasswordVisible.value }
+                            )
+                        else
+                            Image(
+                                painter = painterResource(id = R.drawable.eye),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(25.dp)
+                                    .clickable{ viewModel.isPasswordVisible.value = !viewModel.isPasswordVisible.value }
+                            )
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // Sign In Button
+            Button(
+                onClick = { /* Handle sign in */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF00C853)
+                )
+            ) {
+                Text(
+                    text = "SIGN IN",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Or sign in with
+            Text(
+                text = "or sign in with",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Social Login Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Google
+                Button(
+                    onClick = {},
+                    border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f)),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent
+                    )
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.google),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            text = "Sign in with Google",
+                            fontSize = 16.sp,
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Sign Up Link
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Don't have an account? ",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+                Text(
+                    text = "SIGN UP",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF00C853),
+                    modifier = Modifier.clickable { /* Handle sign up navigation */ }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
     }
+
 }
 
 @Preview
