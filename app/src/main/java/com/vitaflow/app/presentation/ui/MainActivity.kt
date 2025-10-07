@@ -28,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.presentation.ui.auth.signin.SignInScreen
 import com.vitaflow.app.presentation.ui.auth.signup.SignUpScreen
+import com.vitaflow.app.presentation.ui.features.home.HomeScreen
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -104,6 +105,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Routes.SIGNUPSCREEN) {
                         SignUpScreen(navController)
+                    }
+                    composable(Routes.HOMESCREEN){
+                        HomeScreen()
                     }
                 }
             }
