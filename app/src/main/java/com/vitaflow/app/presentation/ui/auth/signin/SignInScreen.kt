@@ -151,7 +151,10 @@ fun SignInScreen(
                                 contentDescription = null,
                                 modifier = Modifier
                                     .size(25.dp)
-                                    .clickable{ viewModel.isPasswordVisible.value = !viewModel.isPasswordVisible.value }
+                                    .clickable {
+                                        viewModel.isPasswordVisible.value =
+                                            !viewModel.isPasswordVisible.value
+                                    }
                             )
                         else
                             Image(
@@ -159,7 +162,10 @@ fun SignInScreen(
                                 contentDescription = null,
                                 modifier = Modifier
                                     .size(25.dp)
-                                    .clickable{ viewModel.isPasswordVisible.value = !viewModel.isPasswordVisible.value }
+                                    .clickable {
+                                        viewModel.isPasswordVisible.value =
+                                            !viewModel.isPasswordVisible.value
+                                    }
                             )
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
@@ -234,7 +240,7 @@ fun SignInScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(40.dp))
 
             // Sign Up Link
             Row(
