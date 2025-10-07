@@ -236,7 +236,7 @@ fun SignInScreen(
                 ) {
                     if (state.isLoading) {
                         CircularProgressIndicator(
-                            color = Color.White,
+                            color = Color(0xFF00C853),
                             modifier = Modifier.size(20.dp)
                         )
                     } else {
