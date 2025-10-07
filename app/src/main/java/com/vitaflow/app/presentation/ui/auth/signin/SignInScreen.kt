@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +32,7 @@ import com.vitaflow.app.R
 fun SignInScreen(
     viewModel: SignInViewModel = hiltViewModel()
 ) {
+    val state by viewModel.state.collectAsState()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -176,7 +178,15 @@ fun SignInScreen(
 
             // Sign In Button
             Button(
-                onClick = { /* Handle sign in */ },
+                onClick = {
+                    viewModel.onEvent(
+                        SignInScreenEvent.OnSignInButtonClicked(
+                            email = viewModel.email.value,
+                            password = viewModel.password.value
+                        )
+                    )
+                },
+                enabled = !state.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -185,12 +195,19 @@ fun SignInScreen(
                     containerColor = Color(0xFF00C853)
                 )
             ) {
-                Text(
-                    text = "SIGN IN",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
+                if (state.isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                } else {
+                    Text(
+                        text = "SIGN IN",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
