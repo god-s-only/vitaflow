@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.common.Resource
+import com.vitaflow.app.common.Routes
 import com.vitaflow.app.common.Routes.SIGNUPSCREEN
 import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.usecase.SignInUseCase
@@ -77,8 +78,7 @@ class SignInViewModel @Inject constructor(
                         error = null
                     )
                     emitUIEvent(UIEvent.ShowSnackBar("Sign in successful!"))
-                    // Navigate to main screen or dashboard
-                    // emitUIEvent(UIEvent.Navigate(Routes.DASHBOARD))
+                    emitUIEvent(UIEvent.Navigate(Routes.HOMESCREEN))
                 }
 
                 is Resource.Error -> {

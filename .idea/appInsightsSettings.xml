@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.vitaflow.app" />
+                  <option name="mobileSdkAppId" value="1:168354877697:android:de0a3a460ad304f2df4b00" />
+                  <option name="projectId" value="vitaflow-1cb73" />
+                  <option name="projectNumber" value="168354877697" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

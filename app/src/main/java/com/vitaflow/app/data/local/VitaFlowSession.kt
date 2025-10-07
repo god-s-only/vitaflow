@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -15,7 +16,7 @@ import javax.inject.Singleton
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "vita_flow_session")
 
 @Singleton
-class VitaFlowSession @Inject constructor(private val context: Context) {
+class VitaFlowSession @Inject constructor(@ApplicationContext private val context: Context) {
 
     private object PreferencesKeys {
         val TOKEN = stringPreferencesKey("token")

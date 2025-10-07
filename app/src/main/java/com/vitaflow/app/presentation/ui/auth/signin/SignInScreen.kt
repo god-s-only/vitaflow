@@ -26,14 +26,41 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.vitaflow.app.R
+import com.vitaflow.app.common.UIEvent
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignInScreen(
+    navController: NavController,
     viewModel: SignInViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(key1 = true) {
+        viewModel.uiEvent.collectLatest { result ->
+            when(result){
+                is UIEvent.Navigate -> {
+                    navController.navigate(result.route)
+                }
+                is UIEvent.ShowSnackBar -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(message = result.message)
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         modifier = Modifier.fillMaxSize(),
     ) {
         Column(
@@ -105,7 +132,9 @@ fun SignInScreen(
                         unfocusedBorderColor = Color(0xFFE0E0E0),
                         focusedBorderColor = Color(0xFF00C853),
                         unfocusedContainerColor = Color(0xFFF8F9FA),
-                        focusedContainerColor = Color(0xFFF8F9FA)
+                        focusedContainerColor = Color(0xFFF8F9FA),
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
@@ -143,7 +172,9 @@ fun SignInScreen(
                         unfocusedBorderColor = Color(0xFFE0E0E0),
                         focusedBorderColor = Color(0xFF00C853),
                         unfocusedContainerColor = Color(0xFFF8F9FA),
-                        focusedContainerColor = Color(0xFFF8F9FA)
+                        focusedContainerColor = Color(0xFFF8F9FA),
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
                     ),
                     visualTransformation = if (viewModel.isPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -197,7 +228,7 @@ fun SignInScreen(
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(
-                        color = Color.White,
+                        color = Color.Black,
                         modifier = Modifier.size(20.dp)
                     )
                 } else {
@@ -288,5 +319,5 @@ fun SignInScreen(
 @Preview
 @Composable
 private fun Preview() {
-    SignInScreen()
+    SignInScreen(rememberNavController())
 }
