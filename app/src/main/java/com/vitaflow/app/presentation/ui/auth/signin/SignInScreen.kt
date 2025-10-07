@@ -306,7 +306,9 @@ fun SignInScreen(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF00C853),
-                    modifier = Modifier.clickable { /* Handle sign up navigation */ }
+                    modifier = Modifier.clickable {
+                        viewModel.onEvent(SignInScreenEvent.OnSignUpButtonClicked)
+                    }
                 )
             }
 

@@ -7,7 +7,7 @@ import com.vitaflow.app.common.Resource
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.common.Routes.SIGNUPSCREEN
 import com.vitaflow.app.common.UIEvent
-import com.vitaflow.app.domain.usecase.SignInUseCase
+import com.vitaflow.app.domain.usecase.auth.SignInUseCase
 import com.vitaflow.app.presentation.ui.auth.signin.SignInScreenEvent
 import com.vitaflow.app.presentation.ui.auth.signin.SignInState
 import dagger.hilt.android.lifecycle.HiltViewModel

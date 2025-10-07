@@ -1,4 +1,4 @@
-package com.vitaflow.app.domain.usecase
+package com.vitaflow.app.domain.usecase.auth
 
 import com.vitaflow.app.common.Resource
 import com.vitaflow.app.data.local.VitaFlowSession
