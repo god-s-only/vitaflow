@@ -72,4 +72,14 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
+    // Retrofit core library
+    implementation("com.squareup.retrofit2:retrofit:2.9.0") // Use the latest stable version
+
+    // Converter factory for JSON serialization/deserialization (e.g., Gson)
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // Use the same version as Retrofit
+
+    // OkHttp BOM for consistent OkHttp dependency versions (optional but recommended)
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0")) // Use the latest stable version
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor") // For logging network requests (optional)
 }
