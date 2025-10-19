@@ -2,9 +2,11 @@ package com.vitaflow.app.di
 
 import com.google.firebase.auth.FirebaseAuth
 import com.vitaflow.app.common.BASE_URL
-import com.vitaflow.app.data.remote.dto.WorkoutAPI
+import com.vitaflow.app.data.remote.WorkoutAPI
 import com.vitaflow.app.data.repository.AuthRepositoryImpl
+import com.vitaflow.app.data.repository.ExerciseRepositoryImpl
 import com.vitaflow.app.domain.repository.AuthRepository
+import com.vitaflow.app.domain.repository.ExerciseRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -38,5 +40,11 @@ object AppModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(WorkoutAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideExerciseRepository(api: WorkoutAPI): ExerciseRepository{
+        return ExerciseRepositoryImpl(api)
     }
 }

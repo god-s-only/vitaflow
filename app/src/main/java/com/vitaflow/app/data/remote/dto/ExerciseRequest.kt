@@ -2,6 +2,7 @@ package com.vitaflow.app.data.remote.dto
 
 
 import com.google.gson.annotations.SerializedName
+import com.vitaflow.app.domain.models.Exercise
 
 data class ExerciseRequest(
     @SerializedName("bodyParts")
@@ -21,3 +22,16 @@ data class ExerciseRequest(
     @SerializedName("targetMuscles")
     val targetMuscles: List<String>
 )
+
+fun ExerciseRequest.toExercise(): Exercise {
+    return Exercise(
+        bodyParts = bodyParts,
+        equipments = equipments,
+        exerciseId = exerciseId,
+        gifUrl = gifUrl,
+        instructions = instructions,
+        name = name,
+        secondaryMuscles = secondaryMuscles,
+        targetMuscles = targetMuscles
+    )
+}
