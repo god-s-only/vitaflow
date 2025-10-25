@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -31,12 +32,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.vitaflow.app.domain.models.Exercise
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    navController: NavController,
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val uiState = viewModel.state.collectAsStateWithLifecycle()
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -89,23 +101,6 @@ fun HomeScreen(
                             fontSize = 24.sp,
                             color = Color.Black,
                             fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { /* Handle notifications */ },
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                Color.White,
-                                CircleShape
-                            )
-                    ) {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = "Notifications",
-                            tint = Color.Black,
-                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -282,8 +277,8 @@ fun HomeScreen(
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(workoutTypes) { workout ->
-                            WorkoutTypeCard(workout = workout)
+                        items(uiState.value.exercises) { exercise ->
+                            WorkoutTypeCard(exercise = exercise)
                         }
                     }
                 }
@@ -340,29 +335,61 @@ fun Badge(
 
 @Composable
 fun WorkoutTypeCard(
-    workout: WorkoutType
+    exercise: Exercise
 ) {
     Card(
         modifier = Modifier
             .width(140.dp)
             .height(160.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Background
+            // Background Image
+            if (exercise.gifUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(exercise.gifUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = exercise.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    onError = { error ->
+                        println("Error loading exercise image: ${error.result.throwable}")
+                    }
+                )
+            } else {
+                // Fallback background if no image
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFF6C63FF),
+                                    Color(0xFF4CAF50)
+                                )
+                            )
+                        )
+                )
+            }
+
+            // Gradient overlay for better text readability
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Gray)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
                                 Color.Black.copy(alpha = 0.7f)
-                            )
+                            ),
+                            startY = 0f,
+                            endY = Float.POSITIVE_INFINITY
                         )
                     )
             )
@@ -375,13 +402,16 @@ fun WorkoutTypeCard(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Text(
-                    text = workout.name,
+                    text = exercise.name.take(20), // Limit text length
                     color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${workout.sessions} session",
+                    text = "Workout",
                     color = Color.White.copy(alpha = 0.8f),
                     fontSize = 12.sp
                 )
@@ -546,5 +576,5 @@ val bottomNavItems = listOf(
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreen(navController = rememberNavController())
 }

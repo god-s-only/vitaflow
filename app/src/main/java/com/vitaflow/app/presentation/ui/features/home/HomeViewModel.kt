@@ -7,7 +7,9 @@ import com.vitaflow.app.domain.models.Exercise
 import com.vitaflow.app.domain.repository.AuthRepository
 import com.vitaflow.app.domain.usecase.exercise.GetExerciseUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,10 +30,14 @@ class HomeViewModel @Inject constructor(
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
+
     init {
         getCurrentUser()
         getExercises()
     }
+
 
     private fun getExercises(){
         viewModelScope.launch {
@@ -71,4 +77,8 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+}
+
+sealed class NavigationEvent {
+    object NavigateToExerciseDetail : NavigationEvent()
 }

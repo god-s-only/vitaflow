@@ -107,7 +107,7 @@ class MainActivity : ComponentActivity() {
                         SignUpScreen(navController)
                     }
                     composable(Routes.HOMESCREEN){
-                        HomeScreen()
+                        HomeScreen(navController)
                     }
                 }
             }
