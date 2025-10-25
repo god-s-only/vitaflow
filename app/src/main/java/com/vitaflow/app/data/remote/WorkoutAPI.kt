@@ -7,7 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface WorkoutAPI {
-    @GET("/exercises")
+    @GET("/api/v1/exercises")
     suspend fun getAllExercises(): Response<ExerciseDTO>
     @GET("/exercises/{exerciseId}")
     suspend fun getExerciseById(@Path("exerciseId") exerciseId: String): Response<ExerciseRequest>

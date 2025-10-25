@@ -15,6 +15,9 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -274,11 +277,51 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(uiState.value.exercises) { exercise ->
-                            WorkoutTypeCard(exercise = exercise)
+                    // Debug info
+                    if (uiState.value.isLoading) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else if (uiState.value.error != null) {
+                        Text(
+                            text = "Error: ${uiState.value.error}",
+                            color = Color.Red,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        // Show sample exercises as fallback
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(sampleExercises) { exercise ->
+                                WorkoutTypeCard(exercise = exercise)
+                            }
+                        }
+                    } else if (uiState.value.exercises.isEmpty()) {
+                        Text(
+                            text = "No exercises available, showing samples",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        // Show sample exercises as fallback
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(sampleExercises) { exercise ->
+                                WorkoutTypeCard(exercise = exercise)
+                            }
+                        }
+                    } else {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(uiState.value.exercises) { exercise ->
+                                WorkoutTypeCard(exercise = exercise)
+                            }
                         }
                     }
                 }
@@ -337,6 +380,8 @@ fun Badge(
 fun WorkoutTypeCard(
     exercise: Exercise
 ) {
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .width(140.dp)
@@ -348,18 +393,25 @@ fun WorkoutTypeCard(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Background Image
+            // Background Image with fallback
             if (exercise.gifUrl.isNotEmpty()) {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
+                    model = ImageRequest.Builder(context)
                         .data(exercise.gifUrl)
                         .crossfade(true)
                         .build(),
                     contentDescription = exercise.name,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
+                    onSuccess = {
+                        println("Successfully loaded: ${exercise.gifUrl}")
+                    },
                     onError = { error ->
                         println("Error loading exercise image: ${error.result.throwable}")
+                        println("Failed URL: ${exercise.gifUrl}")
+                    },
+                    onLoading = {
+                        println("Loading: ${exercise.gifUrl}")
                     }
                 )
             } else {
@@ -402,7 +454,7 @@ fun WorkoutTypeCard(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Text(
-                    text = exercise.name.take(20), // Limit text length
+                    text = exercise.name.take(25), // Limit text length
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
@@ -503,35 +555,88 @@ fun AdditionalTrainingItem(
 
 @Composable
 fun BottomNavigationBar() {
-    NavigationBar(
-        containerColor = Color.White,
-        modifier = Modifier.height(80.dp)
+    var selectedIndex by remember { mutableStateOf(0) }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.White,
+        shadowElevation = 12.dp,
+        tonalElevation = 8.dp
     ) {
-        bottomNavItems.forEach { item ->
-            NavigationBarItem(
-                icon = {
-                    Icon(
-                        item.icon,
-                        contentDescription = item.title,
-                        modifier = Modifier.size(24.dp)
-                    )
-                },
-                label = {
-                    Text(
-                        text = item.title,
-                        fontSize = 12.sp
-                    )
-                },
-                selected = item.title == "Home",
-                onClick = { /* Handle navigation */ },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color(0xFF1A1A1A),
-                    unselectedIconColor = Color.Gray,
-                    selectedTextColor = Color(0xFF1A1A1A),
-                    unselectedTextColor = Color.Gray,
-                    indicatorColor = Color.Transparent
+        NavigationBar(
+            containerColor = Color.White,
+            contentColor = Color.Black,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(88.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            tonalElevation = 0.dp
+        ) {
+            bottomNavItems.forEachIndexed { index, item ->
+                val isSelected = index == selectedIndex
+
+                NavigationBarItem(
+                    icon = {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    color = if (isSelected) Color.Black else Color.Transparent,
+                                    shape = RoundedCornerShape(16.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.title,
+                                modifier = Modifier.size(24.dp),
+                                tint = if (isSelected) Color.White else Color.Gray
+                            )
+                        }
+                    },
+                    label = {
+                        Text(
+                            text = item.title,
+                            fontSize = 12.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) Color.Black else Color.Gray,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    selected = isSelected,
+                    onClick = {
+                        selectedIndex = index
+                        // Handle navigation based on item
+                        when (item.title) {
+                            "Home" -> { /* Already on home */
+                            }
+
+                            "Search" -> { /* Navigate to search */
+                            }
+
+                            "Workout" -> { /* Navigate to workout */
+                            }
+
+                            "Articles" -> { /* Navigate to articles */
+                            }
+
+                            "Profile" -> { /* Navigate to profile */
+                            }
+                        }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Transparent,
+                        unselectedIconColor = Color.Transparent,
+                        selectedTextColor = Color.Black,
+                        unselectedTextColor = Color.Gray,
+                        indicatorColor = Color.Transparent,
+                        disabledIconColor = Color.Gray,
+                        disabledTextColor = Color.Gray
+                    ),
+                    modifier = Modifier.padding(horizontal = 2.dp)
                 )
-            )
+            }
         }
     }
 }
@@ -567,10 +672,45 @@ val additionalTraining = listOf(
 )
 
 val bottomNavItems = listOf(
-    BottomNavItem("Home", Icons.Default.Home),
-    BottomNavItem("Search", Icons.Default.Search),
-    BottomNavItem("Article", Icons.Default.Menu),
-    BottomNavItem("Profile", Icons.Default.Person)
+    BottomNavItem("Home", Icons.Outlined.Home),
+    BottomNavItem("Search", Icons.Outlined.Search),
+    BottomNavItem("Workout", Icons.Default.Star),
+    BottomNavItem("Articles", Icons.Default.Menu),
+    BottomNavItem("Profile", Icons.Outlined.Person)
+)
+
+// Sample exercises
+val sampleExercises = listOf(
+    Exercise(
+        exerciseId = "1",
+        name = "Push Ups",
+        gifUrl = "https://media.giphy.com/media/26FLdmIp6wJr91JAI/giphy.gif",
+        bodyParts = listOf("upper body"),
+        equipments = listOf("body weight"),
+        instructions = listOf("Standard push up exercise"),
+        secondaryMuscles = listOf("shoulders"),
+        targetMuscles = listOf("chest", "triceps")
+    ),
+    Exercise(
+        exerciseId = "2",
+        name = "Squats",
+        gifUrl = "https://media.giphy.com/media/ZdUnQS4LXNWnII2HIv/giphy.gif",
+        bodyParts = listOf("lower body"),
+        equipments = listOf("body weight"),
+        instructions = listOf("Standard squat exercise"),
+        secondaryMuscles = listOf("glutes"),
+        targetMuscles = listOf("quadriceps")
+    ),
+    Exercise(
+        exerciseId = "3",
+        name = "Plank",
+        gifUrl = "https://media.giphy.com/media/26FLbdnqSIk5ddfJm/giphy.gif",
+        bodyParts = listOf("core"),
+        equipments = listOf("body weight"),
+        instructions = listOf("Hold plank position"),
+        secondaryMuscles = listOf("shoulders"),
+        targetMuscles = listOf("abs")
+    )
 )
 
 @Preview

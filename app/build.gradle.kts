@@ -84,5 +84,6 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor") // For logging network requests (optional)
     implementation("io.coil-kt.coil3:coil-compose:3.2.0")
     implementation("io.coil-kt.coil3:coil-gif:3.2.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.2.0")
 
 }
