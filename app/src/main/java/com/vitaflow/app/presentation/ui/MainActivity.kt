@@ -28,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.presentation.ui.auth.signin.SignInScreen
 import com.vitaflow.app.presentation.ui.auth.signup.SignUpScreen
+import com.vitaflow.app.presentation.ui.features.detail.ExerciseDetailScreen
 import com.vitaflow.app.presentation.ui.features.home.HomeScreen
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -108,6 +109,8 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Routes.HOMESCREEN){
                         HomeScreen(navController)
+                    }
+                    composable(Routes.WORKOUTSCREEN + "/{exerciseId}") {
                     }
                 }
             }

@@ -25,8 +25,19 @@ class ExerciseRepositoryImpl @Inject constructor(private val api: WorkoutAPI): E
         }
     }
 
-    override suspend fun getExerciseById(exerciseId: String): Resource<Exercise> {
-        TODO("Not yet implemented")
+    override suspend fun getExerciseById(exerciseId: String): Resource<Exercise?> {
+        val res = safeApiCall { api.getExerciseById(exerciseId) }
+        return when (res) {
+            is Resource.Success -> {
+                Resource.Success(data = res.data?.toExercise())
+            }
+            is Resource.Error -> {
+                Resource.Error(message = res.message ?: "Something went wrong")
+            }
+            is Resource.Loading -> {
+                Resource.Loading()
+            }
+        }
     }
 
     override suspend fun getAllMuscles(): Resource<List<String>> {

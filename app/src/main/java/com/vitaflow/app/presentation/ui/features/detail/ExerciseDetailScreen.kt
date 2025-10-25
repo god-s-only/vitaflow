@@ -32,6 +32,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
@@ -43,17 +45,18 @@ import com.vitaflow.app.domain.models.Exercise
 @Composable
 fun ExerciseDetailScreen(
     navController: NavController,
-    exercise: Exercise
+    viewModel: ExerciseDetailViewModel = hiltViewModel()
 ) {
     var isFavorite by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val state = viewModel.state.collectAsStateWithLifecycle().value
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = exercise.name,
+                        text = state.exercise?.name ?: "",
                         fontWeight = FontWeight.Medium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -112,10 +115,10 @@ fun ExerciseDetailScreen(
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
-                                .data(exercise.gifUrl)
+                                .data(state.exercise?.gifUrl)
                                 .crossfade(true)
                                 .build(),
-                            contentDescription = exercise.name,
+                            contentDescription = state.exercise?.name,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(20.dp)),
@@ -186,7 +189,7 @@ fun ExerciseDetailScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
-                            text = exercise.name,
+                            text = state.exercise?.name ?: "",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Black
@@ -226,7 +229,7 @@ fun ExerciseDetailScreen(
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(exercise.targetMuscles) { muscle ->
+                        items(state.exercise?.targetMuscles ?: emptyList()) { muscle ->
                             MuscleChip(
                                 text = muscle,
                                 isPrimary = true
@@ -237,7 +240,7 @@ fun ExerciseDetailScreen(
             }
 
             // Secondary Muscles Section
-            if (exercise.secondaryMuscles.isNotEmpty()) {
+            if (state.exercise?.secondaryMuscles?.isNotEmpty() == true) {
                 item {
                     SectionCard(
                         title = "Secondary Muscles",
@@ -246,7 +249,7 @@ fun ExerciseDetailScreen(
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(exercise.secondaryMuscles) { muscle ->
+                            items(state.exercise.secondaryMuscles ?: emptyList()) { muscle ->
                                 MuscleChip(
                                     text = muscle,
                                     isPrimary = false
@@ -258,7 +261,7 @@ fun ExerciseDetailScreen(
             }
 
             // Equipment Section
-            if (exercise.equipments.isNotEmpty()) {
+            if (state.exercise?.equipments?.isNotEmpty() == true) {
                 item {
                     SectionCard(
                         title = "Equipment Needed",
@@ -267,7 +270,7 @@ fun ExerciseDetailScreen(
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(exercise.equipments) { equipment ->
+                            items(state.exercise.equipments) { equipment ->
                                 EquipmentChip(text = equipment)
                             }
                         }
@@ -284,7 +287,7 @@ fun ExerciseDetailScreen(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        exercise.instructions.forEachIndexed { index, instruction ->
+                        state.exercise?.instructions?.forEachIndexed { index, instruction ->
                             InstructionItem(
                                 stepNumber = index + 1,
                                 instruction = instruction
@@ -505,6 +508,5 @@ fun ExerciseDetailScreenPreview() {
 
     ExerciseDetailScreen(
         navController = rememberNavController(),
-        exercise = sampleExercise
     )
 }

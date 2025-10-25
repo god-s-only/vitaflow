@@ -2,6 +2,7 @@ package com.vitaflow.app.presentation.ui.features.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -41,6 +42,7 @@ import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.vitaflow.app.common.Routes
 import com.vitaflow.app.domain.models.Exercise
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -297,7 +299,7 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(sampleExercises) { exercise ->
-                                WorkoutTypeCard(exercise = exercise)
+                                WorkoutTypeCard(exercise = exercise){}
                             }
                         }
                     } else if (uiState.value.exercises.isEmpty()) {
@@ -312,7 +314,7 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(sampleExercises) { exercise ->
-                                WorkoutTypeCard(exercise = exercise)
+                                WorkoutTypeCard(exercise = exercise){}
                             }
                         }
                     } else {
@@ -320,7 +322,9 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(uiState.value.exercises) { exercise ->
-                                WorkoutTypeCard(exercise = exercise)
+                                WorkoutTypeCard(exercise = exercise){
+                                    navController.navigate(Routes.WORKOUTSCREEN + "/${exercise.exerciseId}")
+                                }
                             }
                         }
                     }
@@ -378,13 +382,15 @@ fun Badge(
 
 @Composable
 fun WorkoutTypeCard(
-    exercise: Exercise
+    exercise: Exercise,
+    onClick: () -> Unit
 ) {
     val context = LocalContext.current
 
     Card(
         modifier = Modifier
             .width(140.dp)
+            .clickable { onClick() }
             .height(160.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
