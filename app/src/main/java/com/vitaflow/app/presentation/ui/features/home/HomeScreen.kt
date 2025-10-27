@@ -2,6 +2,7 @@ package com.vitaflow.app.presentation.ui.features.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,9 +17,11 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,6 +47,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.domain.models.Exercise
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +57,11 @@ fun HomeScreen(
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val uiState = viewModel.state.collectAsStateWithLifecycle()
+
+    // Random anime character image for featured workout
+    val randomAnimeCharacter by remember {
+        mutableStateOf(animeCharacterImages.random())
+    }
 
     Scaffold(
         topBar = {
@@ -78,6 +87,19 @@ fun HomeScreen(
         },
         bottomBar = {
             BottomNavigationBar()
+        },
+        floatingActionButton = {
+            Box(
+                modifier = Modifier
+                    .background(Color.White)
+                    .clip(CircleShape)
+                    .border(width = 1.dp, color = Color.Black)
+            ){
+                Icon(
+                    imageVector = Icons.Outlined.Email,
+                    contentDescription = null
+                )
+            }
         },
         containerColor = Color(0xFFF8F9FA)
     ) { paddingValues ->
@@ -136,7 +158,7 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Featured Workout Card
+                    // Featured Workout Card with Anime Character Background
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -147,11 +169,24 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            // Background with gradient overlay
+                            // Anime Character Background Image
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(randomAnimeCharacter.imageUrl)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = randomAnimeCharacter.name,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                                onError = { error ->
+                                    println("Error loading anime character image: ${error.result.throwable}")
+                                }
+                            )
+
+                            // Gradient overlay for better text readability
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(Color.Gray)
                                     .background(
                                         Brush.verticalGradient(
                                             colors = listOf(
@@ -181,6 +216,10 @@ fun HomeScreen(
                                         text = "Full body",
                                         backgroundColor = Color.White.copy(alpha = 0.3f)
                                     )
+                                    Badge(
+                                        text = randomAnimeCharacter.anime,
+                                        backgroundColor = Color(0xFF6C63FF).copy(alpha = 0.8f)
+                                    )
                                 }
 
                                 // Bottom content
@@ -191,8 +230,8 @@ fun HomeScreen(
                                 ) {
                                     Column {
                                         Text(
-                                            text = "Push Your Limit",
-                                            fontSize = 24.sp,
+                                            text = "${randomAnimeCharacter.name}'s Workout",
+                                            fontSize = 16.sp,
                                             color = Color.White,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -663,6 +702,115 @@ data class AdditionalTraining(
 data class BottomNavItem(
     val title: String,
     val icon: ImageVector
+)
+
+data class AnimeCharacter(
+    val name: String,
+    val anime: String,
+    val imageUrl: String
+)
+
+val animeCharacterImages = listOf(
+    AnimeCharacter(
+        "Muscular Warrior",
+        "Anime Fitness",
+        "https://vitalentum.net/upload/016/u1623/6/e/6eb2b6c5.webp"
+    ),
+    AnimeCharacter(
+        "Athletic Fighter",
+        "Anime Power",
+        "https://vitalentum.net/upload/016/u1623/1/8/25fb2ba8.webp"
+    ),
+    AnimeCharacter(
+        "Sky Warrior",
+        "Anime Heroes",
+        "https://vitalentum.net/upload/016/u1623/e/5/e5d5a1c8.webp"
+    ),
+    AnimeCharacter(
+        "Chiseled Hero",
+        "Anime Legends",
+        "https://vitalentum.net/upload/016/u1623/f/7/12549d14.webp"
+    ),
+    AnimeCharacter(
+        "Fitness Champion",
+        "Anime Training",
+        "https://img.freepik.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666671.jpg"
+    ),
+    AnimeCharacter(
+        "Gym Master",
+        "Anime Power",
+        "https://img.freepik.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666669.jpg"
+    ),
+    AnimeCharacter(
+        "Training Beast",
+        "Anime Strength",
+        "https://img.freepik.com/free-photo/fit-cartoon-character-training_23-2151149035.jpg"
+    ),
+    AnimeCharacter(
+        "Power Builder",
+        "Anime Elite",
+        "https://img.freepik.com/free-photo/fit-cartoon-character-training_23-2151149009.jpg"
+    ),
+    AnimeCharacter(
+        "Martial Artist",
+        "Combat Anime",
+        "https://img.freepik.com/free-photo/portrait-man-cartoon-style_23-2151134157.jpg"
+    ),
+    AnimeCharacter(
+        "Battle Ready",
+        "Anime Warriors",
+        "https://img.freepik.com/free-photo/3d-cartoon-fitness-man_23-2151691504.jpg"
+    ),
+    AnimeCharacter(
+        "Strength Master",
+        "Anime Heroes",
+        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_52683-117786.jpg"
+    ),
+    AnimeCharacter(
+        "Fitness Legend",
+        "Training Anime",
+        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_52683-116948.jpg"
+    ),
+    AnimeCharacter(
+        "Athletic Hero",
+        "Power Anime",
+        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_23-2150495884.jpg"
+    ),
+    AnimeCharacter(
+        "Gym Warrior",
+        "Fitness Anime",
+        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_23-2150464942.jpg"
+    ),
+    AnimeCharacter(
+        "Combat Master",
+        "Battle Anime",
+        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_52683-119168.jpg"
+    ),
+    AnimeCharacter(
+        "Ultimate Fighter",
+        "Martial Arts",
+        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_23-2150515936.jpg"
+    ),
+    AnimeCharacter(
+        "Power Athlete",
+        "Sports Anime",
+        "https://vitalentum.net/upload/016/u1623/a/2/79cd25b0.webp"
+    ),
+    AnimeCharacter(
+        "Elite Trainer",
+        "Gym Anime",
+        "https://vitalentum.net/upload/016/u1623/0/2/2a3c7d19.webp"
+    ),
+    AnimeCharacter(
+        "Muscle Champion",
+        "Strength Anime",
+        "https://vitalentum.net/upload/016/u1623/8/8/888b383a.webp"
+    ),
+    AnimeCharacter(
+        "Intimidating Force",
+        "Combat Legends",
+        "https://vitalentum.net/upload/016/u1623/6/e/6e1e637c.webp"
+    )
 )
 
 // Sample data

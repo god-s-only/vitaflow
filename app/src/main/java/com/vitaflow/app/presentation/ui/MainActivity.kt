@@ -111,6 +111,7 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(navController)
                     }
                     composable(Routes.WORKOUTSCREEN + "/{exerciseId}") {
+                        ExerciseDetailScreen(navController = navController)
                     }
                 }
             }
