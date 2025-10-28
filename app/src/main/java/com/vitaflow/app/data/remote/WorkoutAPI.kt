@@ -1,6 +1,7 @@
 package com.vitaflow.app.data.remote
 
 import com.vitaflow.app.data.remote.dto.ExerciseDTO
+import com.vitaflow.app.data.remote.dto.ExerciseIdDTO
 import com.vitaflow.app.data.remote.dto.ExerciseRequest
 import retrofit2.Response
 import retrofit2.http.GET
@@ -10,7 +11,7 @@ interface WorkoutAPI {
     @GET("/api/v1/exercises")
     suspend fun getAllExercises(): Response<ExerciseDTO>
     @GET("/api/v1/exercises/{exerciseId}")
-    suspend fun getExerciseById(@Path("exerciseId") exerciseId: String): Response<ExerciseRequest>
+    suspend fun getExerciseById(@Path("exerciseId") exerciseId: String): Response<ExerciseIdDTO>
     @GET("/muscles")
     suspend fun getAllMuscles(): Response<ExerciseDTO>
     @GET("/bodyparts")

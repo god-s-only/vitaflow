@@ -12,13 +12,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ExerciseDetailViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val getExerciseByIdUseCase: GetExerciseByIdUseCase): ViewModel() {
+class ExerciseDetailViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val getExerciseByIdUseCase: GetExerciseByIdUseCase): ViewModel() {
     private val _state = MutableStateFlow(ExerciseDetailState())
     val state = _state.asStateFlow()
 
     init {
-        val exerciseId = savedStateHandle.get<String>("exerciseId")
-        getExerciseById(exerciseId ?: "")
+        savedStateHandle.get<String>("exerciseId")?.let { exerciseId ->
+            getExerciseById(exerciseId)
+        }
     }
 
     private fun getExerciseById(exerciseId: String) {

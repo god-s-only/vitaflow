@@ -91,12 +91,14 @@ fun HomeScreen(
         floatingActionButton = {
             Box(
                 modifier = Modifier
-                    .background(Color.White)
                     .clip(CircleShape)
-                    .border(width = 1.dp, color = Color.Black)
+                    .border(width = 1.dp, color = Color.Gray.copy(alpha = 0.7f), shape = CircleShape)
+                    .background(Color.White)
+                    .padding(10.dp)
             ){
                 Icon(
                     imageVector = Icons.Outlined.Email,
+                    tint = Color.Gray.copy(alpha = 0.7f),
                     contentDescription = null
                 )
             }

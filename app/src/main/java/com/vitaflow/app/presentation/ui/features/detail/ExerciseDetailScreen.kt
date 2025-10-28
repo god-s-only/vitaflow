@@ -93,241 +93,244 @@ fun ExerciseDetailScreen(
         },
         containerColor = Color(0xFFF8F9FA)
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            // Exercise Image/GIF Section
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(280.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize()
+        state.exercise?.let { exercise ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                // Exercise Image/GIF Section
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(280.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(state.exercise?.gifUrl)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = state.exercise?.name,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(20.dp)),
-                            contentScale = ContentScale.Crop,
-                            onError = { error ->
-                                println("Error loading exercise GIF: ${error.result.throwable}")
-                            }
-                        )
-
-                        // Play button overlay
                         Box(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(Color.Black.copy(alpha = 0.7f)),
-                            contentAlignment = Alignment.Center
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(exercise.gifUrl)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = exercise.name,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(20.dp)),
+                                contentScale = ContentScale.Crop,
+                                onError = { error ->
+                                    println("Error loading exercise GIF: ${error.result.throwable}")
+                                }
+                            )
+
+                            // Play button overlay
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .size(64.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black.copy(alpha = 0.7f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.PlayArrow,
+                                    contentDescription = "Play",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+
+                            // Rating badge
+                            Surface(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(16.dp),
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color.Black.copy(alpha = 0.7f)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Star,
+                                        contentDescription = null,
+                                        tint = Color.Yellow,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = "4.8",
+                                        color = Color.White,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Exercise Info Section
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(
+                                text = exercise.name,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+
+                            // Stats Row
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                StatItem(
+                                    label = "Duration",
+                                    value = "15 min",
+                                    icon = android.R.drawable.ic_menu_recent_history
+                                )
+                                StatItem(
+                                    label = "Calories",
+                                    value = "120 kcal",
+                                    icon = android.R.drawable.ic_menu_info_details
+                                )
+                                StatItem(
+                                    label = "Level",
+                                    value = "Intermediate",
+                                    icon = android.R.drawable.ic_menu_sort_by_size
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Target Muscles Section
+                item {
+                    SectionCard(
+                        title = "Target Muscles",
+                        subtitle = "Primary muscle groups"
+                    ) {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(exercise.targetMuscles) { muscle ->
+                                MuscleChip(
+                                    text = muscle,
+                                    isPrimary = true
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Secondary Muscles Section
+                if (exercise.secondaryMuscles.isNotEmpty()) {
+                    item {
+                        SectionCard(
+                            title = "Secondary Muscles",
+                            subtitle = "Supporting muscle groups"
+                        ) {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(exercise.secondaryMuscles) { muscle ->
+                                    MuscleChip(
+                                        text = muscle,
+                                        isPrimary = false
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Equipment Section
+                if (exercise.equipments.isNotEmpty()) {
+                    item {
+                        SectionCard(
+                            title = "Equipment Needed",
+                            subtitle = "Required equipment"
+                        ) {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(state.exercise.equipments) { equipment ->
+                                    EquipmentChip(text = equipment)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Instructions Section
+                item {
+                    SectionCard(
+                        title = "Instructions",
+                        subtitle = "Step by step guide"
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            exercise.instructions.forEachIndexed { index, instruction ->
+                                InstructionItem(
+                                    stepNumber = index + 1,
+                                    instruction = instruction
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Action Button
+                item {
+                    Button(
+                        onClick = { /* Handle start workout */ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black
+                        )
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
                                 Icons.Default.PlayArrow,
-                                contentDescription = "Play",
-                                tint = Color.White,
-                                modifier = Modifier.size(32.dp)
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                            Text(
+                                text = "Start Workout",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
                             )
                         }
-
-                        // Rating badge
-                        Surface(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(16.dp),
-                            shape = RoundedCornerShape(20.dp),
-                            color = Color.Black.copy(alpha = 0.7f)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = Color.Yellow,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "4.8",
-                                    color = Color.White,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Exercise Info Section
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            text = state.exercise?.name ?: "",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-
-                        // Stats Row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            StatItem(
-                                label = "Duration",
-                                value = "15 min",
-                                icon = android.R.drawable.ic_menu_recent_history
-                            )
-                            StatItem(
-                                label = "Calories",
-                                value = "120 kcal",
-                                icon = android.R.drawable.ic_menu_info_details
-                            )
-                            StatItem(
-                                label = "Level",
-                                value = "Intermediate",
-                                icon = android.R.drawable.ic_menu_sort_by_size
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Target Muscles Section
-            item {
-                SectionCard(
-                    title = "Target Muscles",
-                    subtitle = "Primary muscle groups"
-                ) {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(state.exercise?.targetMuscles ?: emptyList()) { muscle ->
-                            MuscleChip(
-                                text = muscle,
-                                isPrimary = true
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Secondary Muscles Section
-            if (state.exercise?.secondaryMuscles?.isNotEmpty() == true) {
-                item {
-                    SectionCard(
-                        title = "Secondary Muscles",
-                        subtitle = "Supporting muscle groups"
-                    ) {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(state.exercise.secondaryMuscles ?: emptyList()) { muscle ->
-                                MuscleChip(
-                                    text = muscle,
-                                    isPrimary = false
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Equipment Section
-            if (state.exercise?.equipments?.isNotEmpty() == true) {
-                item {
-                    SectionCard(
-                        title = "Equipment Needed",
-                        subtitle = "Required equipment"
-                    ) {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(state.exercise.equipments) { equipment ->
-                                EquipmentChip(text = equipment)
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Instructions Section
-            item {
-                SectionCard(
-                    title = "Instructions",
-                    subtitle = "Step by step guide"
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        state.exercise?.instructions?.forEachIndexed { index, instruction ->
-                            InstructionItem(
-                                stepNumber = index + 1,
-                                instruction = instruction
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Action Button
-            item {
-                Button(
-                    onClick = { /* Handle start workout */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black
-                    )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            contentDescription = null,
-                            tint = Color.White
-                        )
-                        Text(
-                            text = "Start Workout",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
                     }
                 }
             }
         }
+
     }
 }
 

@@ -29,7 +29,7 @@ class ExerciseRepositoryImpl @Inject constructor(private val api: WorkoutAPI): E
         val res = safeApiCall { api.getExerciseById(exerciseId) }
         return when (res) {
             is Resource.Success -> {
-                Resource.Success(data = res.data?.toExercise())
+                Resource.Success(data = res.data?.data?.toExercise())
             }
             is Resource.Error -> {
                 Resource.Error(message = res.message ?: "Something went wrong")
