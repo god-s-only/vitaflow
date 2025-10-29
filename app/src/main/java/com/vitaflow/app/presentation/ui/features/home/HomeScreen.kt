@@ -1,6 +1,5 @@
 package com.vitaflow.app.presentation.ui.features.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,17 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -84,24 +73,6 @@ fun HomeScreen(
                     )
                 }
             )
-        },
-        bottomBar = {
-            BottomNavigationBar()
-        },
-        floatingActionButton = {
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .border(width = 1.dp, color = Color.Gray.copy(alpha = 0.7f), shape = CircleShape)
-                    .background(Color.White)
-                    .padding(10.dp)
-            ){
-                Icon(
-                    imageVector = Icons.Outlined.Email,
-                    tint = Color.Gray.copy(alpha = 0.7f),
-                    contentDescription = null
-                )
-            }
         },
         containerColor = Color(0xFFF8F9FA)
     ) { paddingValues ->
@@ -600,110 +571,11 @@ fun AdditionalTrainingItem(
     }
 }
 
-@Composable
-fun BottomNavigationBar() {
-    var selectedIndex by remember { mutableStateOf(0) }
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
-        shadowElevation = 12.dp,
-        tonalElevation = 8.dp
-    ) {
-        NavigationBar(
-            containerColor = Color.White,
-            contentColor = Color.Black,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(88.dp)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            tonalElevation = 0.dp
-        ) {
-            bottomNavItems.forEachIndexed { index, item ->
-                val isSelected = index == selectedIndex
-
-                NavigationBarItem(
-                    icon = {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(
-                                    color = if (isSelected) Color.Black else Color.Transparent,
-                                    shape = RoundedCornerShape(16.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = item.title,
-                                modifier = Modifier.size(24.dp),
-                                tint = if (isSelected) Color.White else Color.Gray
-                            )
-                        }
-                    },
-                    label = {
-                        Text(
-                            text = item.title,
-                            fontSize = 12.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color.Black else Color.Gray,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    selected = isSelected,
-                    onClick = {
-                        selectedIndex = index
-                        // Handle navigation based on item
-                        when (item.title) {
-                            "Home" -> { /* Already on home */
-                            }
-
-                            "Search" -> { /* Navigate to search */
-                            }
-
-                            "Workout" -> { /* Navigate to workout */
-                            }
-
-                            "Articles" -> { /* Navigate to articles */
-                            }
-
-                            "Profile" -> { /* Navigate to profile */
-                            }
-                        }
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.Transparent,
-                        unselectedIconColor = Color.Transparent,
-                        selectedTextColor = Color.Black,
-                        unselectedTextColor = Color.Gray,
-                        indicatorColor = Color.Transparent,
-                        disabledIconColor = Color.Gray,
-                        disabledTextColor = Color.Gray
-                    ),
-                    modifier = Modifier.padding(horizontal = 2.dp)
-                )
-            }
-        }
-    }
-}
-
-// Data classes
-data class WorkoutType(
-    val name: String,
-    val sessions: Int
-)
-
 data class AdditionalTraining(
     val name: String,
     val calories: Int,
     val duration: String,
     val level: String
-)
-
-data class BottomNavItem(
-    val title: String,
-    val icon: ImageVector
 )
 
 data class AnimeCharacter(
@@ -816,23 +688,9 @@ val animeCharacterImages = listOf(
 )
 
 // Sample data
-val workoutTypes = listOf(
-    WorkoutType("Hiit", 12),
-    WorkoutType("Amrap", 15),
-    WorkoutType("For time", 8)
-)
-
 val additionalTraining = listOf(
     AdditionalTraining("Deep Amrap Burner", 125, "15min", "Beginner • Full body"),
     AdditionalTraining("Deep Butt Sculp", 180, "20min", "Intermediate • Lower body")
-)
-
-val bottomNavItems = listOf(
-    BottomNavItem("Home", Icons.Outlined.Home),
-    BottomNavItem("Search", Icons.Outlined.Search),
-    BottomNavItem("Workout", Icons.Default.Star),
-    BottomNavItem("Articles", Icons.Default.Menu),
-    BottomNavItem("Profile", Icons.Outlined.Person)
 )
 
 // Sample exercises
