@@ -1,7 +1,11 @@
 package com.vitaflow.app.di
 
+import android.content.Context
+import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.google.firebase.auth.FirebaseAuth
 import com.vitaflow.app.common.BASE_URL
+import com.vitaflow.app.data.local.NutritionDatabase
 import com.vitaflow.app.data.remote.WorkoutAPI
 import com.vitaflow.app.data.repository.AuthRepositoryImpl
 import com.vitaflow.app.data.repository.ExerciseRepositoryImpl
@@ -11,6 +15,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -46,5 +51,15 @@ object AppModule {
     @Singleton
     fun provideExerciseRepository(api: WorkoutAPI): ExerciseRepository{
         return ExerciseRepositoryImpl(api)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRoomDatabase(@ApplicationContext context: Context): RoomDatabase{
+        return Room.databaseBuilder(
+            context,
+            NutritionDatabase::class.java,
+            "nutrition_database"
+        ).fallbackToDestructiveMigration().build()
     }
 }
