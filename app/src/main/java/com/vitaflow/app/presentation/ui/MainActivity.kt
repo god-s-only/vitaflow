@@ -12,6 +12,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -54,110 +56,34 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     var showSplashScreen = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
-            setKeepOnScreenCondition{
-                showSplashScreen
-            }
-            setOnExitAnimationListener{ screen ->
-                val zoomX = ObjectAnimator.ofFloat(
-                    screen.iconView,
-                    View.SCALE_X,
-                    0.5f,
-                    0f
-                )
-                val zoomY = ObjectAnimator.ofFloat(
-                    screen.iconView,
-                    View.SCALE_Y,
-                    0.5f,
-                    0f
-                )
+            setKeepOnScreenCondition { showSplashScreen }
+            setOnExitAnimationListener { screen ->
+                val zoomX = ObjectAnimator.ofFloat(screen.iconView, View.SCALE_X, 0.5f, 0f)
+                val zoomY = ObjectAnimator.ofFloat(screen.iconView, View.SCALE_Y, 0.5f, 0f)
                 zoomX.duration = 500
                 zoomY.duration = 500
                 zoomX.interpolator = OvershootInterpolator()
                 zoomY.interpolator = OvershootInterpolator()
-                zoomX.doOnEnd {
-                    screen.remove()
-                }
-                zoomX.doOnEnd {
-                    screen.remove()
-                }
+                zoomX.doOnEnd { screen.remove() }
                 zoomX.start()
                 zoomY.start()
             }
         }
+
         super.onCreate(savedInstanceState)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
+
         setContent {
             VitaFlowTheme {
-                val navController = rememberNavController()
-                val currentRoute by navController.currentBackStackEntryAsState()
-
-                // Check if current route should show bottom bar
-                val shouldShowBottomBar = currentRoute?.destination?.route?.let { route ->
-                    route != Routes.SIGNINSCREEN &&
-                            route != Routes.SIGNUPSCREEN &&
-                            !route.startsWith(Routes.WORKOUTSCREEN)
-                } ?: false
-
-                Scaffold(
-                    bottomBar = {
-                        if (shouldShowBottomBar) {
-                            BottomNavigationBar(navController = navController)
-                        }
-                    }
-                ) { paddingValues ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = Routes.SIGNINSCREEN,
-                        modifier = if (shouldShowBottomBar) {
-                            Modifier.padding(bottom = paddingValues.calculateBottomPadding())
-                        } else {
-                            Modifier
-                        },
-                        enterTransition = {
-                            slideIntoContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                animationSpec = tween(300)
-                            ) + fadeIn(animationSpec = tween(300))
-                        },
-                        exitTransition = {
-                            slideOutOfContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                animationSpec = tween(300)
-                            ) + fadeOut(animationSpec = tween(300))
-                        },
-                        popEnterTransition = {
-                            slideIntoContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                animationSpec = tween(300)
-                            ) + fadeIn(animationSpec = tween(300))
-                        },
-                        popExitTransition = {
-                            slideOutOfContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                animationSpec = tween(300)
-                            ) + fadeOut(animationSpec = tween(300))
-                        }) {
-                        composable(Routes.SIGNINSCREEN) {
-                            SignInScreen(navController)
-                        }
-                        composable(Routes.SIGNUPSCREEN) {
-                            SignUpScreen(navController)
-                        }
-                        composable(Routes.HOMESCREEN) {
-                            HomeScreen(navController)
-                        }
-                        composable(Routes.NUTRITIONSCREEN) {
-                            NutritionScreen(navController)
-                        }
-                        composable(Routes.WORKOUTSCREEN + "/{exerciseId}") {
-                            ExerciseDetailScreen(navController = navController)
-                        }
-                    }
-                }
+                MainContent()
             }
         }
+
         CoroutineScope(Dispatchers.IO).launch {
             delay(3000)
             showSplashScreen = false
@@ -165,27 +91,115 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomNavigationBar(navController: NavController) {
+private fun MainContent() {
+    val navController = rememberNavController()
+    val currentRoute by navController.currentBackStackEntryAsState()
+
+    val shouldShowBottomBar = currentRoute?.destination?.route?.let { route ->
+        route != Routes.SIGNINSCREEN &&
+                route != Routes.SIGNUPSCREEN &&
+                !route.startsWith(Routes.WORKOUTSCREEN)
+    } ?: false
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8F9FA))
+    ) {
+        NavHost(
+            navController = navController,
+            startDestination = Routes.SIGNINSCREEN,
+            modifier = Modifier.fillMaxSize(),
+            enterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300))
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(300)
+                ) + fadeOut(animationSpec = tween(300))
+            },
+            popEnterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300))
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(300)
+                ) + fadeOut(animationSpec = tween(300))
+            }
+        ) {
+            composable(Routes.SIGNINSCREEN) {
+                SignInScreen(navController)
+            }
+            composable(Routes.SIGNUPSCREEN) {
+                SignUpScreen(navController)
+            }
+            composable(Routes.HOMESCREEN) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = if (shouldShowBottomBar) 80.dp else 0.dp)
+                ) {
+                    HomeScreen(navController)
+                }
+            }
+            composable(Routes.NUTRITIONSCREEN) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = if (shouldShowBottomBar) 80.dp else 0.dp)
+                ) {
+                    NutritionScreen(navController)
+                }
+            }
+            composable(Routes.WORKOUTSCREEN + "/{exerciseId}") {
+                ExerciseDetailScreen(navController = navController)
+            }
+        }
+
+        if (shouldShowBottomBar) {
+            ProfessionalBottomBar(
+                navController = navController,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfessionalBottomBar(
+    navController: NavController,
+    modifier: Modifier = Modifier
+) {
     val currentRoute by navController.currentBackStackEntryAsState()
     val currentDestination = currentRoute?.destination?.route
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.navigationBars),
         color = Color.White,
-        shadowElevation = 12.dp,
+        shadowElevation = 16.dp,
         tonalElevation = 8.dp
     ) {
-        NavigationBar(
-            containerColor = Color.White,
-            contentColor = Color.Black,
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(88.dp)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            tonalElevation = 0.dp
+                .height(80.dp)
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            bottomNavItems.forEachIndexed { index, item ->
+            bottomNavItems.forEach { item ->
                 val isSelected = when (item.title) {
                     "Home" -> currentDestination == Routes.HOMESCREEN
                     "Nutrition" -> currentDestination == Routes.NUTRITIONSCREEN
@@ -195,38 +209,10 @@ fun BottomNavigationBar(navController: NavController) {
                     else -> false
                 }
 
-                NavigationBarItem(
-                    icon = {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(
-                                    color = if (isSelected) Color.Black else Color.Transparent,
-                                    shape = RoundedCornerShape(16.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = item.title,
-                                modifier = Modifier.size(24.dp),
-                                tint = if (isSelected) Color.White else Color.Gray
-                            )
-                        }
-                    },
-                    label = {
-                        Text(
-                            text = item.title,
-                            fontSize = 12.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color.Black else Color.Gray,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    selected = isSelected,
+                BottomNavItem(
+                    item = item,
+                    isSelected = isSelected,
                     onClick = {
-                        // Handle navigation based on item
                         when (item.title) {
                             "Home" -> {
                                 if (currentDestination != Routes.HOMESCREEN) {
@@ -239,7 +225,6 @@ fun BottomNavigationBar(navController: NavController) {
                                     }
                                 }
                             }
-
                             "Nutrition" -> {
                                 if (currentDestination != Routes.NUTRITIONSCREEN) {
                                     navController.navigate(Routes.NUTRITIONSCREEN) {
@@ -251,47 +236,65 @@ fun BottomNavigationBar(navController: NavController) {
                                     }
                                 }
                             }
-
-                            "Workout" -> {
-                                // TODO: Navigate to workout list screen
-                                // navController.navigate("workout_list")
-                            }
-
-                            "Articles" -> {
-                                // TODO: Navigate to articles screen
-                                // navController.navigate("articles")
-                            }
-
-                            "Profile" -> {
-                                // TODO: Navigate to profile screen
-                                // navController.navigate("profile")
-                            }
+                            // TODO: Add other navigation cases
                         }
                     },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.Transparent,
-                        unselectedIconColor = Color.Transparent,
-                        selectedTextColor = Color.Black,
-                        unselectedTextColor = Color.Gray,
-                        indicatorColor = Color.Transparent,
-                        disabledIconColor = Color.Gray,
-                        disabledTextColor = Color.Gray
-                    ),
-                    modifier = Modifier.padding(horizontal = 2.dp)
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
     }
 }
 
-// Data class for bottom navigation items
+@Composable
+private fun BottomNavItem(
+    item: BottomNavItem,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .padding(vertical = 4.dp)
+            .clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(
+                    color = if (isSelected) Color.Black else Color.Transparent,
+                    shape = RoundedCornerShape(12.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = item.icon,
+                contentDescription = item.title,
+                modifier = Modifier.size(20.dp),
+                tint = if (isSelected) Color.White else Color.Gray
+            )
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = item.title,
+            fontSize = 10.sp,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+            color = if (isSelected) Color.Black else Color.Gray,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
 data class BottomNavItem(
     val title: String,
     val icon: ImageVector
 )
 
-// Bottom navigation items with Nutrition instead of Search
-val bottomNavItems = listOf(
+private val bottomNavItems = listOf(
     BottomNavItem("Home", Icons.Outlined.Home),
     BottomNavItem("Nutrition", Icons.Outlined.FavoriteBorder),
     BottomNavItem("Workout", Icons.Default.Star),

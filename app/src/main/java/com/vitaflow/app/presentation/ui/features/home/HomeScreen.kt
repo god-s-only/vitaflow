@@ -38,6 +38,15 @@ import com.vitaflow.app.common.Routes
 import com.vitaflow.app.domain.models.Exercise
 import kotlin.random.Random
 
+// App Theme Colors
+val PrimaryGreen = Color(0xFF00C853)
+val LightGreen = Color(0xFF4CAF50)
+val DarkGreen = Color(0xFF2E7D32)
+val BackgroundWhite = Color(0xFFFAFAFA)
+val CardWhite = Color.White
+val TextPrimary = Color(0xFF1A1A1A)
+val TextSecondary = Color(0xFF666666)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -47,7 +56,7 @@ fun HomeScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val uiState = viewModel.state.collectAsStateWithLifecycle()
 
-    // Random anime character image for featured workout
+    // Random character image for featured workout
     val randomAnimeCharacter by remember {
         mutableStateOf(animeCharacterImages.random())
     }
@@ -56,315 +65,227 @@ fun HomeScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = Color.Black
+                    containerColor = CardWhite,
+                    titleContentColor = TextPrimary
                 ),
                 title = {
                     Text(
-                        text = "Vita Flow",
+                        text = "VitaFlow",
                         overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = PrimaryGreen
                     )
                 },
                 actions = {
-                    Icon(
-                        imageVector = Icons.Filled.Notifications,
-                        contentDescription = "Notifications"
-                    )
+                    IconButton(onClick = { /* TODO: Notifications */ }) {
+                        Icon(
+                            imageVector = Icons.Filled.Notifications,
+                            contentDescription = "Notifications",
+                            tint = PrimaryGreen
+                        )
+                    }
                 }
             )
         },
-        containerColor = Color(0xFFF8F9FA)
+        containerColor = BackgroundWhite
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp)
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {
-                // Header Section
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column {
-                        Text(
-                            text = "Hello, User!",
-                            fontSize = 16.sp,
-                            color = Color.Gray,
-                            fontWeight = FontWeight.Normal
-                        )
-                        Text(
-                            text = "Stay Fit & Healthy",
-                            fontSize = 24.sp,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+                // Welcome Header
+                WelcomeHeader()
             }
 
             item {
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            item {
-                // Trending Workouts Section
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "Trending Workouts",
-                            fontSize = 20.sp,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "🔥",
-                            fontSize = 20.sp
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Featured Workout Card with Anime Character Background
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            // Anime Character Background Image
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(randomAnimeCharacter.imageUrl)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = randomAnimeCharacter.name,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop,
-                                onError = { error ->
-                                    println("Error loading anime character image: ${error.result.throwable}")
-                                }
-                            )
-
-                            // Gradient overlay for better text readability
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        Brush.verticalGradient(
-                                            colors = listOf(
-                                                Color.Transparent,
-                                                Color.Black.copy(alpha = 0.7f)
-                                            )
-                                        )
-                                    )
-                            )
-
-                            // Content
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(20.dp),
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                // Top badges
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Badge(
-                                        text = "Beginner",
-                                        backgroundColor = Color.White.copy(alpha = 0.3f)
-                                    )
-                                    Badge(
-                                        text = "Full body",
-                                        backgroundColor = Color.White.copy(alpha = 0.3f)
-                                    )
-                                    Badge(
-                                        text = randomAnimeCharacter.anime,
-                                        backgroundColor = Color(0xFF6C63FF).copy(alpha = 0.8f)
-                                    )
-                                }
-
-                                // Bottom content
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.Bottom
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = "${randomAnimeCharacter.name}'s Workout",
-                                            fontSize = 16.sp,
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold
-                                        )
-
-                                        Spacer(modifier = Modifier.height(8.dp))
-
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                        ) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(id = android.R.drawable.ic_menu_info_details),
-                                                    contentDescription = null,
-                                                    tint = Color.White,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                                Text(
-                                                    text = "350 kcal",
-                                                    color = Color.White,
-                                                    fontSize = 14.sp
-                                                )
-                                            }
-
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(id = android.R.drawable.ic_menu_recent_history),
-                                                    contentDescription = null,
-                                                    tint = Color.White,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                                Text(
-                                                    text = "1h 25min",
-                                                    color = Color.White,
-                                                    fontSize = 14.sp
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    // Rating
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Star,
-                                            contentDescription = null,
-                                            tint = Color.Yellow,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Text(
-                                            text = "4.8",
-                                            color = Color.White,
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
+                // Featured Workout Card
+                FeaturedWorkoutCard(randomAnimeCharacter)
             }
 
             item {
                 // Workout Types Section
+                WorkoutTypesSection(uiState, navController)
+            }
+
+            item {
+                // Quick Training Section (Redesigned Additional Training)
+                QuickTrainingSection()
+            }
+        }
+    }
+}
+
+@Composable
+private fun WelcomeHeader() {
+    Column {
+        Text(
+            text = "Hello, Fitness Enthusiast! 👋",
+            fontSize = 16.sp,
+            color = TextSecondary,
+            fontWeight = FontWeight.Normal
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Let's Get Moving Today",
+            fontSize = 28.sp,
+            color = TextPrimary,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun FeaturedWorkoutCard(character: AnimeCharacter) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(220.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Background Image
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(character.imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = character.name,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            // Green Gradient Overlay
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                PrimaryGreen.copy(alpha = 0.3f),
+                                DarkGreen.copy(alpha = 0.8f)
+                            )
+                        )
+                    )
+            )
+
+            // Content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Top badges
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Badge(
+                        text = "Featured",
+                        backgroundColor = CardWhite.copy(alpha = 0.9f),
+                        textColor = PrimaryGreen
+                    )
+                    Badge(
+                        text = "Full Body",
+                        backgroundColor = PrimaryGreen.copy(alpha = 0.8f),
+                        textColor = CardWhite
+                    )
+                }
+
+                // Bottom content
                 Column {
                     Text(
-                        text = "Workout types",
-                        fontSize = 20.sp,
-                        color = Color.Black,
+                        text = "Today's Featured Workout",
+                        fontSize = 18.sp,
+                        color = CardWhite,
                         fontWeight = FontWeight.Bold
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                    // Debug info
-                    if (uiState.value.isLoading) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    } else if (uiState.value.error != null) {
-                        Text(
-                            text = "Error: ${uiState.value.error}",
-                            color = Color.Red,
-                            fontSize = 14.sp
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Show sample exercises as fallback
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(sampleExercises) { exercise ->
-                                WorkoutTypeCard(exercise = exercise){}
-                            }
-                        }
-                    } else if (uiState.value.exercises.isEmpty()) {
-                        Text(
-                            text = "No exercises available, showing samples",
-                            color = Color.Gray,
-                            fontSize = 14.sp
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Show sample exercises as fallback
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(sampleExercises) { exercise ->
-                                WorkoutTypeCard(exercise = exercise){}
-                            }
-                        }
-                    } else {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(uiState.value.exercises) { exercise ->
-                                WorkoutTypeCard(exercise = exercise){
-                                    navController.navigate(Routes.WORKOUTSCREEN + "/${exercise.exerciseId}")
-                                }
-                            }
-                        }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        InfoChip(icon = "🔥", text = "350 kcal")
+                        InfoChip(icon = "⏱️", text = "45 min")
+                        InfoChip(icon = "⭐", text = "4.8")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorkoutTypesSection(
+    uiState: State<com.vitaflow.app.presentation.ui.features.home.HomeState>,
+    navController: NavController
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Workout Categories",
+                fontSize = 22.sp,
+                color = TextPrimary,
+                fontWeight = FontWeight.Bold
+            )
+
+            TextButton(onClick = { /* TODO: See all */ }) {
+                Text(
+                    text = "See All",
+                    color = PrimaryGreen,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        when {
+            uiState.value.isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PrimaryGreen)
+                }
+            }
+
+            uiState.value.error != null -> {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(sampleExercises) { exercise ->
+                        WorkoutTypeCard(exercise = exercise) {}
                     }
                 }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
+            uiState.value.exercises.isEmpty() -> {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(sampleExercises) { exercise ->
+                        WorkoutTypeCard(exercise = exercise) {}
+                    }
+                }
             }
 
-            item {
-                // Additional Training Section
-                Column {
-                    Text(
-                        text = "Additional training",
-                        fontSize = 20.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Column {
-                        additionalTraining.forEachIndexed { index, training ->
-                            AdditionalTrainingItem(training = training)
-                            if (index < additionalTraining.size - 1) {
-                                Spacer(modifier = Modifier.height(12.dp))
-                            }
+            else -> {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(uiState.value.exercises) { exercise ->
+                        WorkoutTypeCard(exercise = exercise) {
+                            navController.navigate(Routes.WORKOUTSCREEN + "/${exercise.exerciseId}")
                         }
                     }
                 }
@@ -374,19 +295,154 @@ fun HomeScreen(
 }
 
 @Composable
-fun Badge(
+private fun QuickTrainingSection() {
+    Column {
+        Text(
+            text = "Quick Training Sessions",
+            fontSize = 22.sp,
+            color = TextPrimary,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            quickTrainingItems.forEach { training ->
+                QuickTrainingCard(training = training)
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickTrainingCard(training: QuickTraining) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { /* TODO: Navigate to workout */ },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon/Image placeholder
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(PrimaryGreen, LightGreen)
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = training.emoji,
+                    fontSize = 24.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Content
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = training.name,
+                    fontSize = 16.sp,
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = training.description,
+                    fontSize = 14.sp,
+                    color = TextSecondary
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    InfoTag(text = "${training.duration} min", color = PrimaryGreen)
+                    InfoTag(text = "${training.calories} kcal", color = LightGreen)
+                    InfoTag(text = training.level, color = DarkGreen)
+                }
+            }
+
+            // Arrow
+            Icon(
+                painter = painterResource(id = android.R.drawable.ic_menu_send),
+                contentDescription = "Start workout",
+                tint = PrimaryGreen,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun Badge(
     text: String,
-    backgroundColor: Color
+    backgroundColor: Color,
+    textColor: Color = Color.White
 ) {
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(20.dp),
         color = backgroundColor
     ) {
         Text(
             text = text,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            color = Color.White,
+            color = textColor,
             fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+private fun InfoChip(icon: String, text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(text = icon, fontSize = 14.sp)
+        Text(
+            text = text,
+            color = CardWhite,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+private fun InfoTag(text: String, color: Color) {
+    Box(
+        modifier = Modifier
+            .background(
+                color.copy(alpha = 0.1f),
+                RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = text,
+            fontSize = 11.sp,
+            color = color,
             fontWeight = FontWeight.Medium
         )
     }
@@ -397,58 +453,40 @@ fun WorkoutTypeCard(
     exercise: Exercise,
     onClick: () -> Unit
 ) {
-    val context = LocalContext.current
-
     Card(
         modifier = Modifier
-            .width(140.dp)
-            .clickable { onClick() }
-            .height(160.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .width(160.dp)
+            .height(200.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // Background Image with fallback
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Background Image
             if (exercise.gifUrl.isNotEmpty()) {
                 AsyncImage(
-                    model = ImageRequest.Builder(context)
+                    model = ImageRequest.Builder(LocalContext.current)
                         .data(exercise.gifUrl)
                         .crossfade(true)
                         .build(),
                     contentDescription = exercise.name,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    onSuccess = {
-                        println("Successfully loaded: ${exercise.gifUrl}")
-                    },
-                    onError = { error ->
-                        println("Error loading exercise image: ${error.result.throwable}")
-                        println("Failed URL: ${exercise.gifUrl}")
-                    },
-                    onLoading = {
-                        println("Loading: ${exercise.gifUrl}")
-                    }
+                    contentScale = ContentScale.Crop
                 )
             } else {
-                // Fallback background if no image
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
                             Brush.linearGradient(
-                                colors = listOf(
-                                    Color(0xFF6C63FF),
-                                    Color(0xFF4CAF50)
-                                )
+                                colors = listOf(PrimaryGreen, LightGreen)
                             )
                         )
                 )
             }
 
-            // Gradient overlay for better text readability
+            // Green gradient overlay
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -456,9 +494,9 @@ fun WorkoutTypeCard(
                         Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                Color.Black.copy(alpha = 0.7f)
+                                PrimaryGreen.copy(alpha = 0.8f)
                             ),
-                            startY = 0f,
+                            startY = 100f,
                             endY = Float.POSITIVE_INFINITY
                         )
                     )
@@ -472,110 +510,35 @@ fun WorkoutTypeCard(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Text(
-                    text = exercise.name.take(25), // Limit text length
-                    color = Color.White,
+                    text = exercise.name.take(20),
+                    color = CardWhite,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
+
                 Spacer(modifier = Modifier.height(4.dp))
+
                 Text(
-                    text = "Workout",
-                    color = Color.White.copy(alpha = 0.8f),
-                    fontSize = 12.sp
+                    text = "Start Workout",
+                    color = CardWhite.copy(alpha = 0.9f),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
     }
 }
 
-@Composable
-fun AdditionalTrainingItem(
-    training: AdditionalTraining
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Image
-        Box(
-            modifier = Modifier
-                .size(60.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color.Gray)
-        )
-
-        // Content
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                text = training.name,
-                fontSize = 16.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(Color.Green)
-                    )
-                    Text(
-                        text = "${training.calories} kcal",
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(Color.Green)
-                    )
-                    Text(
-                        text = training.duration,
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = training.level,
-                color = Color.Gray,
-                fontSize = 12.sp
-            )
-        }
-    }
-}
-
-data class AdditionalTraining(
+// Data classes
+data class QuickTraining(
     val name: String,
+    val description: String,
+    val duration: Int,
     val calories: Int,
-    val duration: String,
-    val level: String
+    val level: String,
+    val emoji: String
 )
 
 data class AnimeCharacter(
@@ -584,116 +547,61 @@ data class AnimeCharacter(
     val imageUrl: String
 )
 
-val animeCharacterImages = listOf(
-    AnimeCharacter(
-        "Muscular Warrior",
-        "Anime Fitness",
-        "https://vitalentum.net/upload/016/u1623/6/e/6eb2b6c5.webp"
+// Sample data with updated content
+val quickTrainingItems = listOf(
+    QuickTraining(
+        name = "Morning Energy Boost",
+        description = "Quick cardio to start your day",
+        duration = 15,
+        calories = 120,
+        level = "Beginner",
+        emoji = "🌅"
     ),
-    AnimeCharacter(
-        "Athletic Fighter",
-        "Anime Power",
-        "https://vitalentum.net/upload/016/u1623/1/8/25fb2ba8.webp"
+    QuickTraining(
+        name = "Core Power Session",
+        description = "Strengthen your core muscles",
+        duration = 20,
+        calories = 150,
+        level = "Intermediate",
+        emoji = "💪"
     ),
-    AnimeCharacter(
-        "Sky Warrior",
-        "Anime Heroes",
-        "https://vitalentum.net/upload/016/u1623/e/5/e5d5a1c8.webp"
+    QuickTraining(
+        name = "HIIT Fat Burner",
+        description = "High intensity interval training",
+        duration = 25,
+        calories = 200,
+        level = "Advanced",
+        emoji = "🔥"
     ),
-    AnimeCharacter(
-        "Chiseled Hero",
-        "Anime Legends",
-        "https://vitalentum.net/upload/016/u1623/f/7/12549d14.webp"
-    ),
-    AnimeCharacter(
-        "Fitness Champion",
-        "Anime Training",
-        "https://img.freepik.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666671.jpg"
-    ),
-    AnimeCharacter(
-        "Gym Master",
-        "Anime Power",
-        "https://img.freepik.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666669.jpg"
-    ),
-    AnimeCharacter(
-        "Training Beast",
-        "Anime Strength",
-        "https://img.freepik.com/free-photo/fit-cartoon-character-training_23-2151149035.jpg"
-    ),
-    AnimeCharacter(
-        "Power Builder",
-        "Anime Elite",
-        "https://img.freepik.com/free-photo/fit-cartoon-character-training_23-2151149009.jpg"
-    ),
-    AnimeCharacter(
-        "Martial Artist",
-        "Combat Anime",
-        "https://img.freepik.com/free-photo/portrait-man-cartoon-style_23-2151134157.jpg"
-    ),
-    AnimeCharacter(
-        "Battle Ready",
-        "Anime Warriors",
-        "https://img.freepik.com/free-photo/3d-cartoon-fitness-man_23-2151691504.jpg"
-    ),
-    AnimeCharacter(
-        "Strength Master",
-        "Anime Heroes",
-        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_52683-117786.jpg"
-    ),
-    AnimeCharacter(
-        "Fitness Legend",
-        "Training Anime",
-        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_52683-116948.jpg"
-    ),
-    AnimeCharacter(
-        "Athletic Hero",
-        "Power Anime",
-        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_23-2150495884.jpg"
-    ),
-    AnimeCharacter(
-        "Gym Warrior",
-        "Fitness Anime",
-        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_23-2150464942.jpg"
-    ),
-    AnimeCharacter(
-        "Combat Master",
-        "Battle Anime",
-        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_52683-119168.jpg"
-    ),
-    AnimeCharacter(
-        "Ultimate Fighter",
-        "Martial Arts",
-        "https://img.freepik.com/free-vector/hand-drawn-strong-man-cartoon-illustration_23-2150515936.jpg"
-    ),
-    AnimeCharacter(
-        "Power Athlete",
-        "Sports Anime",
-        "https://vitalentum.net/upload/016/u1623/a/2/79cd25b0.webp"
-    ),
-    AnimeCharacter(
-        "Elite Trainer",
-        "Gym Anime",
-        "https://vitalentum.net/upload/016/u1623/0/2/2a3c7d19.webp"
-    ),
-    AnimeCharacter(
-        "Muscle Champion",
-        "Strength Anime",
-        "https://vitalentum.net/upload/016/u1623/8/8/888b383a.webp"
-    ),
-    AnimeCharacter(
-        "Intimidating Force",
-        "Combat Legends",
-        "https://vitalentum.net/upload/016/u1623/6/e/6e1e637c.webp"
+    QuickTraining(
+        name = "Flexibility Flow",
+        description = "Improve mobility and flexibility",
+        duration = 18,
+        calories = 80,
+        level = "All Levels",
+        emoji = "🧘"
     )
 )
 
-// Sample data
-val additionalTraining = listOf(
-    AdditionalTraining("Deep Amrap Burner", 125, "15min", "Beginner • Full body"),
-    AdditionalTraining("Deep Butt Sculp", 180, "20min", "Intermediate • Lower body")
+val animeCharacterImages = listOf(
+    AnimeCharacter(
+        "Fitness Hero",
+        "Training Legends",
+        "https://img.freepik.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666671.jpg"
+    ),
+    AnimeCharacter(
+        "Workout Master",
+        "Gym Champions",
+        "https://img.freepik.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666669.jpg"
+    ),
+    AnimeCharacter(
+        "Strength Builder",
+        "Power Training",
+        "https://img.freepik.com/free-photo/fit-cartoon-character-training_23-2151149035.jpg"
+    )
 )
 
-// Sample exercises
+// Sample exercises with green theme
 val sampleExercises = listOf(
     Exercise(
         exerciseId = "1",
@@ -724,6 +632,16 @@ val sampleExercises = listOf(
         instructions = listOf("Hold plank position"),
         secondaryMuscles = listOf("shoulders"),
         targetMuscles = listOf("abs")
+    ),
+    Exercise(
+        exerciseId = "4",
+        name = "Burpees",
+        gifUrl = "",
+        bodyParts = listOf("full body"),
+        equipments = listOf("body weight"),
+        instructions = listOf("Full body exercise"),
+        secondaryMuscles = listOf("core"),
+        targetMuscles = listOf("legs", "arms")
     )
 )
 
