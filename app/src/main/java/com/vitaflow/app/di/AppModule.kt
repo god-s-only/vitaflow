@@ -11,14 +11,16 @@ import com.vitaflow.app.data.repository.AuthRepositoryImpl
 import com.vitaflow.app.data.repository.ExerciseRepositoryImpl
 import com.vitaflow.app.domain.repository.AuthRepository
 import com.vitaflow.app.domain.repository.ExerciseRepository
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -61,5 +63,40 @@ object AppModule {
             NutritionDatabase::class.java,
             "nutrition_database"
         ).fallbackToDestructiveMigration().build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
+        return HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+    }
+    private const val RAPIDAPI_KEY = "a65d1be0e9mshf05431a65c41954p1a2950jsn2d27cf267aa8"
+    private const val RAPIDAPI_HOST = "exercisedb.p.rapidapi.com"
+
+    @Provides
+    @Singleton
+    fun provideRapidApiOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val originalRequest = chain.request()
+
+                // Add RapidAPI headers
+                val requestWithHeaders = originalRequest.newBuilder()
+                    .addHeader("X-RapidAPI-Key", RAPIDAPI_KEY)
+                    .addHeader("X-RapidAPI-Host", RAPIDAPI_HOST)
+                    .addHeader("Content-Type", "application/json")
+                    .build()
+
+                chain.proceed(requestWithHeaders)
+            }
+            .build()
     }
 }

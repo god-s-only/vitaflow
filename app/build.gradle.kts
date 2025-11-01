@@ -20,6 +20,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "RAPIDAPI_KEY",
+            "\"${project.findProperty("RAPIDAPI_KEY") ?: ""}\""
+        )
+        buildConfigField(
+            "String",
+            "RAPIDAPI_HOST",
+            "\"${project.findProperty("RAPIDAPI_HOST") ?: ""}\""
+        )
     }
 
     buildTypes {
@@ -40,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
