@@ -7,11 +7,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.vitaflow.app.common.BASE_URL
 import com.vitaflow.app.common.SPOONACULAR_API
 import com.vitaflow.app.data.local.NutritionDatabase
+import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.WorkoutAPI
 import com.vitaflow.app.data.repository.AuthRepositoryImpl
 import com.vitaflow.app.data.repository.ExerciseRepositoryImpl
+import com.vitaflow.app.data.repository.NutritionFoodRepositoryImpl
 import com.vitaflow.app.domain.repository.AuthRepository
 import com.vitaflow.app.domain.repository.ExerciseRepository
+import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -104,11 +107,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSpoonacularApi(): WorkoutAPI {
+    fun provideSpoonacularApi(): SpoonacularAPI {
         return Retrofit.Builder()
             .baseUrl(SPOONACULAR_API)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(WorkoutAPI::class.java)
+            .create(SpoonacularAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSpoonacularRepository(api: SpoonacularAPI): NutritionFoodRepository{
+        return NutritionFoodRepositoryImpl(api)
     }
 }

@@ -26,10 +26,10 @@ class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI
                     emit(Result.success(nutritionFood))
                 } ?: emit(Result.failure(Exception("Error: Body is null")))
             } else {
-                emit(Result.failure(Exception("Error: ${res.code()} ${res.errorBody()}")))
+                emit(Result.failure(Exception("API Error ${res.code()}: ${res.errorBody()}")))
             }
         }catch (e: Exception){
-            emit(Result.failure(Exception(e.message)))
+            emit(Result.failure(e))
         }
     }
 }
