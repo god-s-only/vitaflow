@@ -3,9 +3,12 @@ package com.vitaflow.app.data.remote
 import com.vitaflow.app.data.remote.dto.ExerciseDTO
 import com.vitaflow.app.data.remote.dto.ExerciseIdDTO
 import com.vitaflow.app.data.remote.dto.ExerciseRequest
+import com.vitaflow.app.data.remote.dto.NutritionFoodDTO
+import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface WorkoutAPI {
     @GET("/api/v1/exercises")
@@ -24,5 +27,4 @@ interface WorkoutAPI {
     suspend fun getExercisesByMuscle(@Path("muscleName") muscleName: String): Response<ExerciseDTO>
     @GET("/equipments/{equipmentName}/exercises")
     suspend fun getExercisesByEquipment(@Path("equipmentName") equipmentName: String): Response<ExerciseDTO>
-
 }

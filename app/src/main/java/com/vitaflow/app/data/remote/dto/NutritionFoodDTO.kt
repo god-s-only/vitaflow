@@ -11,7 +11,7 @@ data class NutritionFoodDTO(
     @SerializedName("processingTimeMs")
     val processingTimeMs: Int,
     @SerializedName("products")
-    val products: List<Product>,
+    val nutritionFoodResponses: List<NutritionFoodResponse>,
     @SerializedName("totalProducts")
     val totalProducts: Int,
     @SerializedName("type")

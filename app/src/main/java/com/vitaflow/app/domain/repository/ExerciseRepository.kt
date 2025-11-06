@@ -2,6 +2,8 @@ package com.vitaflow.app.domain.repository
 
 import com.vitaflow.app.common.Resource
 import com.vitaflow.app.domain.models.Exercise
+import com.vitaflow.app.domain.models.NutritionFood
+import kotlinx.coroutines.flow.Flow
 
 interface ExerciseRepository {
     suspend fun getAllExercises(): Resource<List<Exercise>>

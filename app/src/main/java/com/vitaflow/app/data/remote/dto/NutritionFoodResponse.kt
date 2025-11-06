@@ -3,7 +3,7 @@ package com.vitaflow.app.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 
-data class Product(
+data class NutritionFoodResponse(
     @SerializedName("id")
     val id: Int,
     @SerializedName("image")

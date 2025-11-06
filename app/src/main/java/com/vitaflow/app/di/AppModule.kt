@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.google.firebase.auth.FirebaseAuth
 import com.vitaflow.app.common.BASE_URL
+import com.vitaflow.app.common.SPOONACULAR_API
 import com.vitaflow.app.data.local.NutritionDatabase
 import com.vitaflow.app.data.remote.WorkoutAPI
 import com.vitaflow.app.data.repository.AuthRepositoryImpl
@@ -20,6 +21,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -98,5 +100,15 @@ object AppModule {
                 chain.proceed(requestWithHeaders)
             }
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSpoonacularApi(): WorkoutAPI {
+        return Retrofit.Builder()
+            .baseUrl(SPOONACULAR_API)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(WorkoutAPI::class.java)
     }
 }
