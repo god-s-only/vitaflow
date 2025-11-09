@@ -31,6 +31,11 @@ android {
             "RAPIDAPI_HOST",
             "\"${project.findProperty("RAPIDAPI_HOST") ?: ""}\""
         )
+        buildConfigField(
+            "String",
+            "SPOONACULAR_API_KEY",
+            "\"${project.findProperty("SPOONACULAR_API_KEY") ?: ""}\""
+        )
     }
 
     buildTypes {
@@ -40,6 +45,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
         }
     }
     compileOptions {
