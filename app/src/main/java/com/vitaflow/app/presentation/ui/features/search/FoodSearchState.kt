@@ -5,5 +5,6 @@ import com.vitaflow.app.domain.models.NutritionFood
 data class FoodSearchState(
     val food: List<NutritionFood> = emptyList(),
     val error: String? = null,
-    val loading: Boolean = false
+    val loading: Boolean = false,
+    val query: String = ""
 )

@@ -1,10 +1,13 @@
 package com.vitaflow.app.presentation.ui.features.search
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.BuildConfig
 import com.vitaflow.app.domain.usecase.nutrition.GetNutritionFoodSpoonacular
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -15,7 +18,9 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
     private val _state = MutableStateFlow(FoodSearchState())
     val state = _state.asStateFlow()
 
+
     private val apiKey = BuildConfig.SPOONACULAR_API_KEY
+    private var searchJob: Job? = null
 
 
     private fun searchFoodProducts(query: String){
@@ -54,8 +59,24 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
     fun onEvent(event: FoodSearchEvent){
         when(event){
             is FoodSearchEvent.OnSearchChange -> {
-                searchFoodProducts(event.query)
+                _state.value = _state.value.copy(query = event.query)
+                searchJob?.cancel()
+                searchJob = viewModelScope.launch {
+                    delay(300)
+                    if(event.query.isNotBlank()){
+                        searchFoodProducts(event.query)
+                    }else{
+                        clearResults()
+                    }
+                }
             }
         }
+    }
+    private fun clearResults(){
+        _state.value = _state.value.copy(
+            food = emptyList(),
+            error = null,
+            loading = false
+        )
     }
 }
