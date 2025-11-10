@@ -3,6 +3,7 @@ package com.vitaflow.app.presentation.ui.features.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.BuildConfig
+import com.vitaflow.app.domain.usecase.nutrition.GetNutritionFoodById
 import com.vitaflow.app.domain.usecase.nutrition.GetNutritionFoodSpoonacular
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -13,7 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoonacular: GetNutritionFoodSpoonacular): ViewModel() {
+class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoonacular: GetNutritionFoodSpoonacular, private val getNutritionFoodById: GetNutritionFoodById): ViewModel() {
     private val _state = MutableStateFlow(FoodSearchState())
     val state = _state.asStateFlow()
 
@@ -66,8 +67,11 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
                     }
                 }
             }
+
+            is FoodSearchEvent.LoadNutritionDetails -> TODO()
         }
     }
+
     private fun clearResults(){
         _state.value = _state.value.copy(
             food = emptyList(),

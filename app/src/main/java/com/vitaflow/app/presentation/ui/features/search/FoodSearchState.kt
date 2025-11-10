@@ -6,5 +6,6 @@ data class FoodSearchState(
     val food: List<NutritionFood> = emptyList(),
     val error: String? = null,
     val loading: Boolean = false,
-    val query: String = ""
+    val query: String = "",
+    val loadingDetailsFor: Set<Int> = emptySet()
 )
