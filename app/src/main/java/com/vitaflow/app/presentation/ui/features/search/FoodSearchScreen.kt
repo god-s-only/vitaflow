@@ -32,6 +32,36 @@ private val CardWhite = Color.White
 private val TextPrimary = Color(0xFF1A1A1A)
 private val TextSecondary = Color(0xFF666666)
 
+// Data class for food items
+data class FoodItem(
+    val id: String,
+    val name: String,
+    val brand: String,
+    val calories: Int,
+    val carbs: Int,
+    val protein: Int,
+    val fat: Int,
+    val servingSize: String
+)
+
+val sampleFoods = listOf(
+    FoodItem("1", "Banana", "Fresh", 105, 27, 1, 0, "1 medium"),
+    FoodItem("2", "Chicken Breast", "Fresh", 165, 0, 31, 4, "100g"),
+    FoodItem("3", "Brown Rice", "Generic", 216, 45, 5, 2, "1 cup cooked"),
+    FoodItem("4", "Greek Yogurt", "Chobani", 100, 6, 18, 0, "170g container"),
+    FoodItem("5", "Oatmeal", "Quaker", 150, 27, 5, 3, "1/2 cup dry"),
+    FoodItem("6", "Eggs", "Large", 70, 0, 6, 5, "1 large"),
+    FoodItem("7", "Almonds", "Raw", 160, 6, 6, 14, "28g (23 nuts)"),
+    FoodItem("8", "Sweet Potato", "Fresh", 112, 26, 2, 0, "1 medium"),
+    FoodItem("9", "Salmon", "Atlantic", 206, 0, 22, 12, "100g"),
+    FoodItem("10", "Spinach", "Fresh", 7, 1, 1, 0, "1 cup"),
+    FoodItem("11", "Apple", "Medium", 95, 25, 0, 0, "1 medium"),
+    FoodItem("12", "Avocado", "Fresh", 160, 9, 2, 15, "1/2 medium"),
+    FoodItem("13", "Protein Powder", "Whey", 120, 2, 24, 1, "1 scoop"),
+    FoodItem("14", "Peanut Butter", "Jif", 190, 8, 8, 16, "2 tbsp"),
+    FoodItem("15", "Bread", "Whole Wheat", 80, 14, 4, 1, "1 slice")
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodSearchScreen(
@@ -41,6 +71,11 @@ fun FoodSearchScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val searchQuery by remember { derivedStateOf { state.query } }
+
+    // Decide what to show: sample foods or API results
+    val showSampleFoods = searchQuery.isEmpty()
+    val displayFoods = if (showSampleFoods) sampleFoods else emptyList()
+    val displayApiResults = if (!showSampleFoods) state.food else emptyList()
 
     Scaffold(
         topBar = {
@@ -87,8 +122,8 @@ fun FoodSearchScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Show loading indicator
-            if (state.loading) {
+            // Show loading indicator only when searching (not for sample foods)
+            if (state.loading && !showSampleFoods) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -97,47 +132,66 @@ fun FoodSearchScreen(
                 }
             }
 
-            // Show error message
-            state.error?.let { error ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.Red.copy(alpha = 0.1f))
-                ) {
-                    Text(
-                        text = error,
-                        color = Color.Red,
-                        modifier = Modifier.padding(16.dp)
-                    )
+            // Show error message only when searching
+            if (!showSampleFoods) {
+                state.error?.let { error ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.Red.copy(alpha = 0.1f))
+                    ) {
+                        Text(
+                            text = error,
+                            color = Color.Red,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
-                Spacer(modifier = Modifier.height(8.dp))
             }
 
             // Results Count
+            val totalCount = if (showSampleFoods) displayFoods.size else displayApiResults.size
+            val resultType = if (showSampleFoods) "sample foods" else "foods found"
+
             Text(
-                text = "${state.food.size} foods found",
+                text = "$totalCount $resultType",
                 fontSize = 14.sp,
                 color = TextSecondary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Food List - Now using API data from viewModel
+            // Food List
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(state.food) { nutritionFood ->
-                    NutritionFoodCard(
-                        nutritionFood = nutritionFood,
-                        onFoodClick = {
-                            // TODO: Pass selected food back to nutrition screen
-                            // For now, just navigate back
-                            navController.popBackStack()
-                        }
-                    )
-                }
+                // Show sample foods when not searching
+                if (showSampleFoods) {
+                    items(displayFoods) { food ->
+                        FoodItemCard(
+                            food = food,
+                            onFoodClick = {
+                                // TODO: Pass selected food back to nutrition screen
+                                navController.popBackStack()
+                            }
+                        )
+                    }
+                } else {
+                    // Show API results when searching
+                    items(displayApiResults) { nutritionFood ->
+                        NutritionFoodCard(
+                            nutritionFood = nutritionFood,
+                            onFoodClick = {
+                                // TODO: Pass selected food back to nutrition screen
+                                navController.popBackStack()
+                            }
+                        )
+                    }
 
-                if (state.food.isEmpty() && searchQuery.isNotEmpty() && !state.loading) {
-                    item {
-                        EmptySearchResult(searchQuery = searchQuery)
+                    // Show empty state only when search returns no results
+                    if (displayApiResults.isEmpty() && searchQuery.isNotEmpty() && !state.loading) {
+                        item {
+                            EmptySearchResult(searchQuery = searchQuery)
+                        }
                     }
                 }
             }
@@ -390,18 +444,6 @@ private fun NutritionFoodCard(
         }
     }
 }
-
-// Data class for food items
-data class FoodItem(
-    val id: String,
-    val name: String,
-    val brand: String,
-    val calories: Int,
-    val carbs: Int,
-    val protein: Int,
-    val fat: Int,
-    val servingSize: String
-)
 
 @Preview
 @Composable
