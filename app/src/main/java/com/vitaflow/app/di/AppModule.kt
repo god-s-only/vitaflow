@@ -20,6 +20,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Qualifier
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -27,6 +28,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+
+@Qualifier
+@Retention(AnnotationRetention.RUNTIME)
+annotation class RapidApiClient
+
+@Qualifier
+@Retention(AnnotationRetention.RUNTIME)
+annotation class SpoonacularClient
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -82,6 +91,7 @@ object AppModule {
 
     @Provides
     @Singleton
+    @RapidApiClient
     fun provideRapidApiOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
@@ -107,9 +117,24 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSpoonacularApi(): SpoonacularAPI {
+    @SpoonacularClient
+    fun provideSpoonacularOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSpoonacularApi(@SpoonacularClient spoonacularClient: OkHttpClient): SpoonacularAPI {
         return Retrofit.Builder()
             .baseUrl(SPOONACULAR_API)
+            .client(spoonacularClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(SpoonacularAPI::class.java)

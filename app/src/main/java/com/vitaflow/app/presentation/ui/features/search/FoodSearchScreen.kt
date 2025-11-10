@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.vitaflow.app.domain.models.NutritionFood
 
 // Theme Colors - Consistent with app theme
 private val PrimaryGreen = Color(0xFF00C853)
@@ -38,13 +39,8 @@ fun FoodSearchScreen(
     mealType: String = "breakfast",
     viewModel: FoodSearchViewModel = hiltViewModel()
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-
-    // Filter foods based on search query
-    val filteredFoods = sampleFoods.filter { food ->
-        food.name.contains(searchQuery, ignoreCase = true) ||
-                food.brand.contains(searchQuery, ignoreCase = true)
-    }
+    val state by viewModel.state.collectAsState()
+    val searchQuery by remember { derivedStateOf { state.query } }
 
     Scaffold(
         topBar = {
@@ -83,27 +79,54 @@ fun FoodSearchScreen(
             // Search Bar
             SearchBar(
                 query = searchQuery,
-                onQueryChange = { searchQuery = it },
+                onQueryChange = { query ->
+                    viewModel.onEvent(FoodSearchEvent.OnSearchChange(query))
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Show loading indicator
+            if (state.loading) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PrimaryGreen)
+                }
+            }
+
+            // Show error message
+            state.error?.let { error ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.Red.copy(alpha = 0.1f))
+                ) {
+                    Text(
+                        text = error,
+                        color = Color.Red,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             // Results Count
             Text(
-                text = "${filteredFoods.size} foods found",
+                text = "${state.food.size} foods found",
                 fontSize = 14.sp,
                 color = TextSecondary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Food List
+            // Food List - Now using API data from viewModel
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(filteredFoods) { food ->
-                    FoodItemCard(
-                        food = food,
+                items(state.food) { nutritionFood ->
+                    NutritionFoodCard(
+                        nutritionFood = nutritionFood,
                         onFoodClick = {
                             // TODO: Pass selected food back to nutrition screen
                             // For now, just navigate back
@@ -112,7 +135,7 @@ fun FoodSearchScreen(
                     )
                 }
 
-                if (filteredFoods.isEmpty() && searchQuery.isNotEmpty()) {
+                if (state.food.isEmpty() && searchQuery.isNotEmpty() && !state.loading) {
                     item {
                         EmptySearchResult(searchQuery = searchQuery)
                     }
@@ -293,6 +316,81 @@ private fun EmptySearchResult(searchQuery: String) {
     }
 }
 
+@Composable
+private fun NutritionFoodCard(
+    nutritionFood: NutritionFood,
+    onFoodClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onFoodClick() },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = nutritionFood.title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextPrimary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "ID: ${nutritionFood.id}",
+                    fontSize = 14.sp,
+                    color = TextSecondary
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    NutrientInfo(label = "Cal", value = "---")
+                    NutrientInfo(label = "Carbs", value = "---")
+                    NutrientInfo(label = "Protein", value = "---")
+                    NutrientInfo(label = "Fat", value = "---")
+                }
+            }
+
+            // Add button
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = "Tap for details",
+                    fontSize = 12.sp,
+                    color = TextSecondary
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Icon(
+                    painter = painterResource(id = android.R.drawable.ic_input_add),
+                    contentDescription = "Add",
+                    tint = PrimaryGreen,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
+}
+
 // Data class for food items
 data class FoodItem(
     val id: String,
@@ -303,25 +401,6 @@ data class FoodItem(
     val protein: Int,
     val fat: Int,
     val servingSize: String
-)
-
-// Sample food data - replace with real API data later
-private val sampleFoods = listOf(
-    FoodItem("1", "Banana", "Fresh", 105, 27, 1, 0, "1 medium"),
-    FoodItem("2", "Chicken Breast", "Fresh", 165, 0, 31, 4, "100g"),
-    FoodItem("3", "Brown Rice", "Generic", 216, 45, 5, 2, "1 cup cooked"),
-    FoodItem("4", "Greek Yogurt", "Chobani", 100, 6, 18, 0, "170g container"),
-    FoodItem("5", "Oatmeal", "Quaker", 150, 27, 5, 3, "1/2 cup dry"),
-    FoodItem("6", "Eggs", "Large", 70, 0, 6, 5, "1 large"),
-    FoodItem("7", "Almonds", "Raw", 160, 6, 6, 14, "28g (23 nuts)"),
-    FoodItem("8", "Sweet Potato", "Fresh", 112, 26, 2, 0, "1 medium"),
-    FoodItem("9", "Salmon", "Atlantic", 206, 0, 22, 12, "100g"),
-    FoodItem("10", "Spinach", "Fresh", 7, 1, 1, 0, "1 cup"),
-    FoodItem("11", "Apple", "Medium", 95, 25, 0, 0, "1 medium"),
-    FoodItem("12", "Avocado", "Fresh", 160, 9, 2, 15, "1/2 medium"),
-    FoodItem("13", "Protein Powder", "Whey", 120, 2, 24, 1, "1 scoop"),
-    FoodItem("14", "Peanut Butter", "Jif", 190, 8, 8, 16, "2 tbsp"),
-    FoodItem("15", "Bread", "Whole Wheat", 80, 14, 4, 1, "1 slice")
 )
 
 @Preview

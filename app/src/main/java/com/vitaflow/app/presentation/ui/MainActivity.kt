@@ -46,6 +46,7 @@ import com.vitaflow.app.presentation.ui.auth.signup.SignUpScreen
 import com.vitaflow.app.presentation.ui.features.detail.ExerciseDetailScreen
 import com.vitaflow.app.presentation.ui.features.home.HomeScreen
 import com.vitaflow.app.presentation.ui.features.nutrition.NutritionScreen
+import com.vitaflow.app.presentation.ui.features.search.FoodSearchScreen
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -110,7 +111,7 @@ private fun MainContent() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = Routes.SIGNINSCREEN,
+            startDestination = Routes.FOODSEARCHSCREEN,
             modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 slideIntoContainer(
@@ -163,6 +164,9 @@ private fun MainContent() {
             }
             composable(Routes.WORKOUTSCREEN + "/{exerciseId}") {
                 ExerciseDetailScreen(navController = navController)
+            }
+            composable(Routes.FOODSEARCHSCREEN){
+                FoodSearchScreen(navController = navController)
             }
         }
 

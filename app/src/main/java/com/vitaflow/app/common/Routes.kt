@@ -10,4 +10,5 @@ object Routes {
     const val SETTINGSSCREEN = "settingsscreen"
     const val ONBOARDINGSCREEN = "onboardingscreen"
     const val NUTRITIONSCREEN = "nutritionscreen"
+    const val FOODSEARCHSCREEN = "foodsearchscreen"
 }

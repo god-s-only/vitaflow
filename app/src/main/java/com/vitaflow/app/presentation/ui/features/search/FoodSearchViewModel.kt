@@ -1,6 +1,5 @@
 package com.vitaflow.app.presentation.ui.features.search
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.BuildConfig
@@ -21,8 +20,6 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
 
     private val apiKey = BuildConfig.SPOONACULAR_API_KEY
     private var searchJob: Job? = null
-
-
     private fun searchFoodProducts(query: String){
         _state.value = _state.value.copy(loading = true)
         if(query.isBlank()){
@@ -55,7 +52,6 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
         }
 
     }
-
     fun onEvent(event: FoodSearchEvent){
         when(event){
             is FoodSearchEvent.OnSearchChange -> {

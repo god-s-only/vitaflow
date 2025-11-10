@@ -34,7 +34,7 @@ android {
         buildConfigField(
             "String",
             "SPOONACULAR_API_KEY",
-            "\"${project.findProperty("SPOONACULAR_API_KEY") ?: ""}\""
+            "\"${project.findProperty("SPOONACULAR_API_KEY") ?: "default_empty"}\""
         )
     }
 
