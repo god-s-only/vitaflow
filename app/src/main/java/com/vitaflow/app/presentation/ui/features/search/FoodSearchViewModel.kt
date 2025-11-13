@@ -72,6 +72,20 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
         }
     }
 
+    private fun loadNutritionDetails(productId: Int){
+        viewModelScope.launch {
+            _state.value = _state.value.copy(
+                loadingDetailsFor =  _state.value.loadingDetailsFor + productId
+            )
+            val res = getNutritionFoodById(productId, apiKey).collect { result ->
+                when{
+                    result.isSuccess -> {
+                        val detailedFood = result.getOrNull()
+                    }
+                }
+            }
+        }
+    }
     private fun clearResults(){
         _state.value = _state.value.copy(
             food = emptyList(),
