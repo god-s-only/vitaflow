@@ -9,7 +9,7 @@ data class Servings(
     @SerializedName("raw")
     val raw: String,
     @SerializedName("size")
-    val size: Int,
+    val size: Double,
     @SerializedName("unit")
     val unit: String
 )

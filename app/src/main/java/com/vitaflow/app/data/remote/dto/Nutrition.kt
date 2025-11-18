@@ -7,7 +7,7 @@ data class Nutrition(
     @SerializedName("caloricBreakdown")
     val caloricBreakdown: CaloricBreakdown,
     @SerializedName("calories")
-    val calories: Int,
+    val calories: Double,
     @SerializedName("carbs")
     val carbs: String,
     @SerializedName("fat")

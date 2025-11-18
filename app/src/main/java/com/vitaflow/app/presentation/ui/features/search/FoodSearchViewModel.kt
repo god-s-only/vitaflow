@@ -18,7 +18,7 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
     private val _state = MutableStateFlow(FoodSearchState())
     val state = _state.asStateFlow()
 
-    private val apiKey = BuildConfig.SPOONACULAR_API_KEY
+    private val apiKey = "d27a45f9da6249fc996a69d62713a202"
     private var searchJob: Job? = null
     private fun searchFoodProducts(query: String){
         _state.value = _state.value.copy(loading = true)
@@ -68,7 +68,7 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
             }
 
             is FoodSearchEvent.LoadNutritionDetails -> {
-
+                loadNutritionDetails(event.productId)
             }
         }
     }
@@ -78,7 +78,7 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
             _state.value = _state.value.copy(
                 loadingDetailsFor =  _state.value.loadingDetailsFor + productId
             )
-            val res = getNutritionFoodById(productId, apiKey).collect { result ->
+            getNutritionFoodById(productId, apiKey).collect { result ->
                 when{
                     result.isSuccess -> {
                         val detailedFood = result.getOrNull()

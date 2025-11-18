@@ -181,8 +181,10 @@ fun FoodSearchScreen(
                         NutritionFoodCard(
                             nutritionFood = nutritionFood,
                             onFoodClick = {
-                                // TODO: Pass selected food back to nutrition screen
                                 navController.popBackStack()
+                            },
+                            onLoadDetails = {
+                                viewModel.onEvent(FoodSearchEvent.LoadNutritionDetails(it))
                             }
                         )
                     }
@@ -373,8 +375,14 @@ private fun EmptySearchResult(searchQuery: String) {
 @Composable
 private fun NutritionFoodCard(
     nutritionFood: NutritionFood,
-    onFoodClick: () -> Unit
+    onFoodClick: () -> Unit,
+    onLoadDetails: (Int) -> Unit
 ) {
+    LaunchedEffect(nutritionFood.id) {
+        if(nutritionFood.calories == null && !nutritionFood.isLoadingDetails){
+            onLoadDetails(nutritionFood.id)
+        }
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -412,13 +420,17 @@ private fun NutritionFoodCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    NutrientInfo(label = "Cal", value = "---")
-                    NutrientInfo(label = "Carbs", value = "---")
-                    NutrientInfo(label = "Protein", value = "---")
-                    NutrientInfo(label = "Fat", value = "---")
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    if (nutritionFood.isLoadingDetails) {
+                        repeat(4) {
+                            NutrientInfo(label = "...", value = "⏳")
+                        }
+                    } else {
+                        NutrientInfo(label = "Cal", value = nutritionFood.calories?.toString() ?: "---")
+                        NutrientInfo(label = "Carbs", value = nutritionFood.carbs?.let { "${it}g" } ?: "---")
+                        NutrientInfo(label = "Protein", value = nutritionFood.protein?.let { "${it}g" } ?: "---")
+                        NutrientInfo(label = "Fat", value = nutritionFood.fat?.let { "${it}g" } ?: "---")
+                    }
                 }
             }
 

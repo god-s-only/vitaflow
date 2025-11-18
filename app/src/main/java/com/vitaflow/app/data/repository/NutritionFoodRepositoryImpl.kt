@@ -56,12 +56,10 @@ class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI
         return NutritionFood(
             id = dto.id,
             title = dto.title,
-            calories = nutrients.find { it.name == "Calories" }?.amount?.toInt(),
+            calories = nutrients.find { it.name == "Calories" }?.amount,
             carbs = nutrients.find { it.name == "Carbs" }?.amount,
             protein = nutrients.find { it.name == "Protein" }?.amount,
             fat = nutrients.find { it.name == "Fat" }?.amount,
-            servingSize = dto.servings?.size?.toString(),
-            servingUnit = dto.servings?.unit
         )
 
     }
