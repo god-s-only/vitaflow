@@ -18,7 +18,7 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
     private val _state = MutableStateFlow(FoodSearchState())
     val state = _state.asStateFlow()
 
-    private val apiKey = "d27a45f9da6249fc996a69d62713a202"
+    private val apiKey = "12e4ce472f9d4e068b0df35539cdfcd6"
     private var searchJob: Job? = null
     private fun searchFoodProducts(query: String){
         _state.value = _state.value.copy(loading = true)

@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 data class Servings(
     @SerializedName("number")
-    val number: Int,
+    val number: Double,
     @SerializedName("raw")
     val raw: String,
     @SerializedName("size")

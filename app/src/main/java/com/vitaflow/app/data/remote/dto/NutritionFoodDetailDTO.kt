@@ -45,7 +45,7 @@ data class NutritionFoodDetailDTO(
     @SerializedName("servings")
     val servings: Servings,
     @SerializedName("spoonacularScore")
-    val spoonacularScore: Int,
+    val spoonacularScore: Double,
     @SerializedName("title")
     val title: String,
     @SerializedName("upc")

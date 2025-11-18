@@ -149,7 +149,6 @@ fun FoodSearchScreen(
                 }
             }
 
-            // Results Count
             val totalCount = if (showSampleFoods) displayFoods.size else displayApiResults.size
             val resultType = if (showSampleFoods) "sample foods" else "foods found"
 
@@ -160,17 +159,14 @@ fun FoodSearchScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Food List
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Show sample foods when not searching
                 if (showSampleFoods) {
                     items(displayFoods) { food ->
                         FoodItemCard(
                             food = food,
                             onFoodClick = {
-                                // TODO: Pass selected food back to nutrition screen
                                 navController.popBackStack()
                             }
                         )
@@ -346,9 +342,12 @@ private fun EmptySearchResult(searchQuery: String) {
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "🔍",
-                fontSize = 48.sp
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = null,
+                tint = Color.Black,
+                modifier = Modifier
+                    .size(25.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
