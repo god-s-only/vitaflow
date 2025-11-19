@@ -23,6 +23,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.vitaflow.app.domain.models.NutritionFood
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 // Theme Colors - Consistent with app theme
 private val PrimaryGreen = Color(0xFF00C853)
@@ -70,7 +72,22 @@ fun FoodSearchScreen(
     viewModel: FoodSearchViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     val searchQuery by remember { derivedStateOf { state.query } }
+    LaunchedEffect(key1 = true) {
+        viewModel.uiEvent.collectLatest { result ->
+            when(result){
+                is UIEvent.ShowSnackBar -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(result.message)
+                    }
+                }
+            }
+        }
+    }
+
+
 
     // Decide what to show: sample foods or API results
     val showSampleFoods = searchQuery.isEmpty()
@@ -78,6 +95,11 @@ fun FoodSearchScreen(
     val displayApiResults = if (!showSampleFoods) state.food else emptyList()
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState
+            )
+        },
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -177,7 +199,12 @@ fun FoodSearchScreen(
                         NutritionFoodCard(
                             nutritionFood = nutritionFood,
                             onFoodClick = {
-                                navController.popBackStack()
+                                viewModel.onEvent(FoodSearchEvent.OnAddNutrition(
+                                    name = nutritionFood.title,
+                                    calories = nutritionFood.calories!!,
+                                    carbs = nutritionFood.carbs!!,
+                                    protein = nutritionFood.protein!!,
+                                    fat = nutritionFood.fat!!))
                             },
                             onLoadDetails = {
                                 viewModel.onEvent(FoodSearchEvent.LoadNutritionDetails(it))
@@ -374,7 +401,7 @@ private fun EmptySearchResult(searchQuery: String) {
 @Composable
 private fun NutritionFoodCard(
     nutritionFood: NutritionFood,
-    onFoodClick: () -> Unit,
+    onFoodClick: (NutritionFood) -> Unit,
     onLoadDetails: (Int) -> Unit
 ) {
     LaunchedEffect(nutritionFood.id) {
@@ -385,7 +412,7 @@ private fun NutritionFoodCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onFoodClick() },
+            .clickable { onFoodClick(nutritionFood) },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

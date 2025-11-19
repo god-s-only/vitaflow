@@ -11,13 +11,13 @@ import com.vitaflow.app.domain.models.FoodEntry
 @Dao
 interface NutritionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertNutrition(nutritionEntity: DailyNutrition)
+    suspend fun insertNutrition(dailyNutrition: DailyNutrition)
 
     @Delete
-    suspend fun deleteNutrition(nutritionEntity: DailyNutrition)
+    suspend fun deleteNutrition(dailyNutrition: DailyNutrition)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAllNutrition(nutritionEntities: List<DailyNutrition>)
+    suspend fun insertAllNutrition(dailyNutritionList: List<DailyNutrition>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFoodEntry(foodEntry: FoodEntry)

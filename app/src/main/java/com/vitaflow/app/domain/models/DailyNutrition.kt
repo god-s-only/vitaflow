@@ -6,11 +6,12 @@ import androidx.room.PrimaryKey
 @Entity
 data class DailyNutrition(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
-    val date: String, // "2024-01-15" format
-    val calories: Int,
+    val id: Int = 0,
+    val name: String,
+    val date: String,
+    val calories: Double,
     val carbs: Double,
     val protein: Double,
     val fat: Double,
-    val water: Int // milliliters
+    val water: Double? = null
 )

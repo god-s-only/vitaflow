@@ -1,22 +1,36 @@
 package com.vitaflow.app.presentation.ui.features.search
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.BuildConfig
+import com.vitaflow.app.domain.models.DailyNutrition
+import com.vitaflow.app.domain.usecase.nutrition.AddDailyNutritionUseCase
 import com.vitaflow.app.domain.usecase.nutrition.GetNutritionFoodById
 import com.vitaflow.app.domain.usecase.nutrition.GetNutritionFoodSpoonacular
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
-class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoonacular: GetNutritionFoodSpoonacular, private val getNutritionFoodById: GetNutritionFoodById): ViewModel() {
+class FoodSearchViewModel @Inject constructor(
+    private val getNutritionFoodSpoonacular: GetNutritionFoodSpoonacular,
+    private val getNutritionFoodById: GetNutritionFoodById,
+    private val addDailyNutritionUseCase: AddDailyNutritionUseCase
+): ViewModel() {
     private val _state = MutableStateFlow(FoodSearchState())
     val state = _state.asStateFlow()
+
+    private val _uiEvent = MutableSharedFlow<UIEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
 
     private val apiKey = "12e4ce472f9d4e068b0df35539cdfcd6"
     private var searchJob: Job? = null
@@ -70,6 +84,22 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
             is FoodSearchEvent.LoadNutritionDetails -> {
                 loadNutritionDetails(event.productId)
             }
+
+            is FoodSearchEvent.OnAddNutrition -> {
+                viewModelScope.launch {
+                    addDailyNutritionUseCase.invoke(
+                        DailyNutrition(
+                            name = event.name,
+                            date = SimpleDateFormat("HH-MM-yyyy").format(Date()).toString(),
+                            calories = event.calories,
+                            carbs = event.carbs,
+                            protein = event.protein,
+                            fat = event.fat
+                        )
+                    )
+                    sendUiEvent(UIEvent.ShowSnackBar(message = "Nutrition added successfully"))
+                }
+            }
         }
     }
 
@@ -108,5 +138,10 @@ class FoodSearchViewModel @Inject constructor(private val getNutritionFoodSpoona
             error = null,
             loading = false
         )
+    }
+    private fun sendUiEvent(event: UIEvent){
+        viewModelScope.launch {
+            _uiEvent.emit(event)
+        }
     }
 }

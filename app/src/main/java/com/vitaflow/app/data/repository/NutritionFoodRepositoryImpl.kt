@@ -1,15 +1,19 @@
 package com.vitaflow.app.data.repository
 
 import androidx.datastore.dataStore
+import com.vitaflow.app.data.local.NutritionDao
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
+import com.vitaflow.app.domain.models.DailyNutrition
+import com.vitaflow.app.domain.models.Food
+import com.vitaflow.app.domain.models.FoodEntry
 import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI: SpoonacularAPI): NutritionFoodRepository {
+class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI: SpoonacularAPI, private val dao: NutritionDao): NutritionFoodRepository {
     override suspend fun searchFoodProducts(
         query: String,
         apiKey: String
@@ -49,6 +53,30 @@ class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI
         }catch (e: Exception){
             emit(Result.failure(e))
         }
+    }
+
+    override suspend fun insertNutrition(dailyNutrition: DailyNutrition) {
+        dao.insertNutrition(dailyNutrition)
+    }
+
+    override suspend fun deleteNutrition(dailyNutrition: DailyNutrition) {
+        dao.deleteNutrition(dailyNutrition)
+    }
+
+    override suspend fun insertFoodEntry(foodEntry: FoodEntry) {
+        dao.insertFoodEntry(foodEntry)
+    }
+
+    override suspend fun deleteFoodEntry(foodEntry: FoodEntry) {
+        dao.deleteFoodEntry(foodEntry)
+    }
+
+    override suspend fun insertFood(food: Food) {
+        dao.insertFood(food)
+    }
+
+    override suspend fun deleteFood(food: Food) {
+        dao.deleteFood(food)
     }
 
     private fun mapDetailDtoToNutritionFood(dto: NutritionFoodDetailDTO): NutritionFood{

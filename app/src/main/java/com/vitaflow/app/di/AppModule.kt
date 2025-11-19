@@ -142,7 +142,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSpoonacularRepository(api: SpoonacularAPI): NutritionFoodRepository{
-        return NutritionFoodRepositoryImpl(api)
+    fun provideSpoonacularRepository(api: SpoonacularAPI, db: NutritionDatabase): NutritionFoodRepository{
+        return NutritionFoodRepositoryImpl(api, db.nutritionDao())
     }
 }
