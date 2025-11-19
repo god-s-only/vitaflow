@@ -100,6 +100,7 @@ private fun MainContent() {
 
     val shouldShowBottomBar = currentRoute?.destination?.route?.let { route ->
         route != Routes.SIGNINSCREEN &&
+                route != Routes.FOODSEARCHSCREEN &&
                 route != Routes.SIGNUPSCREEN &&
                 !route.startsWith(Routes.WORKOUTSCREEN)
     } ?: false

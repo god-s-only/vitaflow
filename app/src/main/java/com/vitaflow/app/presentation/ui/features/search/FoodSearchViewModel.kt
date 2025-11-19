@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.BuildConfig
+import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.models.DailyNutrition
 import com.vitaflow.app.domain.usecase.nutrition.AddDailyNutritionUseCase
 import com.vitaflow.app.domain.usecase.nutrition.GetNutritionFoodById
@@ -97,8 +98,9 @@ class FoodSearchViewModel @Inject constructor(
                             fat = event.fat
                         )
                     )
-                    sendUiEvent(UIEvent.ShowSnackBar(message = "Nutrition added successfully"))
                 }
+                sendUiEvent(UIEvent.ShowSnackBar(message = "Nutrition added successfully"))
+                sendUiEvent(UIEvent.PopBackStack)
             }
         }
     }

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.models.NutritionFood
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -80,8 +81,13 @@ fun FoodSearchScreen(
             when(result){
                 is UIEvent.ShowSnackBar -> {
                     scope.launch {
-                        snackbarHostState.showSnackbar(result.message)
+                        snackbarHostState.showSnackbar(message = result.message)
                     }
+                }
+
+                is UIEvent.Navigate -> TODO()
+                UIEvent.PopBackStack -> {
+                    navController.popBackStack()
                 }
             }
         }
@@ -199,12 +205,15 @@ fun FoodSearchScreen(
                         NutritionFoodCard(
                             nutritionFood = nutritionFood,
                             onFoodClick = {
-                                viewModel.onEvent(FoodSearchEvent.OnAddNutrition(
+                                viewModel.onEvent(
+                                    FoodSearchEvent.OnAddNutrition(
                                     name = nutritionFood.title,
-                                    calories = nutritionFood.calories!!,
-                                    carbs = nutritionFood.carbs!!,
-                                    protein = nutritionFood.protein!!,
-                                    fat = nutritionFood.fat!!))
+                                    calories = nutritionFood.calories ?: 0.0,
+                                    carbs = nutritionFood.carbs ?: 0.0,
+                                    protein = nutritionFood.protein ?: 0.0,
+                                    fat = nutritionFood.fat ?: 0.0
+                                )
+                                )
                             },
                             onLoadDetails = {
                                 viewModel.onEvent(FoodSearchEvent.LoadNutritionDetails(it))
