@@ -112,7 +112,7 @@ private fun MainContent() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = Routes.FOODSEARCHSCREEN,
+            startDestination = Routes.NUTRITIONSCREEN,
             modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 slideIntoContainer(

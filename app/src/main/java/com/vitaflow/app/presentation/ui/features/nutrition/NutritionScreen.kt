@@ -1,5 +1,6 @@
 package com.vitaflow.app.presentation.ui.features.nutrition
 
+import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -52,7 +53,40 @@ fun NutritionScreen(
     viewModel: NutritionViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
+    // Handle navigation events
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect { event ->
+            when (event) {
+                is NavigationEvent.NavigateToFoodSearch -> {
+                    navController.navigate("food_search/${event.mealType}")
+                }
+                is NavigationEvent.ShowAddFoodDialog -> {
+                    // TODO: Show dialog to select meal type and quantity
+                    // For now, just show a toast
+                    Toast.makeText(context, "Add ${event.food.name}", Toast.LENGTH_SHORT).show()
+                }
+                is NavigationEvent.ShowMessage -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+                NavigationEvent.NavigateToBarcodeScan -> {
+                    navController.navigate("barcode_scan")
+                }
+                NavigationEvent.NavigateToPhotoCapture -> {
+                    navController.navigate("photo_capture")
+                }
+                NavigationEvent.NavigateToRecipes -> {
+                    navController.navigate("recipes")
+                }
+                NavigationEvent.ShowQuickCaloriesDialog -> {
+                    // TODO: Show dialog for quick calorie entry
+                    Toast.makeText(context, "Quick Calories", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -79,14 +113,18 @@ fun NutritionScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Search functionality */ }) {
+                    IconButton(onClick = {
+                        navController.navigate("food_search/all")
+                    }) {
                         Icon(
                             imageVector = Icons.Filled.Search,
                             contentDescription = "Search Food",
                             tint = Color.Black
                         )
                     }
-                    IconButton(onClick = { /* TODO: Settings */ }) {
+                    IconButton(onClick = {
+                        navController.navigate("nutrition_settings")
+                    }) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Settings",
@@ -99,72 +137,127 @@ fun NutritionScreen(
         },
         containerColor = Color(0xFFF8F9FA)
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+
+        // Show loading indicator
+        if (uiState.value.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Show error if any
+                uiState.value.error?.let { error ->
+                    item {
+                        ErrorCard(error = error)
+                    }
+                }
+
+                // Calorie Overview Card
+                item {
+                    CalorieOverviewCard(
+                        totalCalories = uiState.value.totalCalories,
+                        targetCalories = uiState.value.targetCalories,
+                        consumedCalories = uiState.value.consumedCalories,
+                        burnedCalories = uiState.value.burnedCalories
+                    )
+                }
+
+                // Macronutrients Card
+                item {
+                    MacronutrientsCard(
+                        carbs = uiState.value.carbs,
+                        protein = uiState.value.protein,
+                        fat = uiState.value.fat
+                    )
+                }
+
+                // Quick Add Buttons
+                item {
+                    QuickAddSection(
+                        onActionClick = { action ->
+                            viewModel.onQuickAddClick(action)
+                        }
+                    )
+                }
+
+                // Meals Section
+                item {
+                    MealsSection(
+                        meals = uiState.value.meals,
+                        onAddMeal = { mealType ->
+                            viewModel.onAddMealClick(mealType)
+                        },
+                        onRemoveFood = { entryId ->
+                            viewModel.removeFoodEntry(entryId)
+                        }
+                    )
+                }
+
+                // Water Intake
+                item {
+                    WaterIntakeCard(
+                        currentIntake = uiState.value.waterIntake,
+                        targetIntake = uiState.value.targetWaterIntake,
+                        onAddWater = { amount ->
+                            viewModel.addWater(amount)
+                        }
+                    )
+                }
+
+                // Recent Foods
+                item {
+                    RecentFoodsSection(
+                        recentFoods = uiState.value.recentFoods,
+                        onFoodClick = { food ->
+                            viewModel.onRecentFoodClick(food)
+                        }
+                    )
+                }
+
+                // Nutrition Tips
+                item {
+                    NutritionTipsCard()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ErrorCard(error: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFEBEE)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Calorie Overview Card
-            item {
-                CalorieOverviewCard(
-                    totalCalories = uiState.value.totalCalories,
-                    targetCalories = uiState.value.targetCalories,
-                    consumedCalories = uiState.value.consumedCalories,
-                    burnedCalories = uiState.value.burnedCalories
-                )
-            }
-
-            // Macronutrients Card
-            item {
-                MacronutrientsCard(
-                    carbs = uiState.value.carbs,
-                    protein = uiState.value.protein,
-                    fat = uiState.value.fat
-                )
-            }
-
-            // Quick Add Buttons
-            item {
-                QuickAddSection()
-            }
-
-            // Meals Section
-            item {
-                MealsSection(
-                    meals = uiState.value.meals,
-                    onAddMeal = { mealType ->
-                        // TODO: Navigate to food search/add screen
-                    }
-                )
-            }
-
-            // Water Intake
-            item {
-                WaterIntakeCard(
-                    currentIntake = uiState.value.waterIntake,
-                    targetIntake = uiState.value.targetWaterIntake,
-                    onAddWater = { amount ->
-                        viewModel.addWater(amount)
-                    }
-                )
-            }
-
-            // Recent Foods
-            item {
-                RecentFoodsSection(
-                    recentFoods = uiState.value.recentFoods,
-                    onFoodClick = { food ->
-                        // TODO: Add food to current meal
-                    }
-                )
-            }
-
-            // Nutrition Tips
-            item {
-                NutritionTipsCard()
-            }
+            Icon(
+                imageVector = Icons.Filled.Warning,
+                contentDescription = "Error",
+                tint = Color(0xFFD32F2F)
+            )
+            Text(
+                text = error,
+                fontSize = 14.sp,
+                color = Color(0xFFD32F2F)
+            )
         }
     }
 }
@@ -178,7 +271,7 @@ fun CalorieOverviewCard(
 ) {
     val remainingCalories = targetCalories - consumedCalories + burnedCalories
     val progress = (consumedCalories.toFloat() / targetCalories.toFloat()).coerceIn(0f, 1f)
-    
+
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = spring(
@@ -204,9 +297,9 @@ fun CalorieOverviewCard(
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Circular Progress
             Box(
                 contentAlignment = Alignment.Center,
@@ -242,9 +335,9 @@ fun CalorieOverviewCard(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(20.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -313,9 +406,9 @@ fun MacronutrientsCard(
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -339,7 +432,7 @@ fun MacroProgressBar(
         animationSpec = tween(1000),
         label = "macro_progress"
     )
-    
+
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -358,9 +451,9 @@ fun MacroProgressBar(
                 color = Color.Gray
             )
         }
-        
+
         Spacer(modifier = Modifier.height(6.dp))
-        
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -384,7 +477,9 @@ fun MacroProgressBar(
 }
 
 @Composable
-fun QuickAddSection() {
+fun QuickAddSection(
+    onActionClick: (QuickAddAction) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -400,9 +495,9 @@ fun QuickAddSection() {
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -411,7 +506,7 @@ fun QuickAddSection() {
                         icon = item.icon,
                         label = item.label,
                         color = item.color,
-                        onClick = { /* TODO: Quick add functionality */ }
+                        onClick = { onActionClick(item.action) }
                     )
                 }
             }
@@ -430,9 +525,10 @@ fun QuickAddButton(
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "button_scale"
+        label = "button_scale",
+        finishedListener = { isPressed = false }
     )
-    
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -458,9 +554,9 @@ fun QuickAddButton(
                 modifier = Modifier.size(28.dp)
             )
         }
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = label,
             fontSize = 12.sp,
@@ -472,8 +568,9 @@ fun QuickAddButton(
 
 @Composable
 fun MealsSection(
-    meals: List<Meal>,
-    onAddMeal: (String) -> Unit
+    meals: List<MealWithEntries>,
+    onAddMeal: (String) -> Unit,
+    onRemoveFood: (Long) -> Unit
 ) {
     Column {
         Text(
@@ -483,7 +580,7 @@ fun MealsSection(
             color = Color.Black,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
+
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -492,7 +589,8 @@ fun MealsSection(
                 MealCard(
                     mealType = mealType,
                     meal = meal,
-                    onAddClick = { onAddMeal(mealType.type) }
+                    onAddClick = { onAddMeal(mealType.type) },
+                    onRemoveFood = onRemoveFood
                 )
             }
         }
@@ -502,55 +600,115 @@ fun MealsSection(
 @Composable
 fun MealCard(
     mealType: MealType,
-    meal: Meal?,
-    onAddClick: () -> Unit
+    meal: MealWithEntries?,
+    onAddClick: () -> Unit,
+    onRemoveFood: (Long) -> Unit
 ) {
+    var isExpanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Column {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { if (meal != null && meal.entries.isNotEmpty()) isExpanded = !isExpanded }
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = mealType.icon,
-                    contentDescription = mealType.name,
-                    tint = mealType.color,
-                    modifier = Modifier.size(24.dp)
-                )
-                
-                Column {
-                    Text(
-                        text = mealType.name,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = mealType.icon,
+                        contentDescription = mealType.name,
+                        tint = mealType.color,
+                        modifier = Modifier.size(24.dp)
                     )
-                    Text(
-                        text = if (meal != null) "${meal.calories} cal" else "0 cal",
-                        fontSize = 12.sp,
-                        color = Color.Gray
+
+                    Column {
+                        Text(
+                            text = mealType.name,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
+                        Text(
+                            text = if (meal != null) "${meal.totalCalories} cal" else "0 cal",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+
+                IconButton(onClick = onAddClick) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add ${mealType.name}",
+                        tint = Color.Gray
                     )
                 }
             }
-            
-            IconButton(onClick = onAddClick) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add ${mealType.name}",
-                    tint = Color.Gray
-                )
+
+            // Expandable food entries
+            if (isExpanded && meal != null && meal.entries.isNotEmpty()) {
+                Divider(color = Color.Gray.copy(alpha = 0.2f))
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    meal.entries.forEach { entry ->
+                        FoodEntryItem(
+                            entry = entry,
+                            onRemove = { onRemoveFood(entry.entryId) }
+                        )
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun FoodEntryItem(
+    entry: FoodEntryWithDetails,
+    onRemove: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = entry.food.name,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
+            )
+            Text(
+                text = "${entry.quantity.toInt()}g • ${entry.calculatedCalories} cal",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+        }
+
+        IconButton(
+            onClick = onRemove,
+            modifier = Modifier.size(24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = "Remove",
+                tint = Color.Gray,
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }
@@ -562,7 +720,7 @@ fun WaterIntakeCard(
     onAddWater: (Int) -> Unit
 ) {
     val progress = (currentIntake.toFloat() / targetIntake.toFloat()).coerceIn(0f, 1f)
-    
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -594,16 +752,16 @@ fun WaterIntakeCard(
                         color = Color.Black
                     )
                 }
-                
+
                 Text(
                     text = "$currentIntake / $targetIntake ml",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Water Progress Bar
             Box(
                 modifier = Modifier
@@ -629,9 +787,9 @@ fun WaterIntakeCard(
                         )
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Water Add Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -663,8 +821,8 @@ fun WaterIntakeCard(
 
 @Composable
 fun RecentFoodsSection(
-    recentFoods: List<Food>,
-    onFoodClick: (Food) -> Unit
+    recentFoods: List<FoodItem>,
+    onFoodClick: (FoodItem) -> Unit
 ) {
     if (recentFoods.isNotEmpty()) {
         Column {
@@ -675,12 +833,12 @@ fun RecentFoodsSection(
                 color = Color.Black,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            
+
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(recentFoods) { food ->
-                    FoodCard(
+                    RecentFoodCard(
                         food = food,
                         onClick = { onFoodClick(food) }
                     )
@@ -691,8 +849,8 @@ fun RecentFoodsSection(
 }
 
 @Composable
-fun FoodCard(
-    food: Food,
+fun RecentFoodCard(
+    food: FoodItem,
     onClick: () -> Unit
 ) {
     Card(
@@ -718,9 +876,9 @@ fun FoodCard(
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
                 text = food.name,
                 fontSize = 14.sp,
@@ -729,11 +887,11 @@ fun FoodCard(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            
+
             Spacer(modifier = Modifier.height(4.dp))
-            
+
             Text(
-                text = "${food.calories} cal",
+                text = "${food.caloriesPer100g.toInt()} cal/100g",
                 fontSize = 12.sp,
                 color = Color.Gray
             )
@@ -762,7 +920,7 @@ fun NutritionTipsCard() {
                 tint = Color(0xFF6C63FF),
                 modifier = Modifier.size(32.dp)
             )
-            
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -772,9 +930,9 @@ fun NutritionTipsCard() {
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 Text(
                     text = "Stay hydrated! Drinking water before meals can help with portion control and digestion.",
                     fontSize = 14.sp,
@@ -815,10 +973,11 @@ data class MealType(
     val color: Color
 )
 
-data class QuickAddItem(
+data class QuickAddItemData(
     val label: String,
     val icon: ImageVector,
-    val color: Color
+    val color: Color,
+    val action: QuickAddAction
 )
 
 // Sample data
@@ -830,10 +989,10 @@ val mealTypes = listOf(
 )
 
 val quickAddItems = listOf(
-    QuickAddItem("Scan", Icons.Filled.Search, Color(0xFF4CAF50)),
-    QuickAddItem("Photo", Icons.Filled.Add, Color(0xFF2196F3)),
-    QuickAddItem("Recipe", Icons.Filled.Menu, Color(0xFFFF9800)),
-    QuickAddItem("Quick Cal", Icons.Filled.Add, Color(0xFF9C27B0))
+    QuickAddItemData("Scan", Icons.Filled.Search, Color(0xFF4CAF50), QuickAddAction.SCAN_BARCODE),
+    QuickAddItemData("Photo", Icons.Filled.Add, Color(0xFF2196F3), QuickAddAction.TAKE_PHOTO),
+    QuickAddItemData("Recipe", Icons.Filled.Menu, Color(0xFFFF9800), QuickAddAction.ADD_RECIPE),
+    QuickAddItemData("Quick Cal", Icons.Filled.Add, Color(0xFF9C27B0), QuickAddAction.QUICK_CALORIES)
 )
 
 @Preview
