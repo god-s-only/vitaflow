@@ -55,6 +55,8 @@ fun SignInScreen(
                         snackbarHostState.showSnackbar(message = result.message)
                     }
                 }
+
+                UIEvent.PopBackStack -> TODO()
             }
         }
     }

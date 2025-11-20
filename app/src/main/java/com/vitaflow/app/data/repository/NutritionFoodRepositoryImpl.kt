@@ -11,6 +11,9 @@ import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI: SpoonacularAPI, private val dao: NutritionDao): NutritionFoodRepository {
@@ -67,16 +70,81 @@ class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI
         dao.insertFoodEntry(foodEntry)
     }
 
-    override suspend fun deleteFoodEntry(foodEntry: FoodEntry) {
-        dao.deleteFoodEntry(foodEntry)
-    }
-
     override suspend fun insertFood(food: Food) {
         dao.insertFood(food)
     }
 
     override suspend fun deleteFood(food: Food) {
         dao.deleteFood(food)
+    }
+
+
+
+    override suspend fun removeFoodEntry(entryId: Long) {
+        dao.deleteFoodEntryById(entryId)
+    }
+
+    override suspend fun getFoodEntriesForDate(date: String): Flow<List<FoodEntry>> {
+        return dao.getFoodEntriesForDate(date)
+    }
+
+    override suspend fun getFoodEntriesForMealType(
+        date: String,
+        mealType: String
+    ): Flow<List<FoodEntry>> {
+        return dao.getFoodEntriesForMealType(date, mealType)
+    }
+
+    override suspend fun getFoodById(foodId: String): Food? {
+        return dao.getFoodById(foodId)
+    }
+
+    override suspend fun getRecentFoods(limit: Int): Flow<List<Food>> {
+        return dao.getRecentFoods(limit)
+    }
+
+    override suspend fun searchFoods(query: String): Flow<List<Food>> {
+        return dao.searchFoods(query)
+    }
+
+    override suspend fun getDailyNutrition(date: String): Flow<DailyNutrition?> {
+        return dao.getDailyNutrition(date)
+    }
+
+    override suspend fun updateDailyNutrition(dailyNutrition: DailyNutrition) {
+        dao.insertNutrition(dailyNutrition)
+    }
+
+    override suspend fun calculateAndSaveDailyNutrition(date: String) {
+        dao.calculateDailyTotals(date)
+    }
+
+    override suspend fun updateWaterIntake(date: String, amount: Double) {
+        dao.updateWaterIntake(date, amount)
+    }
+
+    override suspend fun getCalorieTarget(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setCalorieTarget(target: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getMacroTargets(): Triple<Int, Int, Int> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setMacroTargets(carbs: Int, protein: Int, fat: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getWaterTarget(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setWaterTarget(target: Int) {
+        TODO("Not yet implemented")
     }
 
     private fun mapDetailDtoToNutritionFood(dto: NutritionFoodDetailDTO): NutritionFood{
@@ -91,4 +159,7 @@ class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI
         )
 
     }
+}
+fun getTodayDate(): String {
+    return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 }

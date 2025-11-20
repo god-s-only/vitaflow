@@ -2,6 +2,7 @@ package com.vitaflow.app.presentation.ui.features.nutrition
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NutritionViewModel @Inject constructor(
-    // TODO: Inject nutrition repository when implemented
+    private val nutritionFoodRepository: NutritionFoodRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NutritionState())
