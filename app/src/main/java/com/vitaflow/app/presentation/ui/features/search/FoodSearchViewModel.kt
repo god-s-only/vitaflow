@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -91,7 +92,7 @@ class FoodSearchViewModel @Inject constructor(
                     addDailyNutritionUseCase.invoke(
                         DailyNutrition(
                             name = event.name,
-                            date = SimpleDateFormat("HH-MM-yyyy").format(Date()).toString(),
+                            date = SimpleDateFormat("HH-MM-yyyy", Locale.getDefault()).format(Date()).toString(),
                             calories = event.calories,
                             carbs = event.carbs,
                             protein = event.protein,
