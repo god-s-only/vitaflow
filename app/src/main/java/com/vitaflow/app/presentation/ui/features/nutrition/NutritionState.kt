@@ -53,7 +53,7 @@ data class FoodItem(
     val id: String,
     val name: String,
     val caloriesPer100g: Double,
-    val carbsPer100g: Double,
+    val carbsPer100g: Double?,
     val proteinPer100g: Double,
     val fatPer100g: Double,
     val imageUrl: String?
@@ -66,7 +66,7 @@ fun FoodItem.calculateNutrients(quantity: Double): FoodEntryWithDetails {
         food = this,
         quantity = quantity,
         calculatedCalories = (caloriesPer100g * multiplier).toInt(),
-        calculatedCarbs = (carbsPer100g * multiplier).toInt(),
+        calculatedCarbs = (carbsPer100g?.times(multiplier))?.toInt() ?: 0,
         calculatedProtein = (proteinPer100g * multiplier).toInt(),
         calculatedFat = (fatPer100g * multiplier).toInt(),
         timestamp = System.currentTimeMillis()

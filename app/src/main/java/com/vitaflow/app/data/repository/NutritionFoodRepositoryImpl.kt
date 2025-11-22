@@ -1,6 +1,5 @@
 package com.vitaflow.app.data.repository
 
-import androidx.datastore.dataStore
 import com.vitaflow.app.data.local.NutritionDao
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO

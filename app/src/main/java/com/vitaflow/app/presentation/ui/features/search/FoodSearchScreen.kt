@@ -206,7 +206,7 @@ fun FoodSearchScreen(
                             nutritionFood = nutritionFood,
                             onFoodClick = {
                                 viewModel.onEvent(
-                                    FoodSearchEvent.OnAddNutrition(
+                                    FoodSearchEvent.OnAddFood(
                                     name = nutritionFood.title,
                                     calories = nutritionFood.calories ?: 0.0,
                                     carbs = nutritionFood.carbs ?: 0.0,

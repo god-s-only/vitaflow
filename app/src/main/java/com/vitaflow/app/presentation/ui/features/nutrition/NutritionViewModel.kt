@@ -120,7 +120,7 @@ class NutritionViewModel @Inject constructor(
                                 food = food.toFoodItem(),
                                 quantity = entry.quantity,
                                 calculatedCalories = (food.caloriesPer100g * multiplier).toInt(),
-                                calculatedCarbs = (food.carbsPer100g * multiplier).toInt(),
+                                calculatedCarbs = (food.carbsPer100g?.times(multiplier))?.toInt() ?: 0,
                                 calculatedProtein = (food.proteinPer100g * multiplier).toInt(),
                                 calculatedFat = (food.fatPer100g * multiplier).toInt(),
                                 timestamp = entry.timestamp

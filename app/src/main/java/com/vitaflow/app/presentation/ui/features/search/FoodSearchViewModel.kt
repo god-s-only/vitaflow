@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.BuildConfig
 import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.models.DailyNutrition
+import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.usecase.nutrition.AddDailyNutritionUseCase
+import com.vitaflow.app.domain.usecase.nutrition.AddFoodUseCase
 import com.vitaflow.app.domain.usecase.nutrition.GetNutritionFoodById
 import com.vitaflow.app.domain.usecase.nutrition.GetNutritionFoodSpoonacular
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,7 +28,7 @@ import javax.inject.Inject
 class FoodSearchViewModel @Inject constructor(
     private val getNutritionFoodSpoonacular: GetNutritionFoodSpoonacular,
     private val getNutritionFoodById: GetNutritionFoodById,
-    private val addDailyNutritionUseCase: AddDailyNutritionUseCase
+    private val addFoodUseCase: AddFoodUseCase
 ): ViewModel() {
     private val _state = MutableStateFlow(FoodSearchState())
     val state = _state.asStateFlow()
@@ -87,20 +89,19 @@ class FoodSearchViewModel @Inject constructor(
                 loadNutritionDetails(event.productId)
             }
 
-            is FoodSearchEvent.OnAddNutrition -> {
+            is FoodSearchEvent.OnAddFood -> {
                 viewModelScope.launch {
-                    addDailyNutritionUseCase.invoke(
-                        DailyNutrition(
+                    addFoodUseCase.invoke(
+                        Food(
                             name = event.name,
-                            date = SimpleDateFormat("HH-MM-yyyy", Locale.getDefault()).format(Date()).toString(),
-                            calories = event.calories,
-                            carbs = event.carbs,
-                            protein = event.protein,
-                            fat = event.fat
+                            caloriesPer100g = event.calories,
+                            carbsPer100g = event.carbs,
+                            proteinPer100g = event.protein,
+                            fatPer100g = event.fat
                         )
                     )
                 }
-                sendUiEvent(UIEvent.ShowSnackBar(message = "Nutrition added successfully"))
+                sendUiEvent(UIEvent.ShowSnackBar(message = "Food added successfully"))
                 sendUiEvent(UIEvent.PopBackStack)
             }
         }
