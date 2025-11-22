@@ -33,6 +33,7 @@ class FoodSearchViewModel @Inject constructor(
     private val apiKey = "e502be08e8b14c8290b76df779e11de1"
     private var searchJob: Job? = null
 
+
     private fun searchFoodProducts(query: String) {
         _state.value = _state.value.copy(loading = true)
         if (query.isBlank()) {

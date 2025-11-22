@@ -63,7 +63,6 @@ class NutritionViewModel @Inject constructor(
             try {
                 Log.d(TAG, "Loading targets...")
 
-                // Load all targets
                 val calorieTarget = getCalorieTargetUseCase()
                 val (carbsTarget, proteinTarget, fatTarget) = getMacroTargetsUseCase()
                 val waterTarget = getWaterTargetUseCase()

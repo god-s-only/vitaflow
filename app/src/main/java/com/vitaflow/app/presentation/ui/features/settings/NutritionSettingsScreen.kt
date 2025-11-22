@@ -301,6 +301,7 @@ fun NutritionSettingsScreen(
                     Button(
                         onClick = {
                             showSuccessDialog = false
+                            viewModel.refreshData()
                             navController.popBackStack()
                         },
                         colors = ButtonDefaults.buttonColors(
