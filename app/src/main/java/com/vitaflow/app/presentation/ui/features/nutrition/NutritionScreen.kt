@@ -119,9 +119,11 @@ fun NutritionScreen(
                             tint = Color.Black
                         )
                     }
-                    IconButton(onClick = {
-                        navController.navigate("nutrition_settings")
-                    }) {
+                    IconButton(
+                        onClick = {
+                        navController.navigate(Routes.NUTRITIONSCREENSETTINGS)
+                    }
+                    ) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Settings",

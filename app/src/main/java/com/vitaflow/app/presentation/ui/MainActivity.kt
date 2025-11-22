@@ -51,6 +51,7 @@ import com.vitaflow.app.presentation.ui.features.home.HomeScreen
 import com.vitaflow.app.presentation.ui.features.nutrition.NutritionScreen
 import com.vitaflow.app.presentation.ui.features.search.FoodSearchScreen
 import com.vitaflow.app.presentation.ui.features.search.FoodSearchViewModel
+import com.vitaflow.app.presentation.ui.features.settings.NutritionSettingsScreen
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -104,8 +105,9 @@ private fun MainContent() {
 
     val shouldShowBottomBar = currentRoute?.destination?.route?.let { route ->
         route != Routes.SIGNINSCREEN &&
-                route != Routes.FOODSEARCHSCREEN &&
+                route != Routes.FOODSEARCHSCREEN + "/{mealType}" &&
                 route != Routes.SIGNUPSCREEN &&
+                route != Routes.NUTRITIONSCREENSETTINGS &&
                 !route.startsWith(Routes.WORKOUTSCREEN)
     } ?: false
 
@@ -180,6 +182,9 @@ private fun MainContent() {
             ){ backStackEntry ->
                 val mealType = backStackEntry.arguments?.getString("mealType") ?: "breakfast"
                 FoodSearchScreen(navController = navController, mealType)
+            }
+            composable(Routes.NUTRITIONSCREENSETTINGS) {
+                NutritionSettingsScreen(navController = navController)
             }
         }
 
