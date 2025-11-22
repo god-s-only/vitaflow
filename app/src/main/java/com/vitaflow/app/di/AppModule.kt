@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.vitaflow.app.common.BASE_URL
 import com.vitaflow.app.common.SPOONACULAR_API
 import com.vitaflow.app.data.local.NutritionDatabase
+import com.vitaflow.app.data.local.NutritionPreferences
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.WorkoutAPI
 import com.vitaflow.app.data.repository.AuthRepositoryImpl
@@ -142,7 +143,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSpoonacularRepository(api: SpoonacularAPI, db: NutritionDatabase): NutritionFoodRepository{
-        return NutritionFoodRepositoryImpl(api, db.nutritionDao())
+    fun provideNutritionPreferences(@ApplicationContext context: Context): NutritionPreferences {
+        return NutritionPreferences(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSpoonacularRepository(
+        api: SpoonacularAPI,
+        db: NutritionDatabase,
+        nutritionPreferences: NutritionPreferences
+    ): NutritionFoodRepository {
+        return NutritionFoodRepositoryImpl(api, db.nutritionDao(), nutritionPreferences)
     }
 }

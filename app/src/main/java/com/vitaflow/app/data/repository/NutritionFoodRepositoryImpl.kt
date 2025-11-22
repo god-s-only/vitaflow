@@ -1,6 +1,7 @@
 package com.vitaflow.app.data.repository
 
 import com.vitaflow.app.data.local.NutritionDao
+import com.vitaflow.app.data.local.NutritionPreferences
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
 import com.vitaflow.app.domain.models.DailyNutrition
@@ -10,19 +11,21 @@ import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
-class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI: SpoonacularAPI, private val dao: NutritionDao): NutritionFoodRepository {
+class NutritionFoodRepositoryImpl @Inject constructor(
+    private val spoonacularAPI: SpoonacularAPI,
+    private val dao: NutritionDao,
+    private val nutritionPreferences: NutritionPreferences
+) : NutritionFoodRepository {
+
     override suspend fun searchFoodProducts(
         query: String,
         apiKey: String
     ): Flow<Result<List<NutritionFood>>> = flow {
         try {
             val res = spoonacularAPI.searchFoodProducts(query = query, apiKey = apiKey)
-            if(res.isSuccessful){
+            if (res.isSuccessful) {
                 res.body()?.let { data ->
                     val nutritionFood = data.nutritionFoodResponses.map {
                         NutritionFood(
@@ -35,24 +38,23 @@ class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI
             } else {
                 emit(Result.failure(Exception("API Error ${res.code()}: ${res.errorBody()}")))
             }
-        }catch (e: Exception){
+        } catch (e: Exception) {
             emit(Result.failure(e))
         }
     }
 
-
-    override suspend fun getFoodDetail(foodId: Int, apiKey: String): Flow<Result<NutritionFood>> = flow{
-        try{
+    override suspend fun getFoodDetail(foodId: Int, apiKey: String): Flow<Result<NutritionFood>> = flow {
+        try {
             val res = spoonacularAPI.getFoodProductById(foodId, apiKey)
-            if(res.isSuccessful){
+            if (res.isSuccessful) {
                 res.body()?.let { data ->
                     val nutritionFood = mapDetailDtoToNutritionFood(data)
                     emit(Result.success(nutritionFood))
                 } ?: emit(Result.failure(Exception("Error: Body is null")))
-            }else{
+            } else {
                 emit(Result.failure(Exception("API Error ${res.code()} ${res.errorBody()}")))
             }
-        }catch (e: Exception){
+        } catch (e: Exception) {
             emit(Result.failure(e))
         }
     }
@@ -76,8 +78,6 @@ class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI
     override suspend fun deleteFood(food: Food) {
         dao.deleteFood(food)
     }
-
-
 
     override suspend fun removeFoodEntry(entryId: Long) {
         dao.deleteFoodEntryById(entryId)
@@ -115,38 +115,73 @@ class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI
     }
 
     override suspend fun calculateAndSaveDailyNutrition(date: String) {
-        dao.calculateDailyTotals(date)
+        val totals = dao.calculateDailyTotals(date)
+        if (totals != null) {
+            var existingWater = 0.0
+            dao.getDailyNutrition(date).collect { existing ->
+                existingWater = existing?.water ?: 0.0
+            }
+
+            val dailyNutrition = DailyNutrition(
+                name = "Daily Summary",
+                date = date,
+                calories = totals.totalCalories,
+                carbs = totals.totalCarbs,
+                protein = totals.totalProtein,
+                fat = totals.totalFat,
+                water = existingWater
+            )
+            dao.insertNutrition(dailyNutrition)
+        }
     }
 
     override suspend fun updateWaterIntake(date: String, amount: Double) {
-        dao.updateWaterIntake(date, amount)
+        var exists = false
+        dao.getDailyNutrition(date).collect { daily ->
+            exists = daily != null
+        }
+
+        if (exists) {
+            dao.updateWaterIntake(date, amount)
+        } else {
+            val dailyNutrition = DailyNutrition(
+                name = "Daily Summary",
+                date = date,
+                calories = 0.0,
+                carbs = 0.0,
+                protein = 0.0,
+                fat = 0.0,
+                water = amount
+            )
+            dao.insertNutrition(dailyNutrition)
+        }
     }
 
     override suspend fun getCalorieTarget(): Int {
-        TODO("Not yet implemented")
+        return nutritionPreferences.getCalorieTarget()
     }
 
     override suspend fun setCalorieTarget(target: Int) {
-        TODO("Not yet implemented")
+        nutritionPreferences.setCalorieTarget(target)
     }
 
     override suspend fun getMacroTargets(): Triple<Int, Int, Int> {
-        TODO("Not yet implemented")
+        return nutritionPreferences.getMacroTargets()
     }
 
     override suspend fun setMacroTargets(carbs: Int, protein: Int, fat: Int) {
-        TODO("Not yet implemented")
+        nutritionPreferences.setMacroTargets(carbs, protein, fat)
     }
 
     override suspend fun getWaterTarget(): Int {
-        TODO("Not yet implemented")
+        return nutritionPreferences.getWaterTarget()
     }
 
     override suspend fun setWaterTarget(target: Int) {
-        TODO("Not yet implemented")
+        nutritionPreferences.setWaterTarget(target)
     }
 
-    private fun mapDetailDtoToNutritionFood(dto: NutritionFoodDetailDTO): NutritionFood{
+    private fun mapDetailDtoToNutritionFood(dto: NutritionFoodDetailDTO): NutritionFood {
         val nutrients = dto.nutrition?.nutrients ?: emptyList()
         return NutritionFood(
             id = dto.id,
@@ -156,9 +191,5 @@ class NutritionFoodRepositoryImpl @Inject constructor(private val spoonacularAPI
             protein = nutrients.find { it.name == "Protein" }?.amount,
             fat = nutrients.find { it.name == "Fat" }?.amount,
         )
-
     }
-}
-fun getTodayDate(): String {
-    return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 }
