@@ -11,6 +11,9 @@ import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 class NutritionFoodRepositoryImpl @Inject constructor(
@@ -193,3 +196,5 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         )
     }
 }
+
+fun getTodayDate(): String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())

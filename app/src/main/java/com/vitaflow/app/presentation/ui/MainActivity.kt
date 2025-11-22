@@ -34,12 +34,15 @@ import androidx.compose.ui.unit.sp
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.presentation.ui.auth.signin.SignInScreen
 import com.vitaflow.app.presentation.ui.auth.signup.SignUpScreen
@@ -47,6 +50,7 @@ import com.vitaflow.app.presentation.ui.features.detail.ExerciseDetailScreen
 import com.vitaflow.app.presentation.ui.features.home.HomeScreen
 import com.vitaflow.app.presentation.ui.features.nutrition.NutritionScreen
 import com.vitaflow.app.presentation.ui.features.search.FoodSearchScreen
+import com.vitaflow.app.presentation.ui.features.search.FoodSearchViewModel
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -166,8 +170,16 @@ private fun MainContent() {
             composable(Routes.WORKOUTSCREEN + "/{exerciseId}") {
                 ExerciseDetailScreen(navController = navController)
             }
-            composable(Routes.FOODSEARCHSCREEN){
-                FoodSearchScreen(navController = navController)
+            composable(
+                route = Routes.FOODSEARCHSCREEN + "/{mealType}",
+                arguments = listOf(
+                    navArgument("mealType"){
+                        type = NavType.StringType
+                    }
+                )
+            ){ backStackEntry ->
+                val mealType = backStackEntry.arguments?.getString("mealType") ?: "breakfast"
+                FoodSearchScreen(navController = navController, mealType)
             }
         }
 

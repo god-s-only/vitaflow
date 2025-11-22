@@ -1,13 +1,13 @@
 package com.vitaflow.app.presentation.ui.features.search
 
-import android.annotation.SuppressLint
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vitaflow.app.BuildConfig
 import com.vitaflow.app.common.UIEvent
-import com.vitaflow.app.domain.models.DailyNutrition
 import com.vitaflow.app.domain.models.Food
-import com.vitaflow.app.domain.usecase.nutrition.AddDailyNutritionUseCase
 import com.vitaflow.app.domain.usecase.nutrition.AddFoodUseCase
 import com.vitaflow.app.domain.usecase.nutrition.GetNutritionFoodById
 import com.vitaflow.app.domain.usecase.nutrition.GetNutritionFoodSpoonacular
@@ -19,9 +19,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,7 +26,8 @@ class FoodSearchViewModel @Inject constructor(
     private val getNutritionFoodSpoonacular: GetNutritionFoodSpoonacular,
     private val getNutritionFoodById: GetNutritionFoodById,
     private val addFoodUseCase: AddFoodUseCase
-): ViewModel() {
+) : ViewModel() {
+
     private val _state = MutableStateFlow(FoodSearchState())
     val state = _state.asStateFlow()
 
@@ -38,9 +36,11 @@ class FoodSearchViewModel @Inject constructor(
 
     private val apiKey = "12e4ce472f9d4e068b0df35539cdfcd6"
     private var searchJob: Job? = null
-    private fun searchFoodProducts(query: String){
+
+
+    private fun searchFoodProducts(query: String) {
         _state.value = _state.value.copy(loading = true)
-        if(query.isBlank()){
+        if (query.isBlank()) {
             _state.value = _state.value.copy(
                 food = emptyList(),
                 error = null,
@@ -50,7 +50,7 @@ class FoodSearchViewModel @Inject constructor(
         }
         viewModelScope.launch {
             getNutritionFoodSpoonacular(query, apiKey).collect { result ->
-                when{
+                when {
                     result.isSuccess -> {
                         _state.value = _state.value.copy(
                             food = result.getOrNull() ?: emptyList(),
@@ -68,18 +68,18 @@ class FoodSearchViewModel @Inject constructor(
                 }
             }
         }
-
     }
-    fun onEvent(event: FoodSearchEvent){
-        when(event){
+
+    fun onEvent(event: FoodSearchEvent) {
+        when (event) {
             is FoodSearchEvent.OnSearchChange -> {
                 _state.value = _state.value.copy(query = event.query)
                 searchJob?.cancel()
                 searchJob = viewModelScope.launch {
                     delay(300)
-                    if(event.query.isNotBlank()){
+                    if (event.query.isNotBlank()) {
                         searchFoodProducts(event.query)
-                    }else{
+                    } else {
                         clearResults()
                     }
                 }
@@ -93,7 +93,20 @@ class FoodSearchViewModel @Inject constructor(
                 viewModelScope.launch {
                     addFoodUseCase.invoke(
                         Food(
+                            id = event.foodId,
                             name = event.name,
+                            caloriesPer100g = event.calories,
+                            carbsPer100g = event.carbs,
+                            proteinPer100g = event.protein,
+                            fatPer100g = event.fat,
+                            imageUrl = null
+                        )
+                    )
+
+                    _uiEvent.emit(
+                        UIEvent.ShowQuantityDialog(
+                            foodId = event.foodId,
+                            foodName = event.name,
                             caloriesPer100g = event.calories,
                             carbsPer100g = event.carbs,
                             proteinPer100g = event.protein,
@@ -101,24 +114,22 @@ class FoodSearchViewModel @Inject constructor(
                         )
                     )
                 }
-                sendUiEvent(UIEvent.ShowSnackBar(message = "Food added successfully"))
-                sendUiEvent(UIEvent.PopBackStack)
             }
         }
     }
 
-    private fun loadNutritionDetails(productId: Int){
+    private fun loadNutritionDetails(productId: Int) {
         viewModelScope.launch {
             _state.value = _state.value.copy(
-                loadingDetailsFor =  _state.value.loadingDetailsFor + productId
+                loadingDetailsFor = _state.value.loadingDetailsFor + productId
             )
             getNutritionFoodById(productId, apiKey).collect { result ->
-                when{
+                when {
                     result.isSuccess -> {
                         val detailedFood = result.getOrNull()
-                        if(detailedFood != null){
+                        if (detailedFood != null) {
                             val updatedFoods = _state.value.food.map { food ->
-                                if(food.id == productId) detailedFood else food
+                                if (food.id == productId) detailedFood else food
                             }
                             _state.value = _state.value.copy(
                                 food = updatedFoods,
@@ -136,16 +147,12 @@ class FoodSearchViewModel @Inject constructor(
             }
         }
     }
-    private fun clearResults(){
+
+    private fun clearResults() {
         _state.value = _state.value.copy(
             food = emptyList(),
             error = null,
             loading = false
         )
-    }
-    private fun sendUiEvent(event: UIEvent){
-        viewModelScope.launch {
-            _uiEvent.emit(event)
-        }
     }
 }

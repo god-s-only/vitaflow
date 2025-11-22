@@ -15,97 +15,74 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.vitaflow.app.common.UIEvent
+import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.models.NutritionFood
+import com.vitaflow.app.presentation.ui.features.nutrition.NutritionViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-// Theme Colors - Consistent with app theme
 private val PrimaryGreen = Color(0xFF00C853)
-private val LightGreen = Color(0xFF4CAF50)
 private val BackgroundWhite = Color(0xFFFAFAFA)
 private val CardWhite = Color.White
 private val TextPrimary = Color(0xFF1A1A1A)
 private val TextSecondary = Color(0xFF666666)
 
-// Data class for food items
-data class FoodItem(
-    val id: String,
-    val name: String,
-    val brand: String,
-    val calories: Int,
-    val carbs: Int,
-    val protein: Int,
-    val fat: Int,
-    val servingSize: String
-)
-
-val sampleFoods = listOf(
-    FoodItem("1", "Banana", "Fresh", 105, 27, 1, 0, "1 medium"),
-    FoodItem("2", "Chicken Breast", "Fresh", 165, 0, 31, 4, "100g"),
-    FoodItem("3", "Brown Rice", "Generic", 216, 45, 5, 2, "1 cup cooked"),
-    FoodItem("4", "Greek Yogurt", "Chobani", 100, 6, 18, 0, "170g container"),
-    FoodItem("5", "Oatmeal", "Quaker", 150, 27, 5, 3, "1/2 cup dry"),
-    FoodItem("6", "Eggs", "Large", 70, 0, 6, 5, "1 large"),
-    FoodItem("7", "Almonds", "Raw", 160, 6, 6, 14, "28g (23 nuts)"),
-    FoodItem("8", "Sweet Potato", "Fresh", 112, 26, 2, 0, "1 medium"),
-    FoodItem("9", "Salmon", "Atlantic", 206, 0, 22, 12, "100g"),
-    FoodItem("10", "Spinach", "Fresh", 7, 1, 1, 0, "1 cup"),
-    FoodItem("11", "Apple", "Medium", 95, 25, 0, 0, "1 medium"),
-    FoodItem("12", "Avocado", "Fresh", 160, 9, 2, 15, "1/2 medium"),
-    FoodItem("13", "Protein Powder", "Whey", 120, 2, 24, 1, "1 scoop"),
-    FoodItem("14", "Peanut Butter", "Jif", 190, 8, 8, 16, "2 tbsp"),
-    FoodItem("15", "Bread", "Whole Wheat", 80, 14, 4, 1, "1 slice")
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodSearchScreen(
     navController: NavController,
-    mealType: String = "breakfast",
-    viewModel: FoodSearchViewModel = hiltViewModel()
+    mealType: String,
+    viewModel: FoodSearchViewModel = hiltViewModel(),
+    nutritionViewModel: NutritionViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val searchQuery by remember { derivedStateOf { state.query } }
+
+    var showQuantityDialog by remember { mutableStateOf(false) }
+    var selectedFoodForDialog by remember { mutableStateOf<FoodDialogData?>(null) }
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collectLatest { result ->
-            when(result){
+            when (result) {
                 is UIEvent.ShowSnackBar -> {
                     scope.launch {
                         snackbarHostState.showSnackbar(message = result.message)
                     }
                 }
-
-                is UIEvent.Navigate -> TODO()
+                is UIEvent.ShowQuantityDialog -> {
+                    selectedFoodForDialog = FoodDialogData(
+                        foodId = result.foodId,
+                        name = result.foodName,
+                        caloriesPer100g = result.caloriesPer100g,
+                        carbsPer100g = result.carbsPer100g,
+                        proteinPer100g = result.proteinPer100g,
+                        fatPer100g = result.fatPer100g
+                    )
+                    showQuantityDialog = true
+                }
                 UIEvent.PopBackStack -> {
                     navController.popBackStack()
+                }
+                is UIEvent.Navigate -> {
+                    navController.navigate(result.route)
                 }
             }
         }
     }
 
-
-
-    // Decide what to show: sample foods or API results
     val showSampleFoods = searchQuery.isEmpty()
-    val displayFoods = if (showSampleFoods) sampleFoods else emptyList()
-    val displayApiResults = if (!showSampleFoods) state.food else emptyList()
 
     Scaffold(
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState
-            )
-        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -116,17 +93,12 @@ fun FoodSearchScreen(
                     Text(
                         text = "Add to ${mealType.replaceFirstChar { it.uppercase() }}",
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = PrimaryGreen
-                        )
+                        Icon(Icons.Default.ArrowBack, "Back", tint = PrimaryGreen)
                     }
                 }
             )
@@ -139,7 +111,6 @@ fun FoodSearchScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Search Bar
             SearchBar(
                 query = searchQuery,
                 onQueryChange = { query ->
@@ -150,7 +121,6 @@ fun FoodSearchScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Show loading indicator only when searching (not for sample foods)
             if (state.loading && !showSampleFoods) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -160,79 +130,90 @@ fun FoodSearchScreen(
                 }
             }
 
-            // Show error message only when searching
             if (!showSampleFoods) {
                 state.error?.let { error ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.Red.copy(alpha = 0.1f))
                     ) {
-                        Text(
-                            text = error,
-                            color = Color.Red,
-                            modifier = Modifier.padding(16.dp)
-                        )
+                        Text(text = error, color = Color.Red, modifier = Modifier.padding(16.dp))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
 
-            val totalCount = if (showSampleFoods) displayFoods.size else displayApiResults.size
-            val resultType = if (showSampleFoods) "sample foods" else "foods found"
+            val totalCount = if (showSampleFoods) 0 else state.food.size
+            val resultType = if (showSampleFoods) "Search for foods" else "foods found"
 
             Text(
-                text = "$totalCount $resultType",
+                text = if (showSampleFoods) resultType else "$totalCount $resultType",
                 fontSize = 14.sp,
                 color = TextSecondary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (showSampleFoods) {
-                    items(displayFoods) { food ->
-                        FoodItemCard(
-                            food = food,
-                            onFoodClick = {
-                                navController.popBackStack()
-                            }
-                        )
-                    }
+                    item { EmptySearchPrompt() }
                 } else {
-                    // Show API results when searching
-                    items(displayApiResults) { nutritionFood ->
+                    items(state.food) { nutritionFood ->
                         NutritionFoodCard(
                             nutritionFood = nutritionFood,
                             onFoodClick = {
                                 viewModel.onEvent(
                                     FoodSearchEvent.OnAddFood(
-                                    name = nutritionFood.title,
-                                    calories = nutritionFood.calories ?: 0.0,
-                                    carbs = nutritionFood.carbs ?: 0.0,
-                                    protein = nutritionFood.protein ?: 0.0,
-                                    fat = nutritionFood.fat ?: 0.0
-                                )
+                                        foodId = nutritionFood.id,
+                                        name = nutritionFood.title,
+                                        calories = nutritionFood.calories ?: 0.0,
+                                        carbs = nutritionFood.carbs ?: 0.0,
+                                        protein = nutritionFood.protein ?: 0.0,
+                                        fat = nutritionFood.fat ?: 0.0
+                                    )
                                 )
                             },
                             onLoadDetails = {
                                 viewModel.onEvent(FoodSearchEvent.LoadNutritionDetails(it))
-                            }
+                            },
+                            isLoadingDetails = state.loadingDetailsFor.contains(nutritionFood.id)
                         )
                     }
 
-                    // Show empty state only when search returns no results
-                    if (displayApiResults.isEmpty() && searchQuery.isNotEmpty() && !state.loading) {
-                        item {
-                            EmptySearchResult(searchQuery = searchQuery)
-                        }
+                    if (state.food.isEmpty() && searchQuery.isNotEmpty() && !state.loading) {
+                        item { EmptySearchResult(searchQuery = searchQuery) }
                     }
                 }
             }
         }
+
+        if (showQuantityDialog && selectedFoodForDialog != null) {
+            QuantityDialog(
+                foodData = selectedFoodForDialog!!,
+                mealType = mealType,
+                onDismiss = {
+                    showQuantityDialog = false
+                    selectedFoodForDialog = null
+                },
+                onConfirm = { foodData, quantity ->
+                    val food = Food(
+                        id = foodData.foodId,
+                        name = foodData.name,
+                        caloriesPer100g = foodData.caloriesPer100g,
+                        carbsPer100g = foodData.carbsPer100g,
+                        proteinPer100g = foodData.proteinPer100g,
+                        fatPer100g = foodData.fatPer100g,
+                        imageUrl = null
+                    )
+
+                    nutritionViewModel.addFoodToMeal(food, mealType, quantity)
+
+                    showQuantityDialog = false
+                    selectedFoodForDialog = null
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
-
 @Composable
 private fun SearchBar(
     query: String,
@@ -245,7 +226,7 @@ private fun SearchBar(
         modifier = modifier,
         placeholder = {
             Text(
-                text = "Search foods...",
+                text = "Search foods from Spoonacular...",
                 color = TextSecondary
             )
         },
@@ -268,10 +249,102 @@ private fun SearchBar(
 }
 
 @Composable
-private fun FoodItemCard(
-    food: FoodItem,
-    onFoodClick: () -> Unit
+private fun EmptySearchPrompt() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = null,
+                tint = PrimaryGreen,
+                modifier = Modifier.size(48.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Search for Foods",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Type in the search bar to find foods from Spoonacular database",
+                fontSize = 14.sp,
+                color = TextSecondary,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptySearchResult(searchQuery: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = null,
+                tint = Color.Gray,
+                modifier = Modifier.size(48.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "No foods found for \"$searchQuery\"",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Try searching with different keywords or check the spelling",
+                fontSize = 14.sp,
+                color = TextSecondary,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun NutritionFoodCard(
+    nutritionFood: NutritionFood,
+    onFoodClick: () -> Unit,
+    onLoadDetails: (Int) -> Unit,
+    isLoadingDetails: Boolean
 ) {
+    LaunchedEffect(nutritionFood.id) {
+        if (nutritionFood.calories == null && !isLoadingDetails) {
+            onLoadDetails(nutritionFood.id)
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -291,40 +364,47 @@ private fun FoodItemCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = food.name,
+                    text = nutritionFood.title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = TextPrimary,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = food.brand,
-                    fontSize = 14.sp,
-                    color = TextSecondary
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    NutrientInfo(label = "Cal", value = "${food.calories}")
-                    NutrientInfo(label = "Carbs", value = "${food.carbs}g")
-                    NutrientInfo(label = "Protein", value = "${food.protein}g")
-                    NutrientInfo(label = "Fat", value = "${food.fat}g")
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    if (isLoadingDetails) {
+                        repeat(4) {
+                            NutrientInfo(label = "...", value = "⏳")
+                        }
+                    } else {
+                        NutrientInfo(
+                            label = "Cal",
+                            value = nutritionFood.calories?.toInt()?.toString() ?: "---"
+                        )
+                        NutrientInfo(
+                            label = "Carbs",
+                            value = nutritionFood.carbs?.toInt()?.let { "${it}g" } ?: "---"
+                        )
+                        NutrientInfo(
+                            label = "Protein",
+                            value = nutritionFood.protein?.toInt()?.let { "${it}g" } ?: "---"
+                        )
+                        NutrientInfo(
+                            label = "Fat",
+                            value = nutritionFood.fat?.toInt()?.let { "${it}g" } ?: "---"
+                        )
+                    }
                 }
             }
 
-            // Serving size
             Column(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = food.servingSize,
+                    text = "per 100g",
                     fontSize = 12.sp,
                     color = TextSecondary
                 )
@@ -365,135 +445,146 @@ private fun NutrientInfo(
 }
 
 @Composable
-private fun EmptySearchResult(searchQuery: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Search,
-                contentDescription = null,
-                tint = Color.Black,
-                modifier = Modifier
-                    .size(25.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "No foods found for \"$searchQuery\"",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = TextPrimary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Try searching with different keywords or check the spelling",
-                fontSize = 14.sp,
-                color = TextSecondary,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-private fun NutritionFoodCard(
-    nutritionFood: NutritionFood,
-    onFoodClick: (NutritionFood) -> Unit,
-    onLoadDetails: (Int) -> Unit
+private fun QuantityDialog(
+    foodData: FoodDialogData,
+    mealType: String,
+    onDismiss: () -> Unit,
+    onConfirm: (FoodDialogData, Double) -> Unit
 ) {
-    LaunchedEffect(nutritionFood.id) {
-        if(nutritionFood.calories == null && !nutritionFood.isLoadingDetails){
-            onLoadDetails(nutritionFood.id)
-        }
-    }
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onFoodClick(nutritionFood) },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = nutritionFood.title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = TextPrimary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+    var quantity by remember { mutableStateOf("100") }
 
-                Spacer(modifier = Modifier.height(4.dp))
-
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Add ${foodData.name}",
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
                 Text(
-                    text = "ID: ${nutritionFood.id}",
+                    text = "Add to: ${mealType.replaceFirstChar { it.uppercase() }}",
                     fontSize = 14.sp,
                     color = TextSecondary
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    if (nutritionFood.isLoadingDetails) {
-                        repeat(4) {
-                            NutrientInfo(label = "...", value = "⏳")
+                OutlinedTextField(
+                    value = quantity,
+                    onValueChange = { newValue ->
+                        quantity = newValue.filter { it.isDigit() }
+                    },
+                    label = { Text("Quantity (grams)") },
+                    suffix = { Text("g") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryGreen,
+                        focusedLabelColor = PrimaryGreen,
+                        cursorColor = PrimaryGreen
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                val qty = quantity.toDoubleOrNull() ?: 100.0
+                val multiplier = qty / 100.0
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = PrimaryGreen.copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "Nutrition for ${qty.toInt()}g:",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Calories:", fontSize = 14.sp, color = TextSecondary)
+                            Text(
+                                "${(foodData.caloriesPer100g * multiplier).toInt()}",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
-                    } else {
-                        NutrientInfo(label = "Cal", value = nutritionFood.calories?.toString() ?: "---")
-                        NutrientInfo(label = "Carbs", value = nutritionFood.carbs?.let { "${it}g" } ?: "---")
-                        NutrientInfo(label = "Protein", value = nutritionFood.protein?.let { "${it}g" } ?: "---")
-                        NutrientInfo(label = "Fat", value = nutritionFood.fat?.let { "${it}g" } ?: "---")
+
+                        foodData.carbsPer100g?.let {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Carbs:", fontSize = 14.sp, color = TextSecondary)
+                                Text(
+                                    "${(it * multiplier).toInt()}g",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Protein:", fontSize = 14.sp, color = TextSecondary)
+                            Text(
+                                "${(foodData.proteinPer100g * multiplier).toInt()}g",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Fat:", fontSize = 14.sp, color = TextSecondary)
+                            Text(
+                                "${(foodData.fatPer100g * multiplier).toInt()}g",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
-
-            // Add button
-            Column(
-                horizontalAlignment = Alignment.End
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val qty = quantity.toDoubleOrNull() ?: 100.0
+                    onConfirm(foodData, qty)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
             ) {
-                Text(
-                    text = "Tap for details",
-                    fontSize = 12.sp,
-                    color = TextSecondary
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Icon(
-                    painter = painterResource(id = android.R.drawable.ic_input_add),
-                    contentDescription = "Add",
-                    tint = PrimaryGreen,
-                    modifier = Modifier.size(24.dp)
-                )
+                Text("Add to ${mealType.replaceFirstChar { it.uppercase() }}")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextSecondary)
             }
         }
-    }
+    )
 }
 
-@Preview
-@Composable
-fun FoodSearchScreenPreview() {
-    FoodSearchScreen(navController = rememberNavController())
-}
+data class FoodDialogData(
+    val foodId: Int,
+    val name: String,
+    val caloriesPer100g: Double,
+    val carbsPer100g: Double?,
+    val proteinPer100g: Double,
+    val fatPer100g: Double
+)

@@ -57,6 +57,7 @@ fun SignInScreen(
                 }
 
                 UIEvent.PopBackStack -> TODO()
+                is UIEvent.ShowQuantityDialog -> TODO()
             }
         }
     }

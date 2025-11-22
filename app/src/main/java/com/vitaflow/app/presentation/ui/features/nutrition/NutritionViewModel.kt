@@ -244,7 +244,6 @@ class NutritionViewModel @Inject constructor(
         }
     }
 
-    // Navigate to food search from recent foods
     fun onRecentFoodClick(food: FoodItem) {
         viewModelScope.launch {
             _navigationEvent.emit(NavigationEvent.ShowAddFoodDialog(food))

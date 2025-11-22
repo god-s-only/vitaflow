@@ -43,8 +43,10 @@ import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.vitaflow.app.common.Routes
 import java.text.SimpleDateFormat
 import java.util.*
+import com.vitaflow.app.domain.models.Food
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,11 +63,9 @@ fun NutritionScreen(
         viewModel.navigationEvent.collect { event ->
             when (event) {
                 is NavigationEvent.NavigateToFoodSearch -> {
-                    navController.navigate("food_search/${event.mealType}")
+                    navController.navigate(Routes.FOODSEARCHSCREEN + "/${event.mealType}")
                 }
                 is NavigationEvent.ShowAddFoodDialog -> {
-                    // TODO: Show dialog to select meal type and quantity
-                    // For now, just show a toast
                     Toast.makeText(context, "Add ${event.food.name}", Toast.LENGTH_SHORT).show()
                 }
                 is NavigationEvent.ShowMessage -> {
@@ -81,7 +81,6 @@ fun NutritionScreen(
                     navController.navigate("recipes")
                 }
                 NavigationEvent.ShowQuickCaloriesDialog -> {
-                    // TODO: Show dialog for quick calorie entry
                     Toast.makeText(context, "Quick Calories", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -658,7 +657,7 @@ fun MealCard(
 
             // Expandable food entries
             if (isExpanded && meal != null && meal.entries.isNotEmpty()) {
-                Divider(color = Color.Gray.copy(alpha = 0.2f))
+                HorizontalDivider(color = Color.Gray.copy(alpha = 0.2f))
                 Column(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -950,21 +949,8 @@ data class MacroNutrient(
     val target: Int
 )
 
-data class Meal(
-    val type: String,
-    val foods: List<Food>,
-    val calories: Int
-)
 
-data class Food(
-    val id: String,
-    val name: String,
-    val calories: Int,
-    val carbs: Int,
-    val protein: Int,
-    val fat: Int,
-    val imageUrl: String
-)
+
 
 data class MealType(
     val type: String,
