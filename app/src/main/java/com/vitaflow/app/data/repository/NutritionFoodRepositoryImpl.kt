@@ -11,6 +11,7 @@ import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.first
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -120,10 +121,8 @@ class NutritionFoodRepositoryImpl @Inject constructor(
     override suspend fun calculateAndSaveDailyNutrition(date: String) {
         val totals = dao.calculateDailyTotals(date)
         if (totals != null) {
-            var existingWater = 0.0
-            dao.getDailyNutrition(date).collect { existing ->
-                existingWater = existing?.water ?: 0.0
-            }
+            val existingNutrition = dao.getDailyNutrition(date).first()
+            val existingWater = existingNutrition?.water ?: 0.0
 
             val dailyNutrition = DailyNutrition(
                 name = "Daily Summary",
@@ -139,12 +138,10 @@ class NutritionFoodRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateWaterIntake(date: String, amount: Double) {
-        var exists = false
-        dao.getDailyNutrition(date).collect { daily ->
-            exists = daily != null
-        }
+        // Use first() to get single value from Flow
+        val existing = dao.getDailyNutrition(date).first()
 
-        if (exists) {
+        if (existing != null) {
             dao.updateWaterIntake(date, amount)
         } else {
             val dailyNutrition = DailyNutrition(

@@ -3,6 +3,7 @@ package com.vitaflow.app.presentation.ui.features.nutrition
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.domain.models.Food
+import com.vitaflow.app.domain.models.FoodEntry
 import com.vitaflow.app.domain.repository.getTodayDate
 import com.vitaflow.app.domain.usecase.nutrition.AddFoodEntryUseCase
 import com.vitaflow.app.domain.usecase.nutrition.CalculateAndSaveDailyNutritionUseCase
@@ -188,7 +189,6 @@ class NutritionViewModel @Inject constructor(
         viewModelScope.launch {
             removeFoodEntryUseCase(entryId).fold(
                 onSuccess = {
-                    // Successfully removed
                 },
                 onFailure = { error ->
                     _state.update {

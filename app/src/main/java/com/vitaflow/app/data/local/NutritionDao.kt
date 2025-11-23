@@ -42,7 +42,7 @@ interface NutritionDao {
     @Delete
     suspend fun deleteFood(food: Food)
 
-    @Query("SELECT * FROM Food WHERE id = :foodId")
+    @Query("SELECT * FROM Food WHERE CAST(id AS TEXT) = :foodId")
     suspend fun getFoodById(foodId: String): Food?
 
     @Query("""
@@ -59,7 +59,7 @@ interface NutritionDao {
     @Query("""
         SELECT 
             COALESCE(SUM(f.caloriesPer100g * fe.quantity / 100), 0) as totalCalories,
-            COALESCE(SUM(f.carbsPer100g * fe.quantity / 100), 0) as totalCarbs,
+            COALESCE(SUM(IFNULL(f.carbsPer100g, 0) * fe.quantity / 100), 0) as totalCarbs,
             COALESCE(SUM(f.proteinPer100g * fe.quantity / 100), 0) as totalProtein,
             COALESCE(SUM(f.fatPer100g * fe.quantity / 100), 0) as totalFat
         FROM FoodEntry fe

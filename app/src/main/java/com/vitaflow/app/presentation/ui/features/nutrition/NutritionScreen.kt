@@ -46,8 +46,6 @@ import coil3.request.crossfade
 import com.vitaflow.app.common.Routes
 import java.text.SimpleDateFormat
 import java.util.*
-import com.vitaflow.app.domain.models.Food
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NutritionScreen(

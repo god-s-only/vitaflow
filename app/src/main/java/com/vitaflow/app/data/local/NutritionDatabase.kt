@@ -6,7 +6,7 @@ import com.vitaflow.app.domain.models.DailyNutrition
 import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.models.FoodEntry
 
-@Database(entities = [FoodEntry::class, DailyNutrition::class, Food::class], version = 2, exportSchema = false)
+@Database(entities = [FoodEntry::class, DailyNutrition::class, Food::class], version = 1)
 abstract class NutritionDatabase: RoomDatabase() {
     abstract fun nutritionDao(): NutritionDao
 }

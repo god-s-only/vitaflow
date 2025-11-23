@@ -1,9 +1,5 @@
 package com.vitaflow.app.presentation.ui.features.search
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.common.UIEvent
@@ -34,9 +30,8 @@ class FoodSearchViewModel @Inject constructor(
     private val _uiEvent = MutableSharedFlow<UIEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
-    private val apiKey = "12e4ce472f9d4e068b0df35539cdfcd6"
+    private val apiKey = "e502be08e8b14c8290b76df779e11de1"
     private var searchJob: Job? = null
-
 
     private fun searchFoodProducts(query: String) {
         _state.value = _state.value.copy(loading = true)

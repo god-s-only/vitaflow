@@ -194,6 +194,7 @@ fun FoodSearchScreen(
                     selectedFoodForDialog = null
                 },
                 onConfirm = { foodData, quantity ->
+                    // Create the Food object
                     val food = Food(
                         id = foodData.foodId,
                         name = foodData.name,
@@ -204,16 +205,21 @@ fun FoodSearchScreen(
                         imageUrl = null
                     )
 
+                    // Add food to meal using NutritionViewModel
                     nutritionViewModel.addFoodToMeal(food, mealType, quantity)
 
+                    // Close dialog and navigate back
                     showQuantityDialog = false
                     selectedFoodForDialog = null
+
+                    // Navigate back to nutrition screen
                     navController.popBackStack()
                 }
             )
         }
     }
 }
+
 @Composable
 private fun SearchBar(
     query: String,
