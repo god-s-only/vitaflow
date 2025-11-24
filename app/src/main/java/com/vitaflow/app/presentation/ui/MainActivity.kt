@@ -49,6 +49,7 @@ import com.vitaflow.app.presentation.ui.auth.signup.SignUpScreen
 import com.vitaflow.app.presentation.ui.features.detail.ExerciseDetailScreen
 import com.vitaflow.app.presentation.ui.features.home.HomeScreen
 import com.vitaflow.app.presentation.ui.features.nutrition.NutritionScreen
+import com.vitaflow.app.presentation.ui.features.onboarding.OnboardingScreen
 import com.vitaflow.app.presentation.ui.features.search.FoodSearchScreen
 import com.vitaflow.app.presentation.ui.features.search.FoodSearchViewModel
 import com.vitaflow.app.presentation.ui.features.settings.NutritionSettingsScreen
@@ -107,6 +108,7 @@ private fun MainContent() {
         route != Routes.SIGNINSCREEN &&
                 route != Routes.FOODSEARCHSCREEN + "/{mealType}" &&
                 route != Routes.SIGNUPSCREEN &&
+                route != Routes.ONBOARDINGSCREEN &&
                 route != Routes.NUTRITIONSCREENSETTINGS &&
                 !route.startsWith(Routes.WORKOUTSCREEN)
     } ?: false
@@ -118,7 +120,7 @@ private fun MainContent() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = Routes.NUTRITIONSCREEN,
+            startDestination = Routes.ONBOARDINGSCREEN,
             modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 slideIntoContainer(
@@ -185,6 +187,9 @@ private fun MainContent() {
             }
             composable(Routes.NUTRITIONSCREENSETTINGS) {
                 NutritionSettingsScreen(navController = navController)
+            }
+            composable(Routes.ONBOARDINGSCREEN) {
+                OnboardingScreen(navController = navController)
             }
         }
 
