@@ -37,15 +37,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.vitaflow.app.presentation.ui.theme.BackgroundWhite
+import com.vitaflow.app.presentation.ui.theme.OrangeAccent
+import com.vitaflow.app.presentation.ui.theme.PrimaryGreen
+import com.vitaflow.app.presentation.ui.theme.PurpleAccent
+import com.vitaflow.app.presentation.ui.theme.SecondaryBlue
+import com.vitaflow.app.presentation.ui.theme.TextPrimary
+import com.vitaflow.app.presentation.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
-
-private val PrimaryGreen = Color(0xFF4CAF50)
-private val SecondaryBlue = Color(0xFF2196F3)
-private val PurpleAccent = Color(0xFF9C27B0)
-private val OrangeAccent = Color(0xFFFF9800)
-private val BackgroundWhite = Color(0xFFFAFAFA)
-private val TextPrimary = Color(0xFF1A1A1A)
-private val TextSecondary = Color(0xFF666666)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -818,7 +817,7 @@ private fun ActivityLevelCard(
     }
 }
 
-// Data Classes
+
 enum class FitnessGoal(
     val title: String,
     val description: String,
