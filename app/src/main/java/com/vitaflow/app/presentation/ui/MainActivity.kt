@@ -109,7 +109,7 @@ private fun MainContent() {
         route != Routes.SIGNINSCREEN &&
                 route != Routes.FOODSEARCHSCREEN + "/{mealType}" &&
                 route != Routes.SIGNUPSCREEN &&
-                route != Routes.BARCODE_SCREEN &&
+                route != Routes.BARCODE_SCREEN + "/{mealType}" &&
                 route != Routes.ONBOARDINGSCREEN &&
                 route != Routes.NUTRITIONSCREENSETTINGS &&
                 !route.startsWith(Routes.WORKOUTSCREEN)
