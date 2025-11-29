@@ -40,6 +40,8 @@ interface NutritionFoodRepository {
     suspend fun setMacroTargets(carbs: Int, protein: Int, fat: Int)
     suspend fun getWaterTarget(): Int
     suspend fun setWaterTarget(target: Int)
+
+    suspend fun getFoodProductByUPC(upc: String, apiKey: String): Flow<Result<NutritionFood>>
 }
 
 fun getTodayDate(): String {

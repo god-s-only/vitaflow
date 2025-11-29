@@ -44,6 +44,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.vitaflow.app.common.Routes
+import com.vitaflow.app.domain.models.Food
 import java.text.SimpleDateFormat
 import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,6 +56,8 @@ fun NutritionScreen(
     val uiState = viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
+
 
     // Handle navigation events
     LaunchedEffect(Unit) {
@@ -81,6 +84,20 @@ fun NutritionScreen(
                 NavigationEvent.ShowQuickCaloriesDialog -> {
                     Toast.makeText(context, "Quick Calories", Toast.LENGTH_SHORT).show()
                 }
+            }
+        }
+    }
+
+    LaunchedEffect(navController) {
+        val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+        savedStateHandle?.getStateFlow<Food?>("scanned_food", null)?.collect { food ->
+            if (food != null) {
+                val mealType = savedStateHandle.get<String>("meal_type") ?: "breakfast"
+
+                viewModel.addFoodToMeal(food, mealType, 100.0)
+
+                savedStateHandle.remove<Food>("scanned_food")
+                savedStateHandle.remove<String>("meal_type")
             }
         }
     }

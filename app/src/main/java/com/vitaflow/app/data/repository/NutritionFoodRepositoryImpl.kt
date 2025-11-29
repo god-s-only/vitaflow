@@ -181,6 +181,25 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         nutritionPreferences.setWaterTarget(target)
     }
 
+    override suspend fun getFoodProductByUPC(
+        upc: String,
+        apiKey: String
+    ): Flow<Result<NutritionFood>> = flow {
+        try {
+            val res = spoonacularAPI.getFoodProductByUPC(upc, apiKey)
+            if(res.isSuccessful){
+                res.body()?.let { data ->
+                    emit(Result.success(mapDetailDtoToNutritionFood(data)))
+                } ?: emit(Result.failure(Exception("Error body is null")))
+            }else {
+                emit(Result.failure(Exception("API Error ${res.code()}: ${res.errorBody()}")))
+            }
+        }catch (e: Exception){
+            emit(Result.failure(e))
+        }
+    }
+}
+
     private fun mapDetailDtoToNutritionFood(dto: NutritionFoodDetailDTO): NutritionFood {
         val nutrients = dto.nutrition?.nutrients ?: emptyList()
         return NutritionFood(
@@ -192,6 +211,5 @@ class NutritionFoodRepositoryImpl @Inject constructor(
             fat = nutrients.find { it.name == "Fat" }?.amount,
         )
     }
-}
 
 fun getTodayDate(): String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())

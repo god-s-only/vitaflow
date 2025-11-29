@@ -20,4 +20,11 @@ interface SpoonacularAPI {
         @Path("id") productId: Int,
         @Query("apiKey") apiKey: String
     ): Response<NutritionFoodDetailDTO>
+
+    @GET("food/products/upc/{upc}")
+    suspend fun getFoodProductByUPC(
+        @Path("upc") upc: String,
+        @Query("apiKey") apiKey: String
+    ): Response<NutritionFoodDetailDTO>
+
 }
