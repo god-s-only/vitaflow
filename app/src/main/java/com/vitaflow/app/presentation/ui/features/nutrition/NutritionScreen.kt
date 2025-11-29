@@ -73,7 +73,7 @@ fun NutritionScreen(
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
                 NavigationEvent.NavigateToBarcodeScan -> {
-                    navController.navigate("barcode_scan")
+                    navController.navigate(Routes.BARCODE_SCREEN + "/breakfast")
                 }
                 NavigationEvent.NavigateToPhotoCapture -> {
                     navController.navigate("photo_capture")

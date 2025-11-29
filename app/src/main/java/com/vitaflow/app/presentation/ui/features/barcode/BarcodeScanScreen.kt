@@ -1,32 +1,47 @@
 package com.vitaflow.app.presentation.ui.features.barcode
 
+import android.Manifest
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.*
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.common.InputImage
+import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.presentation.ui.features.nutrition.mealTypes
+import java.util.concurrent.Executors
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+
+private const val TAG = "BarcodeScanScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +54,25 @@ fun BarcodeScanScreen(
     val context = LocalContext.current
 
     var showMealSelector by remember { mutableStateOf(false) }
+    var permissionGranted by remember { mutableStateOf(false) }
+    var flashEnabled by remember { mutableStateOf(false) }
+    var camera by remember { mutableStateOf<Camera?>(null) }
+
+    // Camera permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        permissionGranted = isGranted
+        if (!isGranted) {
+            Toast.makeText(context, "Camera permission is required", Toast.LENGTH_LONG).show()
+            navController.popBackStack()
+        }
+    }
+
+    // Request permission on launch
+    LaunchedEffect(Unit) {
+        permissionLauncher.launch(Manifest.permission.CAMERA)
+    }
 
     // Handle events
     LaunchedEffect(Unit) {
@@ -51,34 +85,10 @@ fun BarcodeScanScreen(
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
                 is BarcodeScanEvent.ShowSuccess -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
                 }
             }
         }
-    }
-
-    // Start scanning when screen opens
-    LaunchedEffect(Unit) {
-        val options = GmsBarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_EAN_13, Barcode.FORMAT_UPC_A)
-            .build()
-
-        val scanner = GmsBarcodeScanning.getClient(context, options)
-
-        scanner.startScan()
-            .addOnSuccessListener { barcode ->
-                barcode.rawValue?.let { code ->
-                    viewModel.onBarcodeScanned(code)
-                }
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(
-                    context,
-                    "Scan failed: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
-                navController.popBackStack()
-            }
     }
 
     Scaffold(
@@ -90,21 +100,39 @@ fun BarcodeScanScreen(
                         Icon(Icons.Filled.ArrowBack, "Back")
                     }
                 },
+                actions = {
+                    if (permissionGranted && state.scannedProduct == null) {
+                        IconButton(onClick = {
+                            camera?.cameraControl?.enableTorch(!flashEnabled)
+                            flashEnabled = !flashEnabled
+                        }) {
+                            Icon(
+                                imageVector = if (flashEnabled) Icons.Filled.Settings else Icons.Filled.Settings,
+                                contentDescription = "Toggle Flash",
+                                tint = Color.Black
+                            )
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black
                 )
             )
-        }
+        },
+        containerColor = Color(0xFFF8F9FA)
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF8F9FA))
         ) {
             when {
-                state.isLoading -> {
-                    CircularProgressIndicator(
+                !permissionGranted -> {
+                    PermissionRequiredView(
+                        onRequestPermission = {
+                            permissionLauncher.launch(Manifest.permission.CAMERA)
+                        },
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -118,10 +146,56 @@ fun BarcodeScanScreen(
                     )
                 }
 
+                state.isLoading -> {
+                    // Show camera preview with loading overlay
+                    CameraPreview(
+                        onBarcodeScanned = { barcode ->
+                            viewModel.onBarcodeScanned(barcode)
+                        },
+                        onCameraReady = { cam ->
+                            camera = cam
+                        },
+                        isScanning = false // Don't scan while loading
+                    )
+
+                    LoadingOverlay(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
                 state.error != null -> {
-                    ErrorView(
+                    // Show camera preview with error overlay
+                    CameraPreview(
+                        onBarcodeScanned = { barcode ->
+                            viewModel.onBarcodeScanned(barcode)
+                        },
+                        onCameraReady = { cam ->
+                            camera = cam
+                        },
+                        isScanning = true
+                    )
+
+                    ErrorOverlay(
                         error = state.error!!,
-                        onRetry = { viewModel.resetScan() },
+                        onDismiss = { viewModel.clearError() },
+                        modifier = Modifier.align(Alignment.BottomCenter)
+                    )
+                }
+
+                else -> {
+                    // Active scanning mode
+                    CameraPreview(
+                        onBarcodeScanned = { barcode ->
+                            viewModel.onBarcodeScanned(barcode)
+                        },
+                        onCameraReady = { cam ->
+                            camera = cam
+                        },
+                        isScanning = true
+                    )
+
+                    // Scanning guide overlay
+                    ScanningOverlay(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -142,9 +216,245 @@ fun BarcodeScanScreen(
     }
 }
 
+@androidx.annotation.OptIn(ExperimentalGetImage::class)
+@Composable
+fun CameraPreview(
+    onBarcodeScanned: (String) -> Unit,
+    onCameraReady: (Camera) -> Unit,
+    isScanning: Boolean
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+
+    var lastScannedBarcode by remember { mutableStateOf<String?>(null) }
+    var lastScanTime by remember { mutableStateOf(0L) }
+
+    AndroidView(
+        factory = { ctx ->
+            val previewView = PreviewView(ctx)
+            val executor = ContextCompat.getMainExecutor(ctx)
+
+            cameraProviderFuture.addListener({
+                val cameraProvider = cameraProviderFuture.get()
+
+                // Preview
+                val preview = Preview.Builder().build().also {
+                    it.setSurfaceProvider(previewView.surfaceProvider)
+                }
+
+                // Image Analysis for barcode scanning
+                val barcodeScanner = BarcodeScanning.getClient()
+                val imageAnalysis = ImageAnalysis.Builder()
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+
+                imageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
+                    if (!isScanning) {
+                        imageProxy.close()
+                        return@setAnalyzer
+                    }
+
+                    val mediaImage = imageProxy.image
+                    if (mediaImage != null) {
+                        val image = InputImage.fromMediaImage(
+                            mediaImage,
+                            imageProxy.imageInfo.rotationDegrees
+                        )
+
+                        barcodeScanner.process(image)
+                            .addOnSuccessListener { barcodes ->
+                                for (barcode in barcodes) {
+                                    barcode.rawValue?.let { barcodeValue ->
+                                        val currentTime = System.currentTimeMillis()
+                                        // Prevent duplicate scans within 2 seconds
+                                        if (barcodeValue != lastScannedBarcode ||
+                                            currentTime - lastScanTime > 2000) {
+                                            Log.d(TAG, "Barcode detected: $barcodeValue")
+                                            lastScannedBarcode = barcodeValue
+                                            lastScanTime = currentTime
+                                            onBarcodeScanned(barcodeValue)
+                                        }
+                                    }
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e(TAG, "Barcode scanning failed", e)
+                            }
+                            .addOnCompleteListener {
+                                imageProxy.close()
+                            }
+                    } else {
+                        imageProxy.close()
+                    }
+                }
+
+                // Camera selector
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+                try {
+                    cameraProvider.unbindAll()
+                    val camera = cameraProvider.bindToLifecycle(
+                        lifecycleOwner,
+                        cameraSelector,
+                        preview,
+                        imageAnalysis
+                    )
+                    onCameraReady(camera)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Camera binding failed", e)
+                }
+            }, executor)
+
+            previewView
+        },
+        modifier = Modifier.fillMaxSize()
+    )
+}
+
+@Composable
+fun ScanningOverlay(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        // Scanning frame
+        Box(
+            modifier = Modifier
+                .size(250.dp)
+                .border(3.dp, Color.White, RoundedCornerShape(16.dp))
+        )
+
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Black.copy(alpha = 0.7f)
+            )
+        ) {
+            Text(
+                text = "Position barcode within frame",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun LoadingOverlay(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.padding(32.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            CircularProgressIndicator()
+            Text(
+                text = "Looking up product...",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+@Composable
+fun ErrorOverlay(
+    error: String,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFEBEE)
+        ),
+        elevation = CardDefaults.cardElevation(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "⚠️",
+                fontSize = 24.sp
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Error",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFD32F2F)
+                )
+                Text(
+                    text = error,
+                    fontSize = 14.sp,
+                    color = Color(0xFFD32F2F)
+                )
+            }
+            TextButton(onClick = onDismiss) {
+                Text("OK")
+            }
+        }
+    }
+}
+
+@Composable
+fun PermissionRequiredView(
+    onRequestPermission: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "📷",
+            fontSize = 64.sp
+        )
+        Text(
+            text = "Camera Permission Required",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = "We need camera access to scan barcodes",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center
+        )
+        Button(
+            onClick = onRequestPermission,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("Grant Permission")
+        }
+    }
+}
+
 @Composable
 fun ScannedProductCard(
-    food: com.vitaflow.app.domain.models.NutritionFood,
+    food: NutritionFood,
     onAddToMeal: () -> Unit,
     onScanAgain: () -> Unit,
     isAddingToMeal: Boolean
@@ -156,6 +466,8 @@ fun ScannedProductCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Spacer(modifier = Modifier.weight(1f))
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -163,17 +475,26 @@ fun ScannedProductCard(
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
+                modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(
+                    text = "✓",
+                    fontSize = 48.sp,
+                    color = Color(0xFF4CAF50)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     text = food.title,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Nutrition Info
                 Row(
@@ -182,23 +503,35 @@ fun ScannedProductCard(
                 ) {
                     food.calories?.let {
                         NutrientInfo("Calories", "${it.toInt()}", "kcal")
-                    }
+                    } ?: NutrientInfo("Calories", "N/A", "")
+
                     food.protein?.let {
                         NutrientInfo("Protein", "${it.toInt()}", "g")
-                    }
+                    } ?: NutrientInfo("Protein", "N/A", "")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
                     food.carbs?.let {
                         NutrientInfo("Carbs", "${it.toInt()}", "g")
-                    }
+                    } ?: NutrientInfo("Carbs", "N/A", "")
+
                     food.fat?.let {
                         NutrientInfo("Fat", "${it.toInt()}", "g")
-                    }
+                    } ?: NutrientInfo("Fat", "N/A", "")
                 }
             }
         }
 
         Button(
             onClick = onAddToMeal,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF4CAF50)
@@ -208,68 +541,59 @@ fun ScannedProductCard(
             if (isAddingToMeal) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = Color.White
+                    color = Color.White,
+                    strokeWidth = 2.dp
                 )
                 Spacer(modifier = Modifier.width(8.dp))
             }
             Text(
                 text = if (isAddingToMeal) "Adding..." else "Add to Meal",
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
             )
         }
 
         OutlinedButton(
             onClick = onScanAgain,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             enabled = !isAddingToMeal
         ) {
             Text("Scan Another", fontSize = 16.sp)
         }
+
+        Spacer(modifier = Modifier.weight(1f))
     }
 }
 
 @Composable
 fun NutrientInfo(label: String, value: String, unit: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color.Gray
-        )
-        Text(
-            text = "per 100$unit",
-            fontSize = 10.sp,
-            color = Color.Gray
-        )
-    }
-}
-
-@Composable
-fun ErrorView(
-    error: String,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier
-) {
     Column(
-        modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier.padding(8.dp)
     ) {
         Text(
-            text = error,
-            fontSize = 16.sp,
-            color = Color.Red
+            text = value,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF4CAF50)
         )
-        Button(onClick = onRetry) {
-            Text("Try Again")
+        if (unit.isNotEmpty()) {
+            Text(
+                text = unit,
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
         }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = Color.Black,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -281,14 +605,26 @@ fun MealSelectorDialog(
 ) {
     AlertDialog(
         onDismissRequest = { if (!isLoading) onDismiss() },
-        title = { Text("Select Meal") },
+        title = {
+            Text(
+                "Select Meal",
+                fontWeight = FontWeight.Bold
+            )
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 mealTypes.forEach { mealType ->
-                    OutlinedButton(
+                    Button(
                         onClick = { onMealSelected(mealType.type) },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isLoading
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        enabled = !isLoading,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = mealType.color.copy(alpha = 0.1f),
+                            contentColor = mealType.color
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Icon(
                             imageVector = mealType.icon,
@@ -296,7 +632,10 @@ fun MealSelectorDialog(
                             tint = mealType.color
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(mealType.name)
+                        Text(
+                            mealType.name,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }

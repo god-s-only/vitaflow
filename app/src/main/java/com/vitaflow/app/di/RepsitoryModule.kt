@@ -24,19 +24,19 @@ import javax.inject.Singleton
 object RepsitoryModule {
 
     @Provides
-    @Binds
+    @Singleton
     fun provideRepository(auth: FirebaseAuth): AuthRepository{
         return AuthRepositoryImpl(auth)
     }
 
     @Provides
-    @Binds
+    @Singleton
     fun provideExerciseRepository(api: WorkoutAPI): ExerciseRepository{
         return ExerciseRepositoryImpl(api)
     }
 
     @Provides
-    @Binds
+    @Singleton
     fun provideSpoonacularRepository(
         api: SpoonacularAPI,
         db: NutritionDatabase,

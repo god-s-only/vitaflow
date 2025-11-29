@@ -34,6 +34,7 @@ class BarcodeScanViewModel @Inject constructor(private val scanBarcodeUseCase: S
     private val apiKey = "e502be08e8b14c8290b76df779e11de1"
 
     fun onBarcodeScanned(barcode: String) {
+        // Prevent duplicate scans
         if (_state.value.lastScannedBarcode == barcode && _state.value.scannedProduct != null) {
             Log.d(TAG, "Duplicate barcode scan ignored: $barcode")
             return
@@ -58,9 +59,12 @@ class BarcodeScanViewModel @Inject constructor(private val scanBarcodeUseCase: S
                     },
                     onFailure = { error ->
                         Log.e(TAG, "Failed to scan barcode", error)
-                        val errorMessage = when (error) {
-                            is IllegalArgumentException -> error.message ?: "Invalid barcode"
-                            else -> "Product not found. Try another barcode."
+                        val errorMessage = when {
+                            error is IllegalArgumentException -> error.message ?: "Invalid barcode"
+                            error.message?.contains("404") == true -> "Product not found in database"
+                            error.message?.contains("Network") == true -> "Network error. Check your connection"
+                            error.message?.contains("API quota") == true -> "API limit reached"
+                            else -> "Could not find product. Try another barcode."
                         }
                         _state.update {
                             it.copy(
@@ -87,6 +91,7 @@ class BarcodeScanViewModel @Inject constructor(private val scanBarcodeUseCase: S
             _state.update { it.copy(isAddingToMeal = true) }
             Log.d(TAG, "Adding ${product.title} to $mealType with quantity $quantity")
 
+            // Convert NutritionFood to Food entity
             val food = Food(
                 id = product.id,
                 name = product.title,

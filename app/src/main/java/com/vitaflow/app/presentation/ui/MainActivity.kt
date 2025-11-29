@@ -46,6 +46,7 @@ import androidx.navigation.navArgument
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.presentation.ui.auth.signin.SignInScreen
 import com.vitaflow.app.presentation.ui.auth.signup.SignUpScreen
+import com.vitaflow.app.presentation.ui.features.barcode.BarcodeScanScreen
 import com.vitaflow.app.presentation.ui.features.detail.ExerciseDetailScreen
 import com.vitaflow.app.presentation.ui.features.home.HomeScreen
 import com.vitaflow.app.presentation.ui.features.nutrition.NutritionScreen
@@ -108,6 +109,7 @@ private fun MainContent() {
         route != Routes.SIGNINSCREEN &&
                 route != Routes.FOODSEARCHSCREEN + "/{mealType}" &&
                 route != Routes.SIGNUPSCREEN &&
+                route != Routes.BARCODE_SCREEN &&
                 route != Routes.ONBOARDINGSCREEN &&
                 route != Routes.NUTRITIONSCREENSETTINGS &&
                 !route.startsWith(Routes.WORKOUTSCREEN)
@@ -120,7 +122,7 @@ private fun MainContent() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = Routes.ONBOARDINGSCREEN,
+            startDestination = Routes.NUTRITIONSCREEN,
             modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 slideIntoContainer(
@@ -190,6 +192,10 @@ private fun MainContent() {
             }
             composable(Routes.ONBOARDINGSCREEN) {
                 OnboardingScreen(navController = navController)
+            }
+            composable(Routes.BARCODE_SCREEN + "/{mealType}") { backStackEntry ->
+                val mealType = backStackEntry.arguments?.getString("mealType") ?: "breakfast"
+                BarcodeScanScreen(navController, mealType)
             }
         }
 

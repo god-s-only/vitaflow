@@ -111,5 +111,13 @@ dependencies {
     ksp("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    val cameraxVersion = "1.3.1"
+    implementation("androidx.camera:camera-core:$cameraxVersion")
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
+
+    // ML Kit Barcode Scanning
 
 }
