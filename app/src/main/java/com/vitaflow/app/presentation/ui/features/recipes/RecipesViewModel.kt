@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,9 +28,12 @@ class RecipesViewModel @Inject constructor(private val searchRecipesUseCase: Sea
 
     fun onEvent(event: RecipesEvent){
         when(event){
-            is RecipesEvent.SearchRecipe -> {
+            is RecipesEvent.OnQueryChange -> {
                 _state.update { it.copy(query = event.query) }
-                searchRecipes(event.query)
+            }
+
+            is RecipesEvent.SearchRecipes -> {
+                searchRecipes(query = event.query)
             }
         }
     }
@@ -48,7 +52,7 @@ class RecipesViewModel @Inject constructor(private val searchRecipesUseCase: Sea
                 .catch { e ->
                     _state.update { it.copy(isLoading = false, recipes = emptyList(), error = e.message) }
                 }
-                .collect { recipes ->
+                .collectLatest { recipes ->
                     _state.update {
                         it.copy(isLoading = false, recipes = recipes, error = null)
                     }
