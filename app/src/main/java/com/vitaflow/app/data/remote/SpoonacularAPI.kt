@@ -3,6 +3,7 @@ package com.vitaflow.app.data.remote
 import com.vitaflow.app.data.remote.dto.NutritionFoodDTO
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
 import com.vitaflow.app.data.remote.dto.recipes.RecipeDTO
+import com.vitaflow.app.data.remote.dto.recipes.RecipesDetailDTO
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -42,8 +43,9 @@ interface SpoonacularAPI {
     @GET("recipes/{id}/information")
     suspend fun getRecipeById(
         @Path("id") recipeId: Int,
+        @Query("includeNutrition") includeNutrition: Boolean = false,
         @Query("apiKey") apiKey: String
-    ): Response<NutritionFoodDetailDTO>
+    ): Response<RecipesDetailDTO>
 
 
 }

@@ -6,8 +6,8 @@ import com.vitaflow.app.domain.models.RecipeModel
 
 fun Result.toDomain(): RecipeModel {
 
-    fun nutrient(name: String): Double =
-        nutrition.nutrients.find { it.name == name }?.amount ?: 0.0
+    fun nutrient(name: String): Int =
+        nutrition.nutrients.find { it.name == name }?.amount?.toInt() ?: 0
 
     return RecipeModel(
         id = id,

@@ -92,6 +92,7 @@ class MainActivity : ComponentActivity() {
                 MainContent()
             }
         }
+        actionBar?.hide()
 
         CoroutineScope(Dispatchers.IO).launch {
             delay(3000)

@@ -4,6 +4,7 @@ import com.vitaflow.app.data.local.NutritionDao
 import com.vitaflow.app.data.local.NutritionPreferences
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
+import com.vitaflow.app.data.remote.dto.recipes.RecipesDetailDTO
 import com.vitaflow.app.domain.models.DailyNutrition
 import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.models.FoodEntry
@@ -206,6 +207,15 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         if (!response.isSuccessful) throw Exception("API Error ${response.code()}: ${response.errorBody()?.string()}")
         val body = response.body() ?: throw Exception("Response body is null")
         emit(body.toDomainList())
+    }
+
+    override suspend fun getRecipesDetail(
+        recipeId: Int,
+        apiKey: String
+    ): Flow<RecipesDetailDTO> = flow {
+        val res = spoonacularAPI.getRecipeById(recipeId = recipeId, apiKey = apiKey)
+        if (!res.isSuccessful) throw Exception("API Error ${res.code()}: ${res.errorBody()?.string()}")
+        val body = res.body() ?: throw Exception("Response body is null")
     }
 }
 

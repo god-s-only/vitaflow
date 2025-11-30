@@ -4,8 +4,8 @@ data class RecipeModel(
     val id: Int,
     val title: String,
     val image: String,
-    val fat: Double,
-    val calories: Double = 420.0,
-    val protein: Double = 18.5,
-    val carbs: Double = 45.2
+    val fat: Int,
+    val calories: Int = 0,
+    val protein: Int = 0,
+    val carbs: Int = 0
 )

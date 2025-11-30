@@ -1,6 +1,7 @@
 package com.vitaflow.app.domain.repository
 
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
+import com.vitaflow.app.data.remote.dto.recipes.RecipesDetailDTO
 import com.vitaflow.app.domain.models.DailyNutrition
 import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.models.FoodEntry
@@ -44,6 +45,7 @@ interface NutritionFoodRepository {
 
     suspend fun getFoodProductByUPC(upc: String, apiKey: String): Flow<Result<NutritionFood>>
     suspend fun searchRecipes(query: String, apiKey: String): Flow<List<RecipeModel>>
+    suspend fun getRecipesDetail(recipeId: Int, apiKey: String): Flow<RecipesDetailDTO>
 }
 
 fun getTodayDate(): String {

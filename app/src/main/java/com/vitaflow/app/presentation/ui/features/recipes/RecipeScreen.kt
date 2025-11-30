@@ -47,12 +47,13 @@ object RecipeColors {
     val NutritionBg = Color(0xFFE8F5E9)
 }
 
-
-
 @Composable
 fun RecipeScreen(navController: NavController, viewModel: RecipesViewModel = hiltViewModel()) {
     var favorites by remember { mutableStateOf(setOf<Int>()) }
     val state = viewModel.state.collectAsStateWithLifecycle()
+
+
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
