@@ -13,4 +13,5 @@ object Routes {
     const val FOODSEARCHSCREEN = "foodsearchscreen"
     const val NUTRITIONSCREENSETTINGS = "nutritionscreensettings"
     const val BARCODE_SCREEN = "barcode_screen"
+    const val RECIPES_SCREEN = "recipes_screen"
 }
