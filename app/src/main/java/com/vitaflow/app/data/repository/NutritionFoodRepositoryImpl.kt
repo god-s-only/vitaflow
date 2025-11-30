@@ -8,7 +8,9 @@ import com.vitaflow.app.domain.models.DailyNutrition
 import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.models.FoodEntry
 import com.vitaflow.app.domain.models.NutritionFood
+import com.vitaflow.app.domain.models.RecipeModel
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
+import com.vitaflow.app.mappers.toDomainList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
@@ -197,6 +199,13 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         }catch (e: Exception){
             emit(Result.failure(e))
         }
+    }
+
+    override suspend fun searchRecipes(query: String, apiKey: String): Flow<List<RecipeModel>> = flow {
+        val response = spoonacularAPI.searchRecipes(query = query, apiKey = apiKey)
+        if (!response.isSuccessful) throw Exception("API Error ${response.code()}: ${response.errorBody()?.string()}")
+        val body = response.body() ?: throw Exception("Response body is null")
+        emit(body.toDomainList())
     }
 }
 

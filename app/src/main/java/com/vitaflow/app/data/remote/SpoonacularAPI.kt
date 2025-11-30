@@ -32,6 +32,10 @@ interface SpoonacularAPI {
     suspend fun searchRecipes(
         @Query("query") query: String,
         @Query("number") number: Int = 10,
+        @Query("maxFat") maxFat: Int = 25,
+        @Query("maxCarbs") maxCarbs: Int = 100,
+        @Query("maxProtein") maxProtein: Int = 100,
+        @Query("minCalories") minCalories: Int = 50,
         @Query("apiKey") apiKey: String
     ): Response<RecipeDTO>
 

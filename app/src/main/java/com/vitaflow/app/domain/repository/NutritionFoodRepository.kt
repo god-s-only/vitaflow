@@ -5,6 +5,7 @@ import com.vitaflow.app.domain.models.DailyNutrition
 import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.models.FoodEntry
 import com.vitaflow.app.domain.models.NutritionFood
+import com.vitaflow.app.domain.models.RecipeModel
 import kotlinx.coroutines.flow.Flow
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -42,6 +43,7 @@ interface NutritionFoodRepository {
     suspend fun setWaterTarget(target: Int)
 
     suspend fun getFoodProductByUPC(upc: String, apiKey: String): Flow<Result<NutritionFood>>
+    suspend fun searchRecipes(query: String, apiKey: String): Flow<List<RecipeModel>>
 }
 
 fun getTodayDate(): String {
