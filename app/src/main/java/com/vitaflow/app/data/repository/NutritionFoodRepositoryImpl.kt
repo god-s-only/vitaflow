@@ -11,7 +11,7 @@ import com.vitaflow.app.domain.models.FoodEntry
 import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.models.RecipeModel
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
-import com.vitaflow.app.mappers.toDomainList
+import com.vitaflow.app.data.mappers.toDomainList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first

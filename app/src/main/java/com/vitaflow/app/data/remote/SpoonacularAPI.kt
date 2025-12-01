@@ -43,7 +43,7 @@ interface SpoonacularAPI {
     @GET("recipes/{id}/information")
     suspend fun getRecipeById(
         @Path("id") recipeId: Int,
-        @Query("includeNutrition") includeNutrition: Boolean = false,
+        @Query("includeNutrition") includeNutrition: Boolean = true,
         @Query("apiKey") apiKey: String
     ): Response<RecipesDetailDTO>
 

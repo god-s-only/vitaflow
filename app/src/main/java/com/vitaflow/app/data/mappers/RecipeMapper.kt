@@ -1,4 +1,4 @@
-package com.vitaflow.app.mappers
+package com.vitaflow.app.data.mappers
 
 import com.vitaflow.app.data.remote.dto.recipes.RecipeDTO
 import com.vitaflow.app.data.remote.dto.recipes.Result

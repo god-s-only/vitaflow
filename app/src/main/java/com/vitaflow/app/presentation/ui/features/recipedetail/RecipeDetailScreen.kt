@@ -40,31 +40,46 @@ object RecipeColors {
 }
 
 data class Ingredient(
+    val id: Int,
     val name: String,
-    val amount: String,
+    val amount: Double,
     val unit: String,
-    val original: String
+    val original: String,
+    val image: String
+)
+
+data class RecipeDetail(
+    val id: Int,
+    val title: String,
+    val image: String,
+    val readyInMinutes: Int,
+    val servings: Int,
+    val sourceUrl: String,
+    val preparationMinutes: Int,
+    val cookingMinutes: Int,
+    val aggregateLikes: Int,
+    val healthScore: Int,
+    val sourceName: String,
+    val pricePerServing: Double,
+    val extendedIngredients: List<Ingredient>,
+    val summary: String,
+    val dishTypes: List<String>,
+    val spoonacularScore: Double,
+    val calories: Int = 543,
+    val protein: Int = 17,
+    val fat: Int = 16,
+    val carbs: Int = 65
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecipeDetailScreen() {
+fun RecipeDetailScreen(
+    recipe: RecipeDetail,
+    onBackClick: () -> Unit = {},
+    onStartCooking: () -> Unit = {}
+) {
     var isFavorite by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
-
-    val ingredients = listOf(
-        Ingredient("Butter", "1", "tbsp", "1 tbsp butter"),
-        Ingredient("Cauliflower florets", "2", "cups", "2 cups frozen cauliflower florets, thawed"),
-        Ingredient("Cheese", "2", "tbsp", "2 tbsp grated cheese (romano)"),
-        Ingredient("Extra virgin olive oil", "1-2", "tbsp", "1-2 tbsp extra virgin olive oil"),
-        Ingredient("Garlic", "5-6", "cloves", "5-6 cloves garlic"),
-        Ingredient("Pasta", "6-8", "oz", "6-8 ounces pasta (linguine)"),
-        Ingredient("Red pepper flakes", "2", "pinches", "Optional red pepper flakes"),
-        Ingredient("Salt and pepper", "", "to taste", "Salt and pepper to taste"),
-        Ingredient("Scallions", "3", "", "3 scallions, chopped"),
-        Ingredient("White wine", "2-3", "tbsp", "2-3 tbsp white wine"),
-        Ingredient("Bread crumbs", "1/4", "cup", "1/4 cup whole wheat bread crumbs (panko)")
-    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -80,8 +95,8 @@ fun RecipeDetailScreen() {
                         .height(300.dp)
                 ) {
                     Image(
-                        painter = rememberAsyncImagePainter("https://img.spoonacular.com/recipes/716429-556x370.jpg"),
-                        contentDescription = "Recipe Image",
+                        painter = rememberAsyncImagePainter(recipe.image),
+                        contentDescription = recipe.title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
@@ -103,7 +118,7 @@ fun RecipeDetailScreen() {
 
                     // Back button
                     IconButton(
-                        onClick = { /* Navigate back */ },
+                        onClick = onBackClick,
                         modifier = Modifier
                             .padding(16.dp)
                             .size(40.dp)
@@ -143,7 +158,7 @@ fun RecipeDetailScreen() {
                         .padding(20.dp)
                 ) {
                     Text(
-                        text = "Pasta with Garlic, Scallions, Cauliflower & Breadcrumbs",
+                        text = recipe.title,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = RecipeColors.OnSurface,
@@ -163,13 +178,13 @@ fun RecipeDetailScreen() {
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
-                            text = "83% Score",
+                            text = "${recipe.spoonacularScore.toInt()}% Score",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
                             color = RecipeColors.OnSurface
                         )
                         Text(
-                            text = "• 209 likes",
+                            text = "• ${recipe.aggregateLikes} likes",
                             style = MaterialTheme.typography.bodyMedium,
                             color = RecipeColors.OnSurfaceVariant
                         )
@@ -178,7 +193,7 @@ fun RecipeDetailScreen() {
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = "by Full Belly Sisters",
+                        text = "by ${recipe.sourceName}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = RecipeColors.OnSurfaceVariant
                     )
@@ -197,19 +212,19 @@ fun RecipeDetailScreen() {
                     QuickStatCard(
                         icon = Icons.Default.Settings,
                         label = "Total",
-                        value = "45 min",
+                        value = "${recipe.readyInMinutes} min",
                         modifier = Modifier.weight(1f)
                     )
                     QuickStatCard(
                         icon = Icons.Default.Settings,
                         label = "Servings",
-                        value = "2",
+                        value = "${recipe.servings}",
                         modifier = Modifier.weight(1f)
                     )
                     QuickStatCard(
                         icon = Icons.Default.Settings,
                         label = "Calories",
-                        value = "543",
+                        value = "${recipe.calories}",
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -228,28 +243,28 @@ fun RecipeDetailScreen() {
                         modifier = Modifier.padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        NutritionItem("Protein", "17g")
+                        NutritionItem("Protein", "${recipe.protein}g")
                         Divider(
                             modifier = Modifier
                                 .width(1.dp)
                                 .height(40.dp),
                             color = RecipeColors.Primary.copy(alpha = 0.2f)
                         )
-                        NutritionItem("Fat", "16g")
+                        NutritionItem("Fat", "${recipe.fat}g")
                         Divider(
                             modifier = Modifier
                                 .width(1.dp)
                                 .height(40.dp),
                             color = RecipeColors.Primary.copy(alpha = 0.2f)
                         )
-                        NutritionItem("Carbs", "65g")
+                        NutritionItem("Carbs", "${recipe.carbs}g")
                         Divider(
                             modifier = Modifier
                                 .width(1.dp)
                                 .height(40.dp),
                             color = RecipeColors.Primary.copy(alpha = 0.2f)
                         )
-                        NutritionItem("Price", "$1.57")
+                        NutritionItem("Price", "${"%.2f".format(recipe.pricePerServing / 100)}")
                     }
                 }
             }
@@ -264,12 +279,12 @@ fun RecipeDetailScreen() {
                 ) {
                     TimeChip(
                         label = "Prep",
-                        time = "20 min",
+                        time = "${recipe.preparationMinutes} min",
                         modifier = Modifier.weight(1f)
                     )
                     TimeChip(
                         label = "Cook",
-                        time = "25 min",
+                        time = "${recipe.cookingMinutes} min",
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -328,7 +343,7 @@ fun RecipeDetailScreen() {
                             .padding(horizontal = 20.dp)
                     ) {
                         Text(
-                            text = "${ingredients.size} ingredients",
+                            text = "${recipe.extendedIngredients.size} ingredients",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = RecipeColors.OnSurface,
@@ -337,7 +352,7 @@ fun RecipeDetailScreen() {
                     }
                 }
 
-                items(ingredients) { ingredient ->
+                items(recipe.extendedIngredients) { ingredient ->
                     IngredientItem(ingredient)
                 }
             } else {
@@ -357,7 +372,14 @@ fun RecipeDetailScreen() {
                         )
 
                         Text(
-                            text = "One serving contains 543 calories, 17g of protein, and 16g of fat. For $1.57 per serving, this recipe covers 22% of your daily requirements of vitamins and minerals. This recipe serves 2. A mixture of butter, white wine, pasta, and a handful of other ingredients are all it takes to make this recipe so yummy.",
+                            text = recipe.summary
+                                .replace("<b>", "")
+                                .replace("</b>", "")
+                                .replace(Regex("<a[^>]*>"), "")
+                                .replace("</a>", "")
+                                .split(". ")
+                                .take(4)
+                                .joinToString(". ") + ".",
                             style = MaterialTheme.typography.bodyLarge,
                             color = RecipeColors.OnSurfaceVariant,
                             lineHeight = 24.sp
@@ -366,25 +388,27 @@ fun RecipeDetailScreen() {
                         Spacer(modifier = Modifier.height(20.dp))
 
                         // Dietary Tags
-                        Text(
-                            text = "Dish Types",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = RecipeColors.OnSurface,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                        if (recipe.dishTypes.isNotEmpty()) {
+                            Text(
+                                text = "Dish Types",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = RecipeColors.OnSurface,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
 
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        ) {
-                            DietaryTag("Main Course")
-                            DietaryTag("Dinner")
-                            DietaryTag("Lunch")
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            ) {
+                                recipe.dishTypes.take(3).forEach { dishType ->
+                                    DietaryTag(dishType.replaceFirstChar { it.uppercase() })
+                                }
+                            }
                         }
 
                         Text(
-                            text = "Health Score: 18/100",
+                            text = "Health Score: ${recipe.healthScore}/100",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             color = RecipeColors.OnSurface
@@ -401,7 +425,7 @@ fun RecipeDetailScreen() {
 
         // Floating Action Button
         FloatingActionButton(
-            onClick = { /* Start cooking */ },
+            onClick = onStartCooking,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 24.dp)
@@ -558,7 +582,7 @@ fun IngredientItem(ingredient: Ingredient) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = ingredient.name,
+                    text = ingredient.name.replaceFirstChar { it.uppercase() },
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     color = if (isChecked)
@@ -575,9 +599,9 @@ fun IngredientItem(ingredient: Ingredient) {
                 }
             }
 
-            if (ingredient.amount.isNotEmpty()) {
+            if (ingredient.amount > 0) {
                 Text(
-                    text = "${ingredient.amount} ${ingredient.unit}",
+                    text = "${ingredient.amount.toInt()} ${ingredient.unit}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = RecipeColors.Primary,
@@ -607,5 +631,27 @@ fun DietaryTag(text: String) {
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
-    RecipeDetailScreen()
+    val sampleRecipe = RecipeDetail(
+        id = 716429,
+        title = "Pasta with Garlic, Scallions, Cauliflower & Breadcrumbs",
+        image = "https://img.spoonacular.com/recipes/716429-556x370.jpg",
+        readyInMinutes = 45,
+        servings = 2,
+        sourceUrl = "https://fullbellysisters.blogspot.com/2012/06/pasta-with-garlic-scallions-cauliflower.html",
+        preparationMinutes = 20,
+        cookingMinutes = 25,
+        aggregateLikes = 209,
+        healthScore = 18,
+        sourceName = "Full Belly Sisters",
+        pricePerServing = 157.06,
+        extendedIngredients = listOf(
+            Ingredient(1001, "butter", 1.0, "tbsp", "1 tbsp butter", "butter-sliced.jpg"),
+            Ingredient(10011135, "cauliflower florets", 2.0, "cups", "2 cups frozen cauliflower florets, thawed", "cauliflower.jpg")
+        ),
+        summary = "You can never have too many main course recipes, so give Pasta with Garlic, Scallions, Cauliflower & Breadcrumbs a try. One serving contains 543 calories, 17g of protein, and 16g of fat.",
+        dishTypes = listOf("side dish", "lunch", "main course", "main dish", "dinner"),
+        spoonacularScore = 83.97
+    )
+
+    RecipeDetailScreen(recipe = sampleRecipe)
 }
