@@ -115,6 +115,7 @@ private fun MainContent() {
                 route != Routes.BARCODE_SCREEN + "/{mealType}" &&
                 route != Routes.ONBOARDINGSCREEN &&
                 route != Routes.RECIPES_SCREEN &&
+                route != Routes.RECIPES_DETAIL_SCREEN + "/{recipeId}" &&
                 route != Routes.NUTRITIONSCREENSETTINGS &&
                 !route.startsWith(Routes.WORKOUTSCREEN)
     } ?: false
