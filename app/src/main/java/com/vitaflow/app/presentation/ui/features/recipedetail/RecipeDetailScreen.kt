@@ -615,32 +615,5 @@ fun DietaryTag(text: String) {
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
-    val sampleRecipe = RecipeDetail(
-        id = 716429,
-        title = "Pasta with Garlic, Scallions, Cauliflower & Breadcrumbs",
-        image = "https://img.spoonacular.com/recipes/716429-556x370.jpg",
-        readyInMinutes = 45,
-        servings = 2,
-        sourceUrl = "https://fullbellysisters.blogspot.com/2012/06/pasta-with-garlic-scallions-cauliflower.html",
-        preparationMinutes = 20,
-        cookingMinutes = 25,
-        aggregateLikes = 209,
-        healthScore = 18,
-        sourceName = "Full Belly Sisters",
-        pricePerServing = 157.06,
-        extendedIngredients = listOf(
-            Ingredient(1001, "butter", 1.0, "tbsp", "1 tbsp butter", "butter-sliced.jpg"),
-            Ingredient(
-                10011135,
-                "cauliflower florets",
-                2.0,
-                "cups",
-                "2 cups frozen cauliflower florets, thawed",
-                "cauliflower.jpg"
-            )
-        ),
-        summary = "You can never have too many main course recipes, so give Pasta with Garlic, Scallions, Cauliflower & Breadcrumbs a try. One serving contains 543 calories, 17g of protein, and 16g of fat.",
-        dishTypes = listOf("side dish", "lunch", "main course", "main dish", "dinner"),
-        spoonacularScore = 83.97
-    )
+
 }

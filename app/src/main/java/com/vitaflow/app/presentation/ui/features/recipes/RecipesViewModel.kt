@@ -44,14 +44,14 @@ class RecipesViewModel @Inject constructor(private val searchRecipesUseCase: Sea
     }
     private fun searchRecipes(query: String){
         viewModelScope.launch {
-            _state.update {
-                it.copy(isLoading = true)
-            }
             if(query.isEmpty()){
                 _state.update {
                     it.copy(isLoading = false, recipes = emptyList())
                 }
                 return@launch
+            }
+            _state.update {
+                it.copy(isLoading = true)
             }
             searchRecipesUseCase.invoke(query = query, apiKey = apiKey)
                 .catch { e ->

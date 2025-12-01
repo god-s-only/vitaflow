@@ -1,4 +1,4 @@
-package com.vitaflow.app.data.remote.dto.recipes
+package com.vitaflow.app.data.remote.dto.recipes.recipeslist
 
 
 import com.google.gson.annotations.SerializedName

@@ -1,5 +1,6 @@
 package com.vitaflow.app.presentation.ui.features.recipes
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -48,6 +50,8 @@ object RecipeColors {
     val OnSurface = Color(0xFF1A1A1A)
     val OnSurfaceVariant = Color(0xFF6B6B6B)
     val NutritionBg = Color(0xFFE8F5E9)
+    val SkeletonBase = Color(0xFFE0E0E0)
+    val SkeletonHighlight = Color(0xFFF5F5F5)
 }
 
 @Composable
@@ -101,7 +105,10 @@ fun RecipeScreen(navController: NavController, viewModel: RecipesViewModel = hil
                                 fontSize = 32.sp
                             )
                             Text(
-                                text = "130 healthy options",
+                                text = if (state.value.recipes.isEmpty() && !state.value.isLoading)
+                                    "Search for recipes"
+                                else
+                                    "${state.value.recipes.size} results",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = RecipeColors.OnSurfaceVariant,
                                 modifier = Modifier.padding(top = 4.dp)
@@ -182,30 +189,234 @@ fun RecipeScreen(navController: NavController, viewModel: RecipesViewModel = hil
                 }
             }
 
-            // Recipe List
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(state.value.recipes) { recipe ->
-                    RecipeCard(
-                        recipe = recipe,
-                        isFavorite = favorites.contains(recipe.id),
-                        onFavoriteClick = {
-                            favorites = if (favorites.contains(recipe.id)) {
-                                favorites - recipe.id
-                            } else {
-                                favorites + recipe.id
-                            }
-                        },
-                        onClick = { viewModel.onEvent(RecipesEvent.OnGotoRecipeDetail(id = recipe.id)) }
-                    )
+            // Content
+            if (state.value.isLoading) {
+                // Skeleton Loader
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(6) {
+                        RecipeCardSkeleton()
+                    }
+                }
+            } else if (state.value.error != null) {
+                // Error State
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Something went wrong",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = RecipeColors.OnSurface
+                        )
+                        Text(
+                            text = state.value.error ?: "Unknown error",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = RecipeColors.OnSurfaceVariant
+                        )
+                    }
+                }
+            } else if (state.value.recipes.isEmpty() && state.value.query.isEmpty()) {
+                // Empty State - No Search Yet
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = RecipeColors.OnSurfaceVariant,
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Text(
+                            text = "Search for recipes",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = RecipeColors.OnSurface
+                        )
+                        Text(
+                            text = "Enter ingredients or recipe names to find delicious meals",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = RecipeColors.OnSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
+            } else if (state.value.recipes.isEmpty()) {
+                // Empty State - No Results
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                    ) {
+                        Text(
+                            text = "No recipes found",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = RecipeColors.OnSurface
+                        )
+                        Text(
+                            text = "Try searching with different keywords",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = RecipeColors.OnSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                // Recipe List
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(state.value.recipes) { recipe ->
+                        RecipeCard(
+                            recipe = recipe,
+                            isFavorite = favorites.contains(recipe.id),
+                            onFavoriteClick = {
+                                favorites = if (favorites.contains(recipe.id)) {
+                                    favorites - recipe.id
+                                } else {
+                                    favorites + recipe.id
+                                }
+                            },
+                            onClick = { viewModel.onEvent(RecipesEvent.OnGotoRecipeDetail(id = recipe.id)) }
+                        )
+                    }
                 }
             }
         }
     }
+}
 
+@Composable
+fun RecipeCardSkeleton() {
+    val transition = rememberInfiniteTransition(label = "shimmer")
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmer"
+    )
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Image Skeleton
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                RecipeColors.SkeletonBase,
+                                RecipeColors.SkeletonHighlight,
+                                RecipeColors.SkeletonBase
+                            ),
+                            start = Offset(translateAnim - 1000f, translateAnim - 1000f),
+                            end = Offset(translateAnim, translateAnim)
+                        )
+                    )
+            )
+
+            // Content Skeleton
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                // Title Skeleton
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .height(24.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    RecipeColors.SkeletonBase,
+                                    RecipeColors.SkeletonHighlight,
+                                    RecipeColors.SkeletonBase
+                                ),
+                                start = Offset(translateAnim - 1000f, translateAnim - 1000f),
+                                end = Offset(translateAnim, translateAnim)
+                            )
+                        )
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .height(20.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    RecipeColors.SkeletonBase,
+                                    RecipeColors.SkeletonHighlight,
+                                    RecipeColors.SkeletonBase
+                                ),
+                                start = Offset(translateAnim - 1000f, translateAnim - 1000f),
+                                end = Offset(translateAnim, translateAnim)
+                            )
+                        )
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Nutrition Chips Skeleton
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    repeat(3) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(60.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            RecipeColors.SkeletonBase,
+                                            RecipeColors.SkeletonHighlight,
+                                            RecipeColors.SkeletonBase
+                                        ),
+                                        start = Offset(translateAnim - 1000f, translateAnim - 1000f),
+                                        end = Offset(translateAnim, translateAnim)
+                                    )
+                                )
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -354,4 +565,20 @@ fun NutritionChip(
 @Composable
 private fun DefaultPreview() {
     RecipeScreen(rememberNavController())
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SkeletonPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(RecipeColors.Surface)
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        repeat(3) {
+            RecipeCardSkeleton()
+        }
+    }
 }

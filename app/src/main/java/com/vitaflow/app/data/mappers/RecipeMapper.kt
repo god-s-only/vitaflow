@@ -1,7 +1,7 @@
 package com.vitaflow.app.data.mappers
 
-import com.vitaflow.app.data.remote.dto.recipes.RecipeDTO
-import com.vitaflow.app.data.remote.dto.recipes.Result
+import com.vitaflow.app.data.remote.dto.recipes.recipeslist.RecipeDTO
+import com.vitaflow.app.data.remote.dto.recipes.recipeslist.Result
 import com.vitaflow.app.domain.models.RecipeModel
 
 fun Result.toDomain(): RecipeModel {
