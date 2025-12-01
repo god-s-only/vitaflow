@@ -3,6 +3,7 @@ package com.vitaflow.app.presentation.ui.features.recipes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.util.query
+import com.vitaflow.app.common.Routes
 import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.usecase.recipes.SearchRecipesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,6 +35,10 @@ class RecipesViewModel @Inject constructor(private val searchRecipesUseCase: Sea
 
             is RecipesEvent.SearchRecipes -> {
                 searchRecipes(query = event.query)
+            }
+
+            is RecipesEvent.OnGotoRecipeDetail -> {
+                sendUIEvent(UIEvent.Navigate(Routes.RECIPES_DETAIL_SCREEN + "/${event.id}"))
             }
         }
     }

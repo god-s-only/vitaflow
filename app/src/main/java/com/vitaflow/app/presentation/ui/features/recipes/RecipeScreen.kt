@@ -35,7 +35,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.rememberAsyncImagePainter
+import com.vitaflow.app.common.Routes
+import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.models.RecipeModel
+import kotlinx.coroutines.flow.collectLatest
 
 // Color Palette
 object RecipeColors {
@@ -52,8 +55,19 @@ fun RecipeScreen(navController: NavController, viewModel: RecipesViewModel = hil
     var favorites by remember { mutableStateOf(setOf<Int>()) }
     val state = viewModel.state.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collectLatest { result ->
+            when(result){
+                is UIEvent.Navigate -> {
+                    navController.navigate(result.route)
+                }
+                is UIEvent.ShowSnackBar -> {
 
-
+                }
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -185,7 +199,7 @@ fun RecipeScreen(navController: NavController, viewModel: RecipesViewModel = hil
                                 favorites + recipe.id
                             }
                         },
-                        onClick = { /* Navigate to detail */ }
+                        onClick = { viewModel.onEvent(RecipesEvent.OnGotoRecipeDetail(id = recipe.id)) }
                     )
                 }
             }

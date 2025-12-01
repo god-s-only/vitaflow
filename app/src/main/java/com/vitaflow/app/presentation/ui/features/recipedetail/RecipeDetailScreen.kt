@@ -24,7 +24,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
+import com.vitaflow.app.domain.models.Ingredient
+import com.vitaflow.app.domain.models.RecipeDetail
 
 // Color Palette
 object RecipeColors {
@@ -39,421 +44,400 @@ object RecipeColors {
     val AccentRed = Color(0xFFE53935)
 }
 
-data class Ingredient(
-    val id: Int,
-    val name: String,
-    val amount: Double,
-    val unit: String,
-    val original: String,
-    val image: String
-)
-
-data class RecipeDetail(
-    val id: Int,
-    val title: String,
-    val image: String,
-    val readyInMinutes: Int,
-    val servings: Int,
-    val sourceUrl: String,
-    val preparationMinutes: Int,
-    val cookingMinutes: Int,
-    val aggregateLikes: Int,
-    val healthScore: Int,
-    val sourceName: String,
-    val pricePerServing: Double,
-    val extendedIngredients: List<Ingredient>,
-    val summary: String,
-    val dishTypes: List<String>,
-    val spoonacularScore: Double,
-    val calories: Int = 543,
-    val protein: Int = 17,
-    val fat: Int = 16,
-    val carbs: Int = 65
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeDetailScreen(
-    recipe: RecipeDetail,
+    navController: NavController,
+    viewModel: RecipeDetailViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
     onStartCooking: () -> Unit = {}
 ) {
     var isFavorite by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(RecipeColors.Surface)
+    val state = viewModel.state.collectAsStateWithLifecycle()
+
+    state.value.data?.let { recipe ->
+        Scaffold(
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Hero Image
-            item {
-                Box(
+            Box(modifier = Modifier.fillMaxSize().padding(it)) {
+                LazyColumn(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
+                        .fillMaxSize()
+                        .background(RecipeColors.Surface)
                 ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(recipe.image),
-                        contentDescription = recipe.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    // Gradient overlay
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Black.copy(alpha = 0.3f),
-                                        Color.Transparent,
-                                        Color.Black.copy(alpha = 0.7f)
-                                    )
-                                )
-                            )
-                    )
-
-                    // Back button
-                    IconButton(
-                        onClick = onBackClick,
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .size(40.dp)
-                            .background(Color.White.copy(alpha = 0.9f), CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = RecipeColors.OnSurface
-                        )
-                    }
-
-                    // Favorite button
-                    IconButton(
-                        onClick = { isFavorite = !isFavorite },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(16.dp)
-                            .size(40.dp)
-                            .background(Color.White.copy(alpha = 0.9f), CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Favorite",
-                            tint = if (isFavorite) RecipeColors.AccentRed else RecipeColors.OnSurface
-                        )
-                    }
-                }
-            }
-
-            // Title Section
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(20.dp)
-                ) {
-                    Text(
-                        text = recipe.title,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = RecipeColors.OnSurface,
-                        lineHeight = 32.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = RecipeColors.AccentOrange,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "${recipe.spoonacularScore.toInt()}% Score",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = RecipeColors.OnSurface
-                        )
-                        Text(
-                            text = "• ${recipe.aggregateLikes} likes",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = RecipeColors.OnSurfaceVariant
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = "by ${recipe.sourceName}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = RecipeColors.OnSurfaceVariant
-                    )
-                }
-            }
-
-            // Quick Stats
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    QuickStatCard(
-                        icon = Icons.Default.Settings,
-                        label = "Total",
-                        value = "${recipe.readyInMinutes} min",
-                        modifier = Modifier.weight(1f)
-                    )
-                    QuickStatCard(
-                        icon = Icons.Default.Settings,
-                        label = "Servings",
-                        value = "${recipe.servings}",
-                        modifier = Modifier.weight(1f)
-                    )
-                    QuickStatCard(
-                        icon = Icons.Default.Settings,
-                        label = "Calories",
-                        value = "${recipe.calories}",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            // Nutrition Info
-            item {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 8.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    color = RecipeColors.NutritionBg
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        NutritionItem("Protein", "${recipe.protein}g")
-                        Divider(
-                            modifier = Modifier
-                                .width(1.dp)
-                                .height(40.dp),
-                            color = RecipeColors.Primary.copy(alpha = 0.2f)
-                        )
-                        NutritionItem("Fat", "${recipe.fat}g")
-                        Divider(
-                            modifier = Modifier
-                                .width(1.dp)
-                                .height(40.dp),
-                            color = RecipeColors.Primary.copy(alpha = 0.2f)
-                        )
-                        NutritionItem("Carbs", "${recipe.carbs}g")
-                        Divider(
-                            modifier = Modifier
-                                .width(1.dp)
-                                .height(40.dp),
-                            color = RecipeColors.Primary.copy(alpha = 0.2f)
-                        )
-                        NutritionItem("Price", "${"%.2f".format(recipe.pricePerServing / 100)}")
-                    }
-                }
-            }
-
-            // Time Breakdown
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    TimeChip(
-                        label = "Prep",
-                        time = "${recipe.preparationMinutes} min",
-                        modifier = Modifier.weight(1f)
-                    )
-                    TimeChip(
-                        label = "Cook",
-                        time = "${recipe.cookingMinutes} min",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            // Tabs
-            item {
-                TabRow(
-                    selectedTabIndex = selectedTab,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp)
-                        .clip(RoundedCornerShape(12.dp)),
-                    containerColor = RecipeColors.Surface,
-                    indicator = { tabPositions ->
+                    // Hero Image
+                    item {
                         Box(
-                            Modifier
-                                .tabIndicatorOffset(tabPositions[selectedTab])
-                                .height(4.dp)
-                                .padding(horizontal = 20.dp)
-                                .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                                .background(RecipeColors.Primary)
-                        )
-                    }
-                ) {
-                    Tab(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
-                        text = {
-                            Text(
-                                "Ingredients",
-                                fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(300.dp)
+                        ) {
+                            Image(
+                                painter = rememberAsyncImagePainter(recipe.image),
+                                contentDescription = recipe.title,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
                             )
-                        }
-                    )
-                    Tab(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
-                        text = {
-                            Text(
-                                "Overview",
-                                fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal
+
+                            // Gradient overlay
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Black.copy(alpha = 0.3f),
+                                                Color.Transparent,
+                                                Color.Black.copy(alpha = 0.7f)
+                                            )
+                                        )
+                                    )
                             )
+
+                            // Back button
+                            IconButton(
+                                onClick = onBackClick,
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .size(40.dp)
+                                    .background(Color.White.copy(alpha = 0.9f), CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = RecipeColors.OnSurface
+                                )
+                            }
+
+                            // Favorite button
+                            IconButton(
+                                onClick = { isFavorite = !isFavorite },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(16.dp)
+                                    .size(40.dp)
+                                    .background(Color.White.copy(alpha = 0.9f), CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    contentDescription = "Favorite",
+                                    tint = if (isFavorite) RecipeColors.AccentRed else RecipeColors.OnSurface
+                                )
+                            }
                         }
-                    )
-                }
-            }
-
-            // Tab Content
-            if (selectedTab == 0) {
-                // Ingredients List
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                    ) {
-                        Text(
-                            text = "${recipe.extendedIngredients.size} ingredients",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = RecipeColors.OnSurface,
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
                     }
-                }
 
-                items(recipe.extendedIngredients) { ingredient ->
-                    IngredientItem(ingredient)
-                }
-            } else {
-                // Overview
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                    ) {
-                        Text(
-                            text = "About this recipe",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = RecipeColors.OnSurface,
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
-
-                        Text(
-                            text = recipe.summary
-                                .replace("<b>", "")
-                                .replace("</b>", "")
-                                .replace(Regex("<a[^>]*>"), "")
-                                .replace("</a>", "")
-                                .split(". ")
-                                .take(4)
-                                .joinToString(". ") + ".",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = RecipeColors.OnSurfaceVariant,
-                            lineHeight = 24.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        // Dietary Tags
-                        if (recipe.dishTypes.isNotEmpty()) {
+                    // Title Section
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color.White)
+                                .padding(20.dp)
+                        ) {
                             Text(
-                                text = "Dish Types",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
+                                text = recipe.title,
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
                                 color = RecipeColors.OnSurface,
-                                modifier = Modifier.padding(bottom = 8.dp)
+                                lineHeight = 32.sp
                             )
+
+                            Spacer(modifier = Modifier.height(8.dp))
 
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.padding(bottom = 16.dp)
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                recipe.dishTypes.take(3).forEach { dishType ->
-                                    DietaryTag(dishType.replaceFirstChar { it.uppercase() })
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = RecipeColors.AccentOrange,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = "${recipe.spoonacularScore.toInt()}% Score",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = RecipeColors.OnSurface
+                                )
+                                Text(
+                                    text = "• ${recipe.aggregateLikes} likes",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = RecipeColors.OnSurfaceVariant
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = "by ${recipe.sourceName}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = RecipeColors.OnSurfaceVariant
+                            )
+                        }
+                    }
+
+                    // Quick Stats
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color.White)
+                                .padding(horizontal = 20.dp, vertical = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            QuickStatCard(
+                                icon = Icons.Default.Settings,
+                                label = "Total",
+                                value = "${recipe.readyInMinutes} min",
+                                modifier = Modifier.weight(1f)
+                            )
+                            QuickStatCard(
+                                icon = Icons.Default.Settings,
+                                label = "Servings",
+                                value = "${recipe.servings}",
+                                modifier = Modifier.weight(1f)
+                            )
+                            QuickStatCard(
+                                icon = Icons.Default.Settings,
+                                label = "Calories",
+                                value = "${recipe.calories}",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    // Nutrition Info
+                    item {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 8.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            color = RecipeColors.NutritionBg
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                NutritionItem("Protein", "${recipe.protein}g")
+                                Divider(
+                                    modifier = Modifier
+                                        .width(1.dp)
+                                        .height(40.dp),
+                                    color = RecipeColors.Primary.copy(alpha = 0.2f)
+                                )
+                                NutritionItem("Fat", "${recipe.fat}g")
+                                Divider(
+                                    modifier = Modifier
+                                        .width(1.dp)
+                                        .height(40.dp),
+                                    color = RecipeColors.Primary.copy(alpha = 0.2f)
+                                )
+                                NutritionItem("Carbs", "${recipe.carbs}g")
+                                Divider(
+                                    modifier = Modifier
+                                        .width(1.dp)
+                                        .height(40.dp),
+                                    color = RecipeColors.Primary.copy(alpha = 0.2f)
+                                )
+                                NutritionItem("Price", "${"%.2f".format(recipe.pricePerServing / 100)}")
+                            }
+                        }
+                    }
+
+                    // Time Breakdown
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            TimeChip(
+                                label = "Prep",
+                                time = "${recipe.preparationMinutes} min",
+                                modifier = Modifier.weight(1f)
+                            )
+                            TimeChip(
+                                label = "Cook",
+                                time = "${recipe.cookingMinutes} min",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    // Tabs
+                    item {
+                        TabRow(
+                            selectedTabIndex = selectedTab,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 16.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            containerColor = RecipeColors.Surface,
+                            indicator = { tabPositions ->
+                                Box(
+                                    Modifier
+                                        .tabIndicatorOffset(tabPositions[selectedTab])
+                                        .height(4.dp)
+                                        .padding(horizontal = 20.dp)
+                                        .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                        .background(RecipeColors.Primary)
+                                )
+                            }
+                        ) {
+                            Tab(
+                                selected = selectedTab == 0,
+                                onClick = { selectedTab = 0 },
+                                text = {
+                                    Text(
+                                        "Ingredients",
+                                        fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal
+                                    )
                                 }
+                            )
+                            Tab(
+                                selected = selectedTab == 1,
+                                onClick = { selectedTab = 1 },
+                                text = {
+                                    Text(
+                                        "Overview",
+                                        fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                    // Tab Content
+                    if (selectedTab == 0) {
+                        // Ingredients List
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp)
+                            ) {
+                                Text(
+                                    text = "${recipe.extendedIngredients.size} ingredients",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = RecipeColors.OnSurface,
+                                    modifier = Modifier.padding(bottom = 12.dp)
+                                )
                             }
                         }
 
+                        items(recipe.extendedIngredients) { ingredient ->
+                            IngredientItem(ingredient)
+                        }
+                    } else {
+                        // Overview
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp)
+                            ) {
+                                Text(
+                                    text = "About this recipe",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = RecipeColors.OnSurface,
+                                    modifier = Modifier.padding(bottom = 12.dp)
+                                )
+
+                                Text(
+                                    text = recipe.summary
+                                        .replace("<b>", "")
+                                        .replace("</b>", "")
+                                        .replace(Regex("<a[^>]*>"), "")
+                                        .replace("</a>", "")
+                                        .split(". ")
+                                        .take(4)
+                                        .joinToString(". ") + ".",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = RecipeColors.OnSurfaceVariant,
+                                    lineHeight = 24.sp
+                                )
+
+                                Spacer(modifier = Modifier.height(20.dp))
+
+                                // Dietary Tags
+                                if (recipe.dishTypes.isNotEmpty()) {
+                                    Text(
+                                        text = "Dish Types",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = RecipeColors.OnSurface,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                    ) {
+                                        recipe.dishTypes.take(3).forEach { dishType ->
+                                            DietaryTag(dishType.replaceFirstChar { it.uppercase() })
+                                        }
+                                    }
+                                }
+
+                                Text(
+                                    text = "Health Score: ${recipe.healthScore}/100",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium,
+                                    color = RecipeColors.OnSurface
+                                )
+                            }
+                        }
+                    }
+
+                    // Bottom Spacing
+                    item {
+                        Spacer(modifier = Modifier.height(100.dp))
+                    }
+                }
+
+                // Floating Action Button
+                FloatingActionButton(
+                    onClick = onStartCooking,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 24.dp)
+                        .fillMaxWidth(0.9f)
+                        .height(56.dp),
+                    containerColor = RecipeColors.Primary,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Health Score: ${recipe.healthScore}/100",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
-                            color = RecipeColors.OnSurface
+                            text = "Start Cooking",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     }
                 }
             }
-
-            // Bottom Spacing
-            item {
-                Spacer(modifier = Modifier.height(100.dp))
-            }
-        }
-
-        // Floating Action Button
-        FloatingActionButton(
-            onClick = onStartCooking,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 24.dp)
-                .fillMaxWidth(0.9f)
-                .height(56.dp),
-            containerColor = RecipeColors.Primary,
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = null,
-                    tint = Color.White
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Start Cooking",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
         }
     }
+
 }
 
 @Composable
@@ -646,12 +630,17 @@ private fun DefaultPreview() {
         pricePerServing = 157.06,
         extendedIngredients = listOf(
             Ingredient(1001, "butter", 1.0, "tbsp", "1 tbsp butter", "butter-sliced.jpg"),
-            Ingredient(10011135, "cauliflower florets", 2.0, "cups", "2 cups frozen cauliflower florets, thawed", "cauliflower.jpg")
+            Ingredient(
+                10011135,
+                "cauliflower florets",
+                2.0,
+                "cups",
+                "2 cups frozen cauliflower florets, thawed",
+                "cauliflower.jpg"
+            )
         ),
         summary = "You can never have too many main course recipes, so give Pasta with Garlic, Scallions, Cauliflower & Breadcrumbs a try. One serving contains 543 calories, 17g of protein, and 16g of fat.",
         dishTypes = listOf("side dish", "lunch", "main course", "main dish", "dinner"),
         spoonacularScore = 83.97
     )
-
-    RecipeDetailScreen(recipe = sampleRecipe)
 }

@@ -2,9 +2,9 @@ package com.vitaflow.app.data.repository
 
 import com.vitaflow.app.data.local.NutritionDao
 import com.vitaflow.app.data.local.NutritionPreferences
+import com.vitaflow.app.data.mappers.toDomain
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
-import com.vitaflow.app.data.remote.dto.recipes.RecipesDetailDTO
 import com.vitaflow.app.domain.models.DailyNutrition
 import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.models.FoodEntry
@@ -12,6 +12,8 @@ import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.models.RecipeModel
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import com.vitaflow.app.data.mappers.toDomainList
+import com.vitaflow.app.data.remote.dto.recipes.recipesdetail.RecipesDetailDTO
+import com.vitaflow.app.domain.models.RecipeDetail
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
@@ -212,10 +214,11 @@ class NutritionFoodRepositoryImpl @Inject constructor(
     override suspend fun getRecipesDetail(
         recipeId: Int,
         apiKey: String
-    ): Flow<RecipesDetailDTO> = flow {
+    ): Flow<RecipeDetail> = flow {
         val res = spoonacularAPI.getRecipeById(recipeId = recipeId, apiKey = apiKey)
         if (!res.isSuccessful) throw Exception("API Error ${res.code()}: ${res.errorBody()?.string()}")
         val body = res.body() ?: throw Exception("Response body is null")
+        emit(body.toDomain())
     }
 }
 

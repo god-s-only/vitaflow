@@ -3,7 +3,7 @@ package com.vitaflow.app.data.remote
 import com.vitaflow.app.data.remote.dto.NutritionFoodDTO
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
 import com.vitaflow.app.data.remote.dto.recipes.RecipeDTO
-import com.vitaflow.app.data.remote.dto.recipes.RecipesDetailDTO
+import com.vitaflow.app.data.remote.dto.recipes.recipesdetail.RecipesDetailDTO
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path

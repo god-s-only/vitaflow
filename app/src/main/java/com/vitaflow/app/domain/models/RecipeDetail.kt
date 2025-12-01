@@ -1,7 +1,5 @@
 package com.vitaflow.app.domain.models
 
-import com.vitaflow.app.presentation.ui.features.recipedetail.Ingredient
-
 data class RecipeDetail(
     val id: Int,
     val title: String,

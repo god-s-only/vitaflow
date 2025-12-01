@@ -3,7 +3,7 @@ package com.vitaflow.app.data.remote.dto.recipes.recipesdetail
 
 import com.google.gson.annotations.SerializedName
 
-data class Nutrient(
+data class NutrientX(
     @SerializedName("amount")
     val amount: Double,
     @SerializedName("name")

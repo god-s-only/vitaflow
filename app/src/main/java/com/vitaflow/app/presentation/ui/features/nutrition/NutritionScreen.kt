@@ -79,7 +79,7 @@ fun NutritionScreen(
                     navController.navigate("photo_capture")
                 }
                 NavigationEvent.NavigateToRecipes -> {
-                    navController.navigate("recipes")
+                    navController.navigate(Routes.RECIPES_SCREEN)
                 }
                 NavigationEvent.ShowQuickCaloriesDialog -> {
                     Toast.makeText(context, "Quick Calories", Toast.LENGTH_SHORT).show()
