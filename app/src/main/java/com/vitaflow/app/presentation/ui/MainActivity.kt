@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -52,9 +51,9 @@ import com.vitaflow.app.presentation.ui.features.home.HomeScreen
 import com.vitaflow.app.presentation.ui.features.nutrition.NutritionScreen
 import com.vitaflow.app.presentation.ui.features.onboarding.OnboardingScreen
 import com.vitaflow.app.presentation.ui.features.recipedetail.RecipeDetailScreen
+import com.vitaflow.app.presentation.ui.features.recipestartcooking.RecipeStartCookingScreen
 import com.vitaflow.app.presentation.ui.features.recipes.RecipeScreen
 import com.vitaflow.app.presentation.ui.features.search.FoodSearchScreen
-import com.vitaflow.app.presentation.ui.features.search.FoodSearchViewModel
 import com.vitaflow.app.presentation.ui.features.settings.NutritionSettingsScreen
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -115,6 +114,7 @@ private fun MainContent() {
                 route != Routes.BARCODE_SCREEN + "/{mealType}" &&
                 route != Routes.ONBOARDINGSCREEN &&
                 route != Routes.RECIPES_SCREEN &&
+                route != Routes.RECIPE_START_COOKING + "/{recipeId}" &&
                 route != Routes.RECIPES_DETAIL_SCREEN + "/{recipeId}" &&
                 route != Routes.NUTRITIONSCREENSETTINGS &&
                 !route.startsWith(Routes.WORKOUTSCREEN)
@@ -207,6 +207,9 @@ private fun MainContent() {
             }
             composable(Routes.RECIPES_DETAIL_SCREEN +"/{recipeId}") {
                 RecipeDetailScreen(navController = navController)
+            }
+            composable(Routes.RECIPE_START_COOKING + "/{recipeId}") {
+                RecipeStartCookingScreen(navController = navController)
             }
         }
 

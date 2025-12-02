@@ -15,4 +15,5 @@ object Routes {
     const val BARCODE_SCREEN = "barcode_screen"
     const val RECIPES_SCREEN = "recipes_screen"
     const val RECIPES_DETAIL_SCREEN = "recipes_detail_screen"
+    const val RECIPE_START_COOKING = "recipe_start_cooking"
 }

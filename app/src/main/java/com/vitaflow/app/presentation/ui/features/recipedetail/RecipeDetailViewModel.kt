@@ -3,6 +3,7 @@ package com.vitaflow.app.presentation.ui.features.recipedetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vitaflow.app.common.Routes
 import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.usecase.recipes.GetRecipeDetailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +33,14 @@ class RecipeDetailViewModel @Inject constructor(
     init {
         savedStateHandle.get<String>("recipeId")?.let {
             getRecipesDetail(it)
+        }
+    }
+
+    fun onEvent(event: RecipeDetailEvent){
+        when(event){
+            is RecipeDetailEvent.OnStartCooking -> {
+                sendUIEvent(UIEvent.Navigate(Routes.RECIPE_START_COOKING + "/${_state.value.data?.id}"))
+            }
         }
     }
 

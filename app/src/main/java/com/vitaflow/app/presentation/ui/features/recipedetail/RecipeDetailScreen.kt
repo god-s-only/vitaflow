@@ -30,8 +30,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
+import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.models.Ingredient
 import com.vitaflow.app.domain.models.RecipeDetail
+import kotlinx.coroutines.flow.collectLatest
 
 // Color Palette
 object RecipeColors {
@@ -53,13 +55,28 @@ object RecipeColors {
 fun RecipeDetailScreen(
     navController: NavController,
     viewModel: RecipeDetailViewModel = hiltViewModel(),
-    onBackClick: () -> Unit = {},
-    onStartCooking: () -> Unit = {}
+    onBackClick: () -> Unit = {}
 ) {
     var isFavorite by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
 
     val state = viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collectLatest { result ->
+            when(result){
+                is UIEvent.Navigate -> {
+                    navController.navigate(result.route)
+                }
+                is UIEvent.ShowSnackBar -> {
+
+                }
+                else -> {
+
+                }
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -467,7 +484,7 @@ fun RecipeDetailScreen(
 
                     // Floating Action Button
                     FloatingActionButton(
-                        onClick = onStartCooking,
+                        onClick = {viewModel.onEvent(RecipeDetailEvent.OnStartCooking)},
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .padding(bottom = 24.dp)
