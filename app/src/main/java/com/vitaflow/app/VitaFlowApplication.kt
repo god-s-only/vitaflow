@@ -4,7 +4,12 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
+import android.util.Log
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -15,11 +20,16 @@ import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import com.vitaflow.app.common.CHANNEL_ID
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.resume
 
+private const val TAG = "STEP_COUNT_LISTENER"
 @HiltAndroidApp
 class VitaFlowApplication : Application(), SingletonImageLoader.Factory {
+    private val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {
         val okHttpClient = OkHttpClient.Builder()
@@ -66,6 +76,25 @@ class VitaFlowApplication : Application(), SingletonImageLoader.Factory {
         }
 
     }
-
-
+    suspend fun steps() = suspendCancellableCoroutine { continuation ->
+        Log.d(TAG, "Registering sensor listener... ")
+        val listener: SensorEventListener by lazy {
+            object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    if(event == null) return
+                    val stepsSinceLastReboot = event.values[0].toLong()
+                    Log.d(TAG, "Steps since last reboot: $stepsSinceLastReboot")
+                    if(continuation.isActive){
+                        continuation.resume(stepsSinceLastReboot)
+                    }
+                }
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                    Log.d(TAG, "Accuracy changed: $accuracy")
+                }
+            }
+        }
+        val supportedAndEnabled = sensorManager.registerListener(listener,
+            sensor, SensorManager.SENSOR_DELAY_UI)
+        Log.d(TAG, "Sensor listener registered: $supportedAndEnabled")
+    }
 }

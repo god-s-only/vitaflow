@@ -345,6 +345,6 @@ private val bottomNavItems = listOf(
     BottomNavItem("Home", Icons.Outlined.Home),
     BottomNavItem("Nutrition", Icons.Outlined.FavoriteBorder),
     BottomNavItem("Workout", Icons.Default.Star),
-    BottomNavItem("Articles", Icons.Default.Menu),
+    BottomNavItem("Steps", Icons.Default.Menu),
     BottomNavItem("Profile", Icons.Outlined.Person)
 )

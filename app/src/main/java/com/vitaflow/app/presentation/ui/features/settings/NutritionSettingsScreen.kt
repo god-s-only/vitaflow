@@ -1,10 +1,7 @@
 package com.vitaflow.app.presentation.ui.features.settings
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.vitaflow.app.presentation.ui.features.nutrition.NutritionViewModel
+import kotlinx.coroutines.delay
 
 private val PrimaryGreen = Color(0xFF4CAF50)
 private val SecondaryBlue = Color(0xFF2196F3)
@@ -273,7 +270,6 @@ fun NutritionSettingsScreen(
             AlertDialog(
                 onDismissRequest = {
                     showSuccessDialog = false
-                    navController.popBackStack()
                 },
                 icon = {
                     Icon(
@@ -450,7 +446,7 @@ private fun SettingSection(
                         color = iconColor
                     )
                     Icon(
-                        imageVector = if (isExpanded) Icons.Default.Settings else Icons.Default.Settings,
+                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = null,
                         tint = TextSecondary
                     )
