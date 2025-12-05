@@ -119,4 +119,5 @@ dependencies {
     implementation("androidx.camera:camera-view:$cameraxVersion")
 
     implementation("androidx.hilt:hilt-work:1.1.0")
+    implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
 }
