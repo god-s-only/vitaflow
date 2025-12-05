@@ -120,4 +120,8 @@ dependencies {
 
     implementation("androidx.hilt:hilt-work:1.1.0")
     implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
+    val work_version = "2.11.0"
+
+    // Kotlin + coroutines
+    implementation("androidx.work:work-runtime-ktx:$work_version")
 }
