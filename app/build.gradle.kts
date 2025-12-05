@@ -118,6 +118,5 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-view:$cameraxVersion")
 
-    // ML Kit Barcode Scanning
-
+    implementation("androidx.hilt:hilt-work:1.1.0")
 }

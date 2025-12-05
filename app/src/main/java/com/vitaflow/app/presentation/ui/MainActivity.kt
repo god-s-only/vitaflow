@@ -1,7 +1,13 @@
 package com.vitaflow.app.presentation.ui
 
 import android.animation.ObjectAnimator
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.animation.OvershootInterpolator
 import androidx.activity.ComponentActivity
@@ -61,6 +67,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -99,6 +108,9 @@ class MainActivity : ComponentActivity() {
             showSplashScreen = false
         }
     }
+
+
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

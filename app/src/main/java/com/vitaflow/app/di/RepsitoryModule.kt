@@ -8,9 +8,11 @@ import com.vitaflow.app.data.remote.WorkoutAPI
 import com.vitaflow.app.data.repository.AuthRepositoryImpl
 import com.vitaflow.app.data.repository.ExerciseRepositoryImpl
 import com.vitaflow.app.data.repository.NutritionFoodRepositoryImpl
+import com.vitaflow.app.data.repository.StepCounterRepositoryImpl
 import com.vitaflow.app.domain.repository.AuthRepository
 import com.vitaflow.app.domain.repository.ExerciseRepository
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
+import com.vitaflow.app.domain.repository.StepCounterRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -43,5 +45,11 @@ object RepsitoryModule {
         nutritionPreferences: NutritionPreferences
     ): NutritionFoodRepository {
         return NutritionFoodRepositoryImpl(api, db.nutritionDao(), nutritionPreferences)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStepCounterRepository(db: NutritionDatabase): StepCounterRepository{
+        return StepCounterRepositoryImpl(db.stepsDao())
     }
 }
