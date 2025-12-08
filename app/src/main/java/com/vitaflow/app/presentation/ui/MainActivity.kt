@@ -6,6 +6,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -13,6 +14,7 @@ import android.view.animation.OvershootInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -61,6 +63,8 @@ import com.vitaflow.app.presentation.ui.features.recipestartcooking.RecipeStartC
 import com.vitaflow.app.presentation.ui.features.recipes.RecipeScreen
 import com.vitaflow.app.presentation.ui.features.search.FoodSearchScreen
 import com.vitaflow.app.presentation.ui.features.settings.NutritionSettingsScreen
+import com.vitaflow.app.presentation.ui.features.steps.StepsTrackerScreenContainer
+import com.vitaflow.app.presentation.ui.features.workout.WorkoutBodyPartsScreen
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -75,6 +79,7 @@ import kotlin.coroutines.resume
 class MainActivity : ComponentActivity() {
     var showSplashScreen = true
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
             setKeepOnScreenCondition { showSplashScreen }
@@ -113,6 +118,7 @@ class MainActivity : ComponentActivity() {
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainContent() {
@@ -139,7 +145,7 @@ private fun MainContent() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = Routes.NUTRITIONSCREEN,
+            startDestination = Routes.WORKOUT_BODY_PARTS_SCREEN,
             modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 slideIntoContainer(
@@ -222,6 +228,12 @@ private fun MainContent() {
             }
             composable(Routes.RECIPE_START_COOKING + "/{recipeId}") {
                 RecipeStartCookingScreen(navController = navController)
+            }
+            composable(Routes.STEPS_CONTAINER_SCREEN) {
+                StepsTrackerScreenContainer()
+            }
+            composable(Routes.WORKOUT_BODY_PARTS_SCREEN) {
+                WorkoutBodyPartsScreen(navController = navController)
             }
         }
 

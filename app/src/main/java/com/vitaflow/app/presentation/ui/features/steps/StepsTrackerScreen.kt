@@ -28,6 +28,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vitaflow.app.domain.models.DailySteps
+import com.vitaflow.app.domain.models.StepsData
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.cos
@@ -47,36 +49,13 @@ object StepsColors {
     val AccentBlue = Color(0xFF2196F3)
 }
 
-data class DailySteps(
-    val date: LocalDate,
-    val steps: Int,
-    val targetSteps: Int = 10000
-)
 
-data class StepsData(
-    val currentSteps: Int = 7842,
-    val targetSteps: Int = 10000,
-    val caloriesBurned: Int = 320,
-    val distanceKm: Float = 5.8f,
-    val activeMinutes: Int = 67,
-    val weeklyData: List<DailySteps> = emptyList()
-)
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StepsTrackerScreen(
-    stepsData: StepsData = StepsData(
-        weeklyData = listOf(
-            DailySteps(LocalDate.now().minusDays(6), 8234),
-            DailySteps(LocalDate.now().minusDays(5), 10567),
-            DailySteps(LocalDate.now().minusDays(4), 6543),
-            DailySteps(LocalDate.now().minusDays(3), 12098),
-            DailySteps(LocalDate.now().minusDays(2), 9876),
-            DailySteps(LocalDate.now().minusDays(1), 11234),
-            DailySteps(LocalDate.now(), 7842)
-        )
-    )
+    stepsData: StepsData = StepsData()
 ) {
     val progress = (stepsData.currentSteps.toFloat() / stepsData.targetSteps.toFloat()).coerceIn(0f, 1f)
     val animatedProgress by animateFloatAsState(

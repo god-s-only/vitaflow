@@ -1,15 +1,14 @@
 package com.vitaflow.app.data.remote
 
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.content.Intent
+import android.net.Uri
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
@@ -19,10 +18,20 @@ import javax.inject.Singleton
 class HealthConnectService @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val healthConnectClient by lazy {
-        HealthConnectClient.getOrCreate(context)
+    // Use lazy initialization with null safety
+    private val healthConnectClient: HealthConnectClient? by lazy {
+        try {
+            if (HealthConnectClient.getSdkStatus(context) == HealthConnectClient.SDK_AVAILABLE) {
+                HealthConnectClient.getOrCreate(context)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
+    // Required permissions
     val permissions = setOf(
         HealthPermission.getReadPermission(StepsRecord::class),
         HealthPermission.getReadPermission(DistanceRecord::class),
@@ -30,22 +39,68 @@ class HealthConnectService @Inject constructor(
         HealthPermission.getReadPermission(ExerciseSessionRecord::class)
     )
 
+    /**
+     * Check if Health Connect SDK is available
+     */
     suspend fun isAvailable(): Boolean {
-        return HealthConnectClient.getSdkStatus(context) == HealthConnectClient.SDK_AVAILABLE
+        return try {
+            HealthConnectClient.getSdkStatus(context) == HealthConnectClient.SDK_AVAILABLE
+        } catch (e: Exception) {
+            false
+        }
     }
 
+    /**
+     * Get the SDK status for detailed error handling
+     */
+    fun getSdkStatus(): Int {
+        return try {
+            HealthConnectClient.getSdkStatus(context)
+        } catch (e: Exception) {
+            HealthConnectClient.SDK_UNAVAILABLE
+        }
+    }
+
+    /**
+     * Check if Health Connect is installed
+     */
+    fun isHealthConnectInstalled(): Boolean {
+        return getSdkStatus() != HealthConnectClient.SDK_UNAVAILABLE
+    }
+
+    /**
+     * Get intent to install Health Connect from Play Store
+     */
+    fun getHealthConnectInstallIntent(): Intent {
+        return Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+    }
+
+    /**
+     * Check if all required permissions are granted
+     */
     suspend fun hasAllPermissions(): Boolean {
-        return healthConnectClient.permissionController.getGrantedPermissions()
-            .containsAll(permissions)
+        return try {
+            healthConnectClient?.permissionController?.getGrantedPermissions()
+                ?.containsAll(permissions) ?: false
+        } catch (e: Exception) {
+            false
+        }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /**
+     * Get steps for a specific date
+     */
     suspend fun getStepsForDate(date: LocalDate): Int {
+        if (healthConnectClient == null) return 0
+
         val startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant()
         val endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()
 
         return try {
-            val response = healthConnectClient.readRecords(
+            val response = healthConnectClient!!.readRecords(
                 ReadRecordsRequest(
                     recordType = StepsRecord::class,
                     timeRangeFilter = TimeRangeFilter.between(startOfDay, endOfDay)
@@ -57,13 +112,17 @@ class HealthConnectService @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /**
+     * Get distance for a specific date
+     */
     suspend fun getDistanceForDate(date: LocalDate): Float {
+        if (healthConnectClient == null) return 0f
+
         val startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant()
         val endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()
 
         return try {
-            val response = healthConnectClient.readRecords(
+            val response = healthConnectClient!!.readRecords(
                 ReadRecordsRequest(
                     recordType = DistanceRecord::class,
                     timeRangeFilter = TimeRangeFilter.between(startOfDay, endOfDay)
@@ -75,13 +134,17 @@ class HealthConnectService @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /**
+     * Get calories burned for a specific date
+     */
     suspend fun getCaloriesForDate(date: LocalDate): Int {
+        if (healthConnectClient == null) return 0
+
         val startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant()
         val endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()
 
         return try {
-            val response = healthConnectClient.readRecords(
+            val response = healthConnectClient!!.readRecords(
                 ReadRecordsRequest(
                     recordType = ActiveCaloriesBurnedRecord::class,
                     timeRangeFilter = TimeRangeFilter.between(startOfDay, endOfDay)
@@ -93,13 +156,17 @@ class HealthConnectService @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /**
+     * Get active minutes for a specific date
+     */
     suspend fun getActiveMinutesForDate(date: LocalDate): Int {
+        if (healthConnectClient == null) return 0
+
         val startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant()
         val endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()
 
         return try {
-            val response = healthConnectClient.readRecords(
+            val response = healthConnectClient!!.readRecords(
                 ReadRecordsRequest(
                     recordType = ExerciseSessionRecord::class,
                     timeRangeFilter = TimeRangeFilter.between(startOfDay, endOfDay)
@@ -112,8 +179,6 @@ class HealthConnectService @Inject constructor(
             0
         }
     }
-
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getDailyHealthData(date: LocalDate): DailyHealthData {
         return DailyHealthData(
             date = date,

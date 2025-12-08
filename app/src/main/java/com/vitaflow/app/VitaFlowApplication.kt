@@ -4,12 +4,9 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.os.Build
-import android.util.Log
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -19,14 +16,19 @@ import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import com.vitaflow.app.common.CHANNEL_ID
+import com.vitaflow.app.data.worker.StepsSyncWorker
 import dagger.hilt.android.HiltAndroidApp
-import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.resume
+import javax.inject.Inject
 
 @HiltAndroidApp
-class VitaFlowApplication : Application(), SingletonImageLoader.Factory {
+class VitaFlowApplication : Application(),
+    SingletonImageLoader.Factory,
+    Configuration.Provider {
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {
         val okHttpClient = OkHttpClient.Builder()
@@ -58,11 +60,18 @@ class VitaFlowApplication : Application(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
         super.onCreate()
+        StepsSyncWorker.schedulePeriodicSync(this)
         createNotificationChannel()
     }
-    private fun createNotificationChannel(){
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .setMinimumLoggingLevel(android.util.Log.INFO)
+            .build()
+
+    private fun createNotificationChannel() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Target Reminder",
@@ -71,7 +80,5 @@ class VitaFlowApplication : Application(), SingletonImageLoader.Factory {
             channel.description = "This channel is for reminding the user about his/her target calories set"
             notificationManager.createNotificationChannel(channel)
         }
-
     }
-
 }

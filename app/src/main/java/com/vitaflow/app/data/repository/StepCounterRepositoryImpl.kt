@@ -1,7 +1,6 @@
 package com.vitaflow.app.data.repository
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import com.vitaflow.app.common.Resource
 import com.vitaflow.app.data.local.StepsDAO
@@ -10,35 +9,34 @@ import com.vitaflow.app.domain.models.DailySteps
 import com.vitaflow.app.domain.models.DailyStepsEntity
 import com.vitaflow.app.domain.models.StepsData
 import com.vitaflow.app.domain.repository.StepCounterRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
-import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
 import javax.inject.Inject
 
-private const val TAG = "STEP_COUNT_LISTENER"
-class StepCounterRepositoryImpl @Inject constructor(private val dao: StepsDAO, private val healthConnectService: HealthConnectService): StepCounterRepository {
+class StepCounterRepositoryImpl @Inject constructor(
+    private val dao: StepsDAO,
+    private val healthConnectService: HealthConnectService
+) : StepCounterRepository {
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun getTodaySteps(): Flow<Resource<StepsData>> = flow {
         emit(Resource.Loading())
 
-        val today = LocalDate.now()
-        val startDate = today.minusDays(6)
+        try {
+            val today = LocalDate.now()
+            val startDate = today.minusDays(6)
 
-        dao.getStepsInRangeFlow(startDate.toString(), today.toString())
-            .map { entities ->
-                if (entities.isEmpty()) {
-                    Resource.Error("No data available")
-                } else {
-                    val todayEntity = entities.lastOrNull { it.date == today.toString() }
-                    val domainModels = entities.map { it.toDomainModel() }
+            // Use suspend function instead of Flow to get immediate result
+            val entities = dao.getStepsInRange(startDate.toString(), today.toString())
 
+            if (entities.isEmpty()) {
+                emit(Resource.Error("No data available. Please sync your data."))
+            } else {
+                val todayEntity = entities.lastOrNull { it.date == today.toString() }
+                val domainModels = entities.map { it.toDomainModel() }
+
+                emit(
                     Resource.Success(
                         StepsData(
                             currentSteps = todayEntity?.steps ?: 0,
@@ -49,29 +47,31 @@ class StepCounterRepositoryImpl @Inject constructor(private val dao: StepsDAO, p
                             weeklyData = domainModels
                         )
                     )
-                }
+                )
             }
-            .catch { e ->
-                emit(Resource.Error(e.message ?: "Unknown error occurred"))
-            }
-            .collect { emit(it) }
+        } catch (e: Exception) {
+            emit(Resource.Error(e.message ?: "Unknown error occurred"))
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun getWeeklySteps(): Flow<Resource<List<DailySteps>>> = flow {
         emit(Resource.Loading())
 
-        val today = LocalDate.now()
-        val startDate = today.minusDays(6)
+        try {
+            val today = LocalDate.now()
+            val startDate = today.minusDays(6)
 
-        dao.getStepsInRangeFlow(startDate.toString(), today.toString())
-            .map { entities ->
-                Resource.Success(entities.map { it.toDomainModel() })
+            val entities = dao.getStepsInRange(startDate.toString(), today.toString())
+
+            if (entities.isEmpty()) {
+                emit(Resource.Error("No data available"))
+            } else {
+                emit(Resource.Success(entities.map { it.toDomainModel() }))
             }
-            .catch { e ->
-                emit(Resource.Error(e.message ?: "Unknown error occurred"))
-            }
-            .collect { emit(it) }
+        } catch (e: Exception) {
+            emit(Resource.Error(e.message ?: "Unknown error occurred"))
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -148,6 +148,7 @@ class StepCounterRepositoryImpl @Inject constructor(private val dao: StepsDAO, p
         return healthConnectService.isAvailable()
     }
 }
+
 @RequiresApi(Build.VERSION_CODES.O)
 private fun DailyStepsEntity.toDomainModel(): DailySteps {
     return DailySteps(

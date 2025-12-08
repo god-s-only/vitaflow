@@ -1,4 +1,4 @@
-package com.vitaflow.app.data.mappers
+package com.vitaflow.app.data.mappers.recipe
 
 import com.vitaflow.app.data.remote.dto.recipes.recipesdetail.RecipesDetailDTO
 import com.vitaflow.app.domain.models.Ingredient

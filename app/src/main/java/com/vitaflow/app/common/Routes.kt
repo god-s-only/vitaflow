@@ -16,4 +16,6 @@ object Routes {
     const val RECIPES_SCREEN = "recipes_screen"
     const val RECIPES_DETAIL_SCREEN = "recipes_detail_screen"
     const val RECIPE_START_COOKING = "recipe_start_cooking"
+    const val STEPS_CONTAINER_SCREEN = "steps_container_screen"
+    const val WORKOUT_BODY_PARTS_SCREEN = "workout_body_parts_screen"
 }

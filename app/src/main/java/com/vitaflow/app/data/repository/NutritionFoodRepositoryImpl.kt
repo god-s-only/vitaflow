@@ -2,7 +2,7 @@ package com.vitaflow.app.data.repository
 
 import com.vitaflow.app.data.local.NutritionDao
 import com.vitaflow.app.data.local.NutritionPreferences
-import com.vitaflow.app.data.mappers.toDomain
+import com.vitaflow.app.data.mappers.recipe.toDomain
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
 import com.vitaflow.app.domain.models.DailyNutrition
@@ -11,8 +11,7 @@ import com.vitaflow.app.domain.models.FoodEntry
 import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.models.RecipeModel
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
-import com.vitaflow.app.data.mappers.toDomainList
-import com.vitaflow.app.data.remote.dto.recipes.recipesdetail.RecipesDetailDTO
+import com.vitaflow.app.data.mappers.recipe.toDomainList
 import com.vitaflow.app.domain.models.RecipeDetail
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

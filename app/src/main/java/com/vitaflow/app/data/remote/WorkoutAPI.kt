@@ -17,7 +17,7 @@ interface WorkoutAPI {
     suspend fun getExerciseById(@Path("exerciseId") exerciseId: String): Response<ExerciseIdDTO>
     @GET("/muscles")
     suspend fun getAllMuscles(): Response<ExerciseDTO>
-    @GET("/bodyparts")
+    @GET("/api/v1/bodyparts")
     suspend fun getAllBodyParts(): Response<ExerciseDTO>
     @GET("/equipments")
     suspend fun getAllEquipment(): Response<ExerciseDTO>

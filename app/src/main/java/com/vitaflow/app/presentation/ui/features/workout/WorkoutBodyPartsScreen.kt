@@ -19,12 +19,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import com.vitaflow.app.common.UIEvent
+import com.vitaflow.app.domain.models.BodyPart
+import com.vitaflow.app.domain.models.toBodyPart
+import kotlinx.coroutines.flow.collectLatest
 
 // Color Palette
 object WorkoutColors {
@@ -43,32 +48,27 @@ object WorkoutColors {
     val SkeletonHighlight = Color(0xFFF5F5F5)
 }
 
-data class BodyPart(
-    val name: String,
-    val icon: ImageVector,
-    val color: Color
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutBodyPartsScreen(
-    onBackClick: () -> Unit = {},
-    onBodyPartClick: (String) -> Unit = {},
-    isLoading: Boolean = false
+    viewModel: WorkoutBodyPartsViewModel = hiltViewModel(),
+    navController: NavController
 ) {
-    val bodyParts = remember {
-        listOf(
-            BodyPart("Neck", Icons.Default.Settings, WorkoutColors.AccentPurple),
-            BodyPart("Lower Arms", Icons.Default.Settings, WorkoutColors.AccentBlue),
-            BodyPart("Shoulders", Icons.Default.Settings, WorkoutColors.AccentOrange),
-            BodyPart("Cardio", Icons.Default.Favorite, WorkoutColors.AccentRed),
-            BodyPart("Upper Arms", Icons.Default.Settings, WorkoutColors.Primary),
-            BodyPart("Chest", Icons.Default.Settings, WorkoutColors.PrimaryLight),
-            BodyPart("Lower Legs", Icons.Default.Settings, WorkoutColors.AccentBlue),
-            BodyPart("Back", Icons.Default.Settings, WorkoutColors.PrimaryLighter),
-            BodyPart("Upper Legs", Icons.Default.Settings, WorkoutColors.AccentOrange),
-            BodyPart("Waist", Icons.Default.Settings, WorkoutColors.AccentPurple)
-        )
+    val state = viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collectLatest { result ->
+            when(result){
+                is UIEvent.PopBackStack -> {
+                    navController.popBackStack()
+                }
+                else -> {}
+            }
+        }
+    }
+
+    val bodyPartsWithUI = remember(state.value.bodyParts) {
+        state.value.bodyParts.map { it.toBodyPart() }
     }
 
     Scaffold(
@@ -89,7 +89,7 @@ fun WorkoutBodyPartsScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = { viewModel.onEvent(WorkoutBodyPartsEvent.PopBackStack) }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
@@ -104,7 +104,7 @@ fun WorkoutBodyPartsScreen(
                     IconButton(onClick = { /* Filter/Settings */ }) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Filter",
+                            contentDescription = "Settings",
                             tint = WorkoutColors.OnSurface
                         )
                     }
@@ -119,10 +119,9 @@ fun WorkoutBodyPartsScreen(
                 .padding(padding)
         ) {
             // Stats Card
-            StatsCard()
+            StatsCard(bodyPartCount = bodyPartsWithUI.size)
 
-            if (isLoading) {
-                // Skeleton Loader
+            if (state.value.isLoading) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier
@@ -136,6 +135,35 @@ fun WorkoutBodyPartsScreen(
                         BodyPartCardSkeleton()
                     }
                 }
+            } else if (state.value.error != null) {
+                // Error state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = WorkoutColors.OnSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = state.value.error ?: "An error occurred",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = WorkoutColors.OnSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.getBodyParts() }) {
+                            Text("Retry")
+                        }
+                    }
+                }
             } else {
                 // Body Parts Grid
                 LazyVerticalGrid(
@@ -147,10 +175,12 @@ fun WorkoutBodyPartsScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(bodyParts) { bodyPart ->
+                    items(bodyPartsWithUI) { bodyPart ->
                         BodyPartCard(
                             bodyPart = bodyPart,
-                            onClick = { onBodyPartClick(bodyPart.name.lowercase()) }
+                            onClick = {
+                                // TODO: Navigate to exercises for this body part
+                            }
                         )
                     }
                 }
@@ -160,7 +190,7 @@ fun WorkoutBodyPartsScreen(
 }
 
 @Composable
-fun StatsCard() {
+fun StatsCard(bodyPartCount: Int = 0) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -185,7 +215,7 @@ fun StatsCard() {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "10 muscle groups available",
+                    text = "$bodyPartCount muscle groups available",
                     fontSize = 14.sp,
                     color = Color.White.copy(alpha = 0.9f)
                 )
@@ -269,7 +299,7 @@ fun BodyPartCard(
 
                 // Body Part Name
                 Text(
-                    text = bodyPart.name,
+                    text = bodyPart.name.replaceFirstChar { it.uppercase() },
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = WorkoutColors.OnSurface,
@@ -361,16 +391,4 @@ fun BodyPartCardSkeleton() {
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun WorkoutBodyPartsPreview() {
-    WorkoutBodyPartsScreen()
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun WorkoutBodyPartsLoadingPreview() {
-    WorkoutBodyPartsScreen(isLoading = true)
 }
