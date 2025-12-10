@@ -45,18 +45,21 @@ class NutritionViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NutritionState())
-    val state: StateFlow<NutritionState> = _state.asStateFlow()
+    val state: StateFlow<NutritionState> = _state
+        .onStart {
+            loadTargets()
+            observeFoodEntries()
+            observeDailyNutrition()
+            loadRecentFoods()
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = NutritionState()
+        )
 
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent: SharedFlow<NavigationEvent> = _navigationEvent.asSharedFlow()
-
-    init {
-        Log.d(TAG, "ViewModel initialized")
-        loadTargets()
-        observeFoodEntries()
-        observeDailyNutrition()
-        loadRecentFoods()
-    }
 
     private fun loadTargets() {
         viewModelScope.launch {

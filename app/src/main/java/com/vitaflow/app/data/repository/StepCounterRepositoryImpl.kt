@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.vitaflow.app.common.Resource
 import com.vitaflow.app.data.local.StepsDAO
+import com.vitaflow.app.data.local.StepsPreferences
 import com.vitaflow.app.data.remote.HealthConnectService
 import com.vitaflow.app.domain.models.DailySteps
 import com.vitaflow.app.domain.models.DailyStepsEntity
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 class StepCounterRepositoryImpl @Inject constructor(
     private val dao: StepsDAO,
-    private val healthConnectService: HealthConnectService
+    private val healthConnectService: HealthConnectService,
+    private val stepsPreferences: StepsPreferences
 ) : StepCounterRepository {
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -146,6 +148,10 @@ class StepCounterRepositoryImpl @Inject constructor(
 
     override suspend fun isHealthConnectAvailable(): Boolean {
         return healthConnectService.isAvailable()
+    }
+
+    override suspend fun getStepsTarget(): Int? {
+        return stepsPreferences.getStepsTarget()
     }
 }
 

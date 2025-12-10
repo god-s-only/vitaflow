@@ -8,6 +8,7 @@ import com.vitaflow.app.data.remote.HealthConnectService
 import com.vitaflow.app.domain.models.StepsData
 import com.vitaflow.app.domain.usecase.steps.CheckHealthConnectAvailabilityUseCase
 import com.vitaflow.app.domain.usecase.steps.CheckHealthConnectPermissionsUseCase
+import com.vitaflow.app.domain.usecase.steps.GetStepsTarget
 import com.vitaflow.app.domain.usecase.steps.GetTodayStepsUseCase
 import com.vitaflow.app.domain.usecase.steps.SyncStepsDataUseCase
 import com.vitaflow.app.domain.usecase.steps.UpdateTargetStepsUseCase
@@ -23,7 +24,8 @@ class StepsViewModel @Inject constructor(
     private val updateTargetStepsUseCase: UpdateTargetStepsUseCase,
     private val checkHealthConnectPermissionsUseCase: CheckHealthConnectPermissionsUseCase,
     private val checkHealthConnectAvailabilityUseCase: CheckHealthConnectAvailabilityUseCase,
-    private val healthConnectService: HealthConnectService
+    private val healthConnectService: HealthConnectService,
+    private val getStepsTarget: GetStepsTarget
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<StepsUiState>(StepsUiState.Loading)
@@ -34,6 +36,22 @@ class StepsViewModel @Inject constructor(
 
     init {
         checkHealthConnectAvailability()
+        getStepsTarget()
+    }
+
+    fun getStepsTarget() {
+        viewModelScope.launch {
+            getStepsTarget.invoke()?.let { target ->
+                _uiState.value = when (val currentState = _uiState.value) {
+                    is StepsUiState.Success -> {
+                        StepsUiState.Success(
+                            currentState.data.copy(targetSteps = target)
+                        )
+                    }
+                    else -> currentState
+                }
+            }
+        }
     }
 
     fun checkHealthConnectAvailability() {
