@@ -54,7 +54,7 @@ class NutritionViewModel @Inject constructor(
         }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000L),
+            started = SharingStarted.WhileSubscribed(2000L),
             initialValue = NutritionState()
         )
 

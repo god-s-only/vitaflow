@@ -22,7 +22,7 @@ class RecipeStartCookingViewModel @Inject constructor(
     private val _state = MutableStateFlow(RecipeDetailState())
     val state = _state.asStateFlow()
 
-    private val apiKey = "e502be08e8b14c8290b76df779e11de1"
+    private val apiKey = "d2c131a9ef64479c80be1352a98a6028"
 
     init {
         savedStateHandle.get<String>("recipeId")?.let {

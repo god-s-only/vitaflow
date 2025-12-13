@@ -31,7 +31,7 @@ class BarcodeScanViewModel @Inject constructor(private val scanBarcodeUseCase: S
     private val _events = MutableSharedFlow<BarcodeScanEvent>()
     val events: SharedFlow<BarcodeScanEvent> = _events.asSharedFlow()
 
-    private val apiKey = "e502be08e8b14c8290b76df779e11de1"
+    private val apiKey = "d2c131a9ef64479c80be1352a98a6028"
 
     fun onBarcodeScanned(barcode: String) {
         // Prevent duplicate scans

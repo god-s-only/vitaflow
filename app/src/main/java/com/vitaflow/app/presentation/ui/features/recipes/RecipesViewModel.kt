@@ -25,7 +25,7 @@ class RecipesViewModel @Inject constructor(private val searchRecipesUseCase: Sea
     private val _uiEvent = MutableSharedFlow<UIEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
-    private val apiKey = "e502be08e8b14c8290b76df779e11de1"
+    private val apiKey = "d2c131a9ef64479c80be1352a98a6028"
 
     fun onEvent(event: RecipesEvent){
         when(event){

@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.vitaflow.app.data.local.NutritionDatabase
 import com.vitaflow.app.data.local.NutritionPreferences
 import com.vitaflow.app.data.local.StepsDAO
+import com.vitaflow.app.data.local.StepsPreferences
 import com.vitaflow.app.data.remote.HealthConnectService
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.WorkoutAPI
@@ -53,9 +54,10 @@ object RepsitoryModule {
     @Singleton
     fun provideStepsRepository(
         stepsDao: StepsDAO,
-        healthConnectService: HealthConnectService
+        healthConnectService: HealthConnectService,
+        stepsPreferences: StepsPreferences
     ): StepCounterRepository {
-        return StepCounterRepositoryImpl(stepsDao, healthConnectService)
+        return StepCounterRepositoryImpl(stepsDao, healthConnectService, stepsPreferences)
     }
     @Provides
     @Singleton
