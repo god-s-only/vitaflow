@@ -59,7 +59,10 @@ class ExerciseRepositoryImpl @Inject constructor(private val api: WorkoutAPI): E
     }
 
     override suspend fun getExercisesByBodyPart(bodyPartName: String): Resource<List<Exercise>> {
-        TODO("Not yet implemented")
+        val res = api.getExercisesByBodyPart(bodyPartName)
+        if(!res.isSuccessful) Resource.Error<List<Exercise>>(message = res.message())
+        val body = res.body() ?: return Resource.Error<List<Exercise>>(message = "Error, body is null")
+        return Resource.Success(data = body.data.map { it.toExercise() })
     }
 
     override suspend fun getExercisesByMuscle(muscleName: String): Resource<List<Exercise>> {
