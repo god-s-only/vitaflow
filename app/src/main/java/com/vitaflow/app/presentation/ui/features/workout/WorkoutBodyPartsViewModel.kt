@@ -3,6 +3,7 @@ package com.vitaflow.app.presentation.ui.features.workout
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.common.Resource
+import com.vitaflow.app.common.Routes
 import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.usecase.exercise.GetBodyPartsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,6 +35,9 @@ class WorkoutBodyPartsViewModel @Inject constructor(private val getBodyPartsUseC
         when(event){
             WorkoutBodyPartsEvent.PopBackStack -> {
                 sendUIEvent(UIEvent.PopBackStack)
+            }
+            is WorkoutBodyPartsEvent.OnBodyPartClick -> {
+                sendUIEvent(UIEvent.Navigate(Routes.WORKOUT_BODY_PARTS_SELECTED_SCREEN + "/${event.bodyPart}"))
             }
         }
     }
@@ -77,4 +81,5 @@ class WorkoutBodyPartsViewModel @Inject constructor(private val getBodyPartsUseC
 
 sealed class WorkoutBodyPartsEvent {
     data object PopBackStack: WorkoutBodyPartsEvent()
+    data class OnBodyPartClick(val bodyPart: String): WorkoutBodyPartsEvent()
 }

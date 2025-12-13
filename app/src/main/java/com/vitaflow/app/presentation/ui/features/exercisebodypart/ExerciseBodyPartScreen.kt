@@ -34,7 +34,9 @@ data class Exercise(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExercisesScreen() {
+fun ExercisesScreen(
+    bodyPart: String
+) {
     var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
 
     val exercises = remember {
@@ -111,7 +113,7 @@ fun ExercisesScreen() {
             TopAppBar(
                 title = {
                     Text(
-                        "Upper Arms Exercises",
+                        "$bodyPart Exercises",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -328,10 +330,4 @@ fun ExerciseDetailsBottomSheet(
             }
         }
     }
-}
-
-@Preview
-@Composable
-private fun Default() {
-    ExercisesScreen()
 }

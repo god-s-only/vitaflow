@@ -55,6 +55,7 @@ import com.vitaflow.app.presentation.ui.auth.signin.SignInScreen
 import com.vitaflow.app.presentation.ui.auth.signup.SignUpScreen
 import com.vitaflow.app.presentation.ui.features.barcode.BarcodeScanScreen
 import com.vitaflow.app.presentation.ui.features.detail.ExerciseDetailScreen
+import com.vitaflow.app.presentation.ui.features.exercisebodypart.ExercisesScreen
 import com.vitaflow.app.presentation.ui.features.home.HomeScreen
 import com.vitaflow.app.presentation.ui.features.nutrition.NutritionScreen
 import com.vitaflow.app.presentation.ui.features.onboarding.OnboardingScreen
@@ -234,6 +235,14 @@ private fun MainContent() {
             }
             composable(Routes.WORKOUT_BODY_PARTS_SCREEN) {
                 WorkoutBodyPartsScreen(navController = navController)
+            }
+            composable(Routes.WORKOUT_BODY_PARTS_SELECTED_SCREEN, arguments = listOf(
+                navArgument("bodyPart"){
+                    type = NavType.StringType
+                }
+            )) {
+                val bodyPart = it.arguments?.getString("bodyPart") ?: ""
+                ExercisesScreen(bodyPart)
             }
         }
 

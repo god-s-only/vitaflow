@@ -62,6 +62,9 @@ fun WorkoutBodyPartsScreen(
                 is UIEvent.PopBackStack -> {
                     navController.popBackStack()
                 }
+                is UIEvent.Navigate -> {
+                    navController.navigate(result.route)
+                }
                 else -> {}
             }
         }
@@ -179,7 +182,7 @@ fun WorkoutBodyPartsScreen(
                         BodyPartCard(
                             bodyPart = bodyPart,
                             onClick = {
-                                // TODO: Navigate to exercises for this body part
+                                viewModel.onEvent(WorkoutBodyPartsEvent.OnBodyPartClick(bodyPart = bodyPart.name))
                             }
                         )
                     }
