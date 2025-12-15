@@ -114,9 +114,6 @@ class MainActivity : ComponentActivity() {
             showSplashScreen = false
         }
     }
-
-
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -236,7 +233,7 @@ private fun MainContent() {
             composable(Routes.WORKOUT_BODY_PARTS_SCREEN) {
                 WorkoutBodyPartsScreen(navController = navController)
             }
-            composable(Routes.WORKOUT_BODY_PARTS_SELECTED_SCREEN, arguments = listOf(
+            composable(Routes.WORKOUT_BODY_PARTS_SELECTED_SCREEN + "/{bodyPart}", arguments = listOf(
                 navArgument("bodyPart"){
                     type = NavType.StringType
                 }
