@@ -24,7 +24,6 @@ interface WorkoutAPI {
     @GET("/api/v1/bodyparts/{bodyPartName}/exercises")
     suspend fun getExercisesByBodyPart(
         @Path("bodyPartName") bodyPartName: String,
-        @Query("offset") offset: Int = 0,
         @Query("limit") limit: Int = 10): Response<ExerciseDTO>
     @GET("/muscles/{muscleName}/exercises")
     suspend fun getExercisesByMuscle(@Path("muscleName") muscleName: String): Response<ExerciseDTO>

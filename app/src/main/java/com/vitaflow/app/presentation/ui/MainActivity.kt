@@ -130,6 +130,7 @@ private fun MainContent() {
                 route != Routes.BARCODE_SCREEN + "/{mealType}" &&
                 route != Routes.ONBOARDINGSCREEN &&
                 route != Routes.RECIPES_SCREEN &&
+                route != Routes.WORKOUT_BODY_PARTS_SELECTED_SCREEN + "/{bodyPart}" &&
                 route != Routes.RECIPE_START_COOKING + "/{recipeId}" &&
                 route != Routes.RECIPES_DETAIL_SCREEN + "/{recipeId}" &&
                 route != Routes.NUTRITIONSCREENSETTINGS &&
