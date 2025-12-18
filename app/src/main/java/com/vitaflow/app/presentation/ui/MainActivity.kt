@@ -64,6 +64,7 @@ import com.vitaflow.app.presentation.ui.features.recipestartcooking.RecipeStartC
 import com.vitaflow.app.presentation.ui.features.recipes.RecipeScreen
 import com.vitaflow.app.presentation.ui.features.search.FoodSearchScreen
 import com.vitaflow.app.presentation.ui.features.settings.NutritionSettingsScreen
+import com.vitaflow.app.presentation.ui.features.steps.StepsSettingsScreen
 import com.vitaflow.app.presentation.ui.features.steps.StepsTrackerScreenContainer
 import com.vitaflow.app.presentation.ui.features.workout.WorkoutBodyPartsScreen
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
@@ -229,7 +230,7 @@ private fun MainContent() {
                 RecipeStartCookingScreen(navController = navController)
             }
             composable(Routes.STEPS_CONTAINER_SCREEN) {
-                StepsTrackerScreenContainer()
+                StepsTrackerScreenContainer(navController = navController)
             }
             composable(Routes.WORKOUT_BODY_PARTS_SCREEN) {
                 WorkoutBodyPartsScreen(navController = navController)
@@ -241,6 +242,9 @@ private fun MainContent() {
             )) {
                 val bodyPart = it.arguments?.getString("bodyPart") ?: ""
                 ExercisesScreen(bodyPart)
+            }
+            composable(Routes.STEPS_SETTINGS_SCREEN) {
+                StepsSettingsScreen(navController = navController)
             }
         }
 

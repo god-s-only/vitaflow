@@ -15,11 +15,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.health.connect.client.PermissionController
+import androidx.navigation.NavController
+import com.vitaflow.app.common.Routes
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StepsTrackerScreenContainer(
+    navController: NavController,
     viewModel: StepsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -83,7 +86,7 @@ fun StepsTrackerScreenContainer(
                         }
                     }
 
-                    IconButton(onClick = { /* Settings */ }) {
+                    IconButton(onClick = { navController.navigate(Routes.STEPS_SETTINGS_SCREEN) }) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Settings",
