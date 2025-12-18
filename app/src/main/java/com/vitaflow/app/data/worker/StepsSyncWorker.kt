@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit
 
 @HiltWorker
 class StepsSyncWorker @AssistedInject constructor(
-    @Assisted context: Context,
-    @Assisted workerParams: WorkerParameters,
+    @Assisted private val context: Context,
+    @Assisted private val workerParams: WorkerParameters,
     private val healthConnectService: HealthConnectService,
     private val stepsDao: StepsDAO
 ) : CoroutineWorker(context, workerParams) {

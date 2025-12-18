@@ -65,28 +65,7 @@ fun StepsTrackerScreen(
     )
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Steps Tracker",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                actions = {
-                    IconButton(onClick = { /* Settings */ }) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = StepsColors.OnSurface
-                        )
-                    }
-                }
-            )
-        }
+
     ) { padding ->
         LazyColumn(
             modifier = Modifier

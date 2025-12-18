@@ -121,4 +121,5 @@ dependencies {
     implementation("androidx.hilt:hilt-work:1.1.0")
     implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    ksp("androidx.hilt:hilt-compiler:1.1.0")
 }

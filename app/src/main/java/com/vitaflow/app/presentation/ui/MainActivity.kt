@@ -144,7 +144,7 @@ private fun MainContent() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = Routes.WORKOUT_BODY_PARTS_SCREEN,
+            startDestination = Routes.STEPS_CONTAINER_SCREEN,
             modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 slideIntoContainer(
