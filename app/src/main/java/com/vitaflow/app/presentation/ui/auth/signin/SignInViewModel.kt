@@ -7,6 +7,7 @@ import com.vitaflow.app.common.Resource
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.common.Routes.SIGNUPSCREEN
 import com.vitaflow.app.common.UIEvent
+import com.vitaflow.app.domain.usecase.auth.GetTokenUseCase
 import com.vitaflow.app.domain.usecase.auth.SignInUseCase
 import com.vitaflow.app.presentation.ui.auth.signin.SignInScreenEvent
 import com.vitaflow.app.presentation.ui.auth.signin.SignInState
@@ -15,12 +16,14 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SignInViewModel @Inject constructor(
-    private val signInUseCase: SignInUseCase
+    private val signInUseCase: SignInUseCase,
+    private val getTokenUseCase: GetTokenUseCase
 ) : ViewModel() {
 
     var email = mutableStateOf("")
@@ -35,6 +38,10 @@ class SignInViewModel @Inject constructor(
 
     private val _uiEvent = MutableSharedFlow<UIEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
+
+    init {
+        getToken()
+    }
 
     fun onEvent(event: SignInScreenEvent) {
         when (event) {
@@ -58,6 +65,16 @@ class SignInViewModel @Inject constructor(
 
             is SignInScreenEvent.OnPasswordVisibilityChanged -> {
                 isPasswordVisible.value = !isPasswordVisible.value
+            }
+        }
+    }
+
+    fun getToken(){
+        viewModelScope.launch{
+            _state.update{
+                it.copy(
+                    token = getTokenUseCase.invoke()
+                )
             }
         }
     }

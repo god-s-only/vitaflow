@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -52,6 +53,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.presentation.ui.auth.signin.SignInScreen
+import com.vitaflow.app.presentation.ui.auth.signin.SignInViewModel
 import com.vitaflow.app.presentation.ui.auth.signup.SignUpScreen
 import com.vitaflow.app.presentation.ui.features.barcode.BarcodeScanScreen
 import com.vitaflow.app.presentation.ui.features.detail.ExerciseDetailScreen
@@ -124,6 +126,23 @@ private fun MainContent() {
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryAsState()
 
+    val viewModel: SignInViewModel = hiltViewModel()
+    val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(state.token) {
+        if (state.token !== "") {
+            navController.navigate(Routes.HOMESCREEN) {
+                popUpTo(Routes.SIGNINSCREEN) { inclusive = true }
+            }
+        } else {
+            navController.navigate(Routes.SIGNINSCREEN) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    inclusive = true
+                }
+            }
+        }
+    }
+
     val shouldShowBottomBar = currentRoute?.destination?.route?.let { route ->
         route != Routes.SIGNINSCREEN &&
                 route != Routes.FOODSEARCHSCREEN + "/{mealType}" &&
@@ -131,6 +150,7 @@ private fun MainContent() {
                 route != Routes.BARCODE_SCREEN + "/{mealType}" &&
                 route != Routes.ONBOARDINGSCREEN &&
                 route != Routes.RECIPES_SCREEN &&
+                route != Routes.STEPS_SETTINGS_SCREEN &&
                 route != Routes.WORKOUT_BODY_PARTS_SELECTED_SCREEN + "/{bodyPart}" &&
                 route != Routes.RECIPE_START_COOKING + "/{recipeId}" &&
                 route != Routes.RECIPES_DETAIL_SCREEN + "/{recipeId}" &&
@@ -143,9 +163,10 @@ private fun MainContent() {
             .fillMaxSize()
             .background(Color(0xFFF8F9FA))
     ) {
+
         NavHost(
             navController = navController,
-            startDestination = Routes.STEPS_CONTAINER_SCREEN,
+            startDestination = Routes.SIGNINSCREEN,
             modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 slideIntoContainer(
@@ -285,8 +306,8 @@ private fun ProfessionalBottomBar(
                 val isSelected = when (item.title) {
                     "Home" -> currentDestination == Routes.HOMESCREEN
                     "Nutrition" -> currentDestination == Routes.NUTRITIONSCREEN
-                    "Workout" -> currentDestination?.startsWith("workout_list") == true
-                    "Articles" -> currentDestination?.startsWith("articles") == true
+                    "Workout" -> currentDestination == Routes.WORKOUT_BODY_PARTS_SCREEN
+                    "Steps" -> currentDestination == Routes.STEPS_CONTAINER_SCREEN
                     "Profile" -> currentDestination?.startsWith("profile") == true
                     else -> false
                 }
@@ -318,7 +339,28 @@ private fun ProfessionalBottomBar(
                                     }
                                 }
                             }
-                            // TODO: Add other navigation cases
+                            "Workout" -> {
+                                if (currentDestination != Routes.WORKOUT_BODY_PARTS_SCREEN) {
+                                    navController.navigate(Routes.WORKOUT_BODY_PARTS_SCREEN) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            }
+                            "Steps" -> {
+                                if (currentDestination != Routes.STEPS_CONTAINER_SCREEN) {
+                                    navController.navigate(Routes.STEPS_CONTAINER_SCREEN) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            }
                         }
                     },
                     modifier = Modifier.weight(1f)

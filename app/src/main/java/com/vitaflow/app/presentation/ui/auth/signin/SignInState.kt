@@ -6,5 +6,6 @@ data class SignInState(
     val isLoading: Boolean = false,
     val user: User? = null,
     val error: String? = null,
-    val isSignInSuccessful: Boolean = false
+    val isSignInSuccessful: Boolean = false,
+    val token: String = ""
 )

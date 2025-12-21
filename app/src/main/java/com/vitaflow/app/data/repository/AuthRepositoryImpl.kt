@@ -7,15 +7,19 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
 import com.vitaflow.app.common.Resource
+import com.vitaflow.app.data.local.VitaFlowSession
 import com.vitaflow.app.domain.models.User
 import com.vitaflow.app.domain.repository.AuthRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val vitaFlowSession: VitaFlowSession
 ) : AuthRepository {
 
     override suspend fun signInWithEmailAndPassword(
@@ -85,6 +89,12 @@ class AuthRepositoryImpl @Inject constructor(
             Resource.Error("No account found with this email address.")
         } catch (e: Exception) {
             Resource.Error("Failed to send password reset email: ${e.message}")
+        }
+    }
+
+    override suspend fun getToken(): String {
+        return withContext(Dispatchers.Default){
+            vitaFlowSession.getToken() ?: ""
         }
     }
 
