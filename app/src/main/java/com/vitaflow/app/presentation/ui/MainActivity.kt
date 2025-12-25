@@ -129,19 +129,7 @@ private fun MainContent() {
     val viewModel: SignInViewModel = hiltViewModel()
     val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(state.token) {
-        if (state.token !== "") {
-            navController.navigate(Routes.HOMESCREEN) {
-                popUpTo(Routes.SIGNINSCREEN) { inclusive = true }
-            }
-        } else {
-            navController.navigate(Routes.SIGNINSCREEN) {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    inclusive = true
-                }
-            }
-        }
-    }
+    
 
     val shouldShowBottomBar = currentRoute?.destination?.route?.let { route ->
         route != Routes.SIGNINSCREEN &&
@@ -166,7 +154,7 @@ private fun MainContent() {
 
         NavHost(
             navController = navController,
-            startDestination = Routes.SIGNINSCREEN,
+            startDestination = Routes.ONBOARDINGSCREEN,
             modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 slideIntoContainer(

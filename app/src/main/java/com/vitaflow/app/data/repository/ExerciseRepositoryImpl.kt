@@ -9,7 +9,9 @@ import com.vitaflow.app.data.remote.dto.toExercise
 import com.vitaflow.app.domain.models.Exercise
 import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.repository.ExerciseRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ExerciseRepositoryImpl @Inject constructor(private val api: WorkoutAPI): ExerciseRepository {
@@ -48,10 +50,13 @@ class ExerciseRepositoryImpl @Inject constructor(private val api: WorkoutAPI): E
     }
 
     override suspend fun getAllBodyParts(): Resource<List<String>> {
-        val res = api.getAllBodyParts()
-        if(!res.isSuccessful) Resource.Error<List<String>>(message = res.message())
-        val body = res.body() ?: return Resource.Error<List<String>>(message = "Error, body is null")
-        return Resource.Success(data = body.data.map { it.name })
+        return withContext(Dispatchers.IO){
+            val res = api.getAllBodyParts()
+            if(!res.isSuccessful) Resource.Error<List<String>>(message = res.message())
+            val body = res.body() ?: return@withContext Resource.Error<List<String>>(message = "Error, body is null")
+            Resource.Success(data = body.data.map { it.name })
+        }
+
     }
 
     override suspend fun getAllEquipment(): Resource<List<String>> {
@@ -59,10 +64,13 @@ class ExerciseRepositoryImpl @Inject constructor(private val api: WorkoutAPI): E
     }
 
     override suspend fun getExercisesByBodyPart(bodyPartName: String): Resource<List<Exercise>> {
-        val res = api.getExercisesByBodyPart(bodyPartName)
-        if(!res.isSuccessful) Resource.Error<List<Exercise>>(message = res.message())
-        val body = res.body() ?: return Resource.Error<List<Exercise>>(message = "Error, body is null")
-        return Resource.Success(data = body.data.map { it.toExercise() })
+        return withContext(Dispatchers.IO){
+            val res = api.getExercisesByBodyPart(bodyPartName)
+            if(!res.isSuccessful) Resource.Error<List<Exercise>>(message = res.message())
+            val body = res.body() ?: return@withContext Resource.Error<List<Exercise>>(message = "Error, body is null")
+             Resource.Success(data = body.data.map { it.toExercise() })
+        }
+
     }
 
     override suspend fun getExercisesByMuscle(muscleName: String): Resource<List<Exercise>> {

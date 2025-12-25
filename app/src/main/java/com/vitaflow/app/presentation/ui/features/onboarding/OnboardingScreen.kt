@@ -1,16 +1,9 @@
 package com.vitaflow.app.presentation.ui.features.onboarding
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -18,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,223 +19,148 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.vitaflow.app.presentation.ui.theme.BackgroundWhite
-import com.vitaflow.app.presentation.ui.theme.OrangeAccent
-import com.vitaflow.app.presentation.ui.theme.PrimaryGreen
-import com.vitaflow.app.presentation.ui.theme.PurpleAccent
-import com.vitaflow.app.presentation.ui.theme.SecondaryBlue
-import com.vitaflow.app.presentation.ui.theme.TextPrimary
-import com.vitaflow.app.presentation.ui.theme.TextSecondary
+import com.vitaflow.app.presentation.ui.theme.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: OnboardingViewModel = hiltViewModel()
 ) {
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    val state by viewModel.state.collectAsState()
+    val pagerState = rememberPagerState(pageCount = { 5 })
     val scope = rememberCoroutineScope()
 
-    var selectedGoal by remember { mutableStateOf<FitnessGoal?>(null) }
-
-    var age by remember { mutableStateOf("") }
-    var selectedGender by remember { mutableStateOf<Gender?>(null) }
-    var height by remember { mutableStateOf("") }
-    var weight by remember { mutableStateOf("") }
-    var selectedActivityLevel by remember { mutableStateOf<ActivityLevel?>(null) }
-    var targetWeight by remember { mutableStateOf("") }
-
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
-                .background(BackgroundWhite)
-        ) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                when (page) {
-                    0 -> WelcomePage()
-                    1 -> GoalSelectionPage(
-                        selectedGoal = selectedGoal,
-                        onGoalSelected = { selectedGoal = it }
-                    )
-                    2 -> PersonalizationPage(
-                        age = age,
-                        onAgeChange = { age = it },
-                        selectedGender = selectedGender,
-                        onGenderSelected = { selectedGender = it },
-                        height = height,
-                        onHeightChange = { height = it },
-                        weight = weight,
-                        onWeightChange = { weight = it },
-                        selectedActivityLevel = selectedActivityLevel,
-                        onActivityLevelSelected = { selectedActivityLevel = it },
-                        targetWeight = targetWeight,
-                        onTargetWeightChange = { targetWeight = it }
-                    )
-                }
-            }
-
-            // Page Indicators (Bottom Left)
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(32.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                repeat(3) { index ->
-                    PageIndicator(
-                        isActive = pagerState.currentPage == index,
-                        onClick = {
-                            scope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        }
-                    )
-                }
-            }
-
-            // CTA Button (Bottom Right)
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(32.dp)
-            ) {
-                when (pagerState.currentPage) {
-                    0 -> {
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    pagerState.animateScrollToPage(1)
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = PrimaryGreen
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.height(56.dp)
-                        ) {
-                            Text(
-                                text = "Get Started",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-                    1 -> {
-                        Button(
-                            onClick = {
-                                if (selectedGoal != null) {
-                                    scope.launch {
-                                        pagerState.animateScrollToPage(2)
-                                    }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (selectedGoal != null) PrimaryGreen else Color.Gray
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.height(56.dp),
-                            enabled = selectedGoal != null
-                        ) {
-                            Text(
-                                text = "Continue",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-                    2 -> {
-                        val isFormValid = age.isNotEmpty() &&
-                                selectedGender != null &&
-                                height.isNotEmpty() &&
-                                weight.isNotEmpty() &&
-                                selectedActivityLevel != null
-
-                        Button(
-                            onClick = {
-                                // TODO: Save onboarding data and navigate to main screen
-                                navController.navigate("nutrition") {
-                                    popUpTo(0) { inclusive = true }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isFormValid) PrimaryGreen else Color.Gray
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.height(56.dp),
-                            enabled = isFormValid
-                        ) {
-                            Text(
-                                text = "Generate Plan",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect { event ->
+            when (event) {
+                is OnboardingNavigationEvent.NavigateToHome -> {
+                    navController.navigate("home") {
+                        popUpTo("onboarding") { inclusive = true }
                     }
                 }
             }
         }
     }
 
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = BackgroundWhite
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding)) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                userScrollEnabled = false
+            ) { page ->
+                when (page) {
+                    0 -> WelcomePage()
+                    1 -> PersonalInfoPage(state, viewModel)
+                    2 -> GoalsAndActivityPage(state, viewModel)
+                    3 -> NutritionTargetsPage(state, viewModel)
+                    4 -> StepsTargetPage(state, viewModel)
+                }
+            }
 
-}
+            // Bottom Navigation
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 32.dp)
+            ) {
+                // Page Indicators
+                Row(
+                    Modifier.align(Alignment.CenterStart),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    repeat(5) { index ->
+                        val isSelected = pagerState.currentPage == index
+                        Box(
+                            modifier = Modifier
+                                .height(6.dp)
+                                .width(if (isSelected) 24.dp else 6.dp)
+                                .clip(CircleShape)
+                                .background(if (isSelected) PrimaryGreen else Color.LightGray)
+                                .animateContentSize()
+                        )
+                    }
+                }
 
-@Composable
-private fun PageIndicator(
-    isActive: Boolean,
-    onClick: () -> Unit
-) {
-    val width by animateFloatAsState(
-        targetValue = if (isActive) 32f else 8f,
-        animationSpec = tween(300),
-        label = "indicator_width"
-    )
+                // Navigation Buttons
+                Row(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Back Button
+                    if (pagerState.currentPage > 0) {
+                        FloatingActionButton(
+                            onClick = {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                }
+                            },
+                            modifier = Modifier.size(48.dp),
+                            containerColor = Color.White,
+                            contentColor = PrimaryGreen,
+                            shape = CircleShape,
+                            elevation = FloatingActionButtonDefaults.elevation(2.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    }
 
-    Box(
-        modifier = Modifier
-            .width(width.dp)
-            .height(8.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(
-                if (isActive) PrimaryGreen else Color.Gray.copy(alpha = 0.3f)
-            )
-            .clickable { onClick() }
-    )
+                    // Next/Complete Button
+                    FloatingActionButton(
+                        onClick = {
+                            scope.launch {
+                                if (pagerState.currentPage < 4) {
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                } else {
+                                    viewModel.completeOnboarding()
+                                }
+                            }
+                        },
+                        modifier = Modifier.size(56.dp),
+                        containerColor = PrimaryGreen,
+                        contentColor = Color.White,
+                        shape = CircleShape
+                    ) {
+                        if (state.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White
+                            )
+                        } else {
+                            Icon(
+                                imageVector = if (pagerState.currentPage == 4) Icons.Default.Check else Icons.Default.ArrowForward,
+                                contentDescription = "Next"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Error Snackbar
+        state.error?.let { error ->
+            LaunchedEffect(error) {
+                kotlinx.coroutines.delay(3000)
+                viewModel.clearError()
+            }
+        }
+    }
 }
 
 @Composable
@@ -251,646 +168,650 @@ private fun WelcomePage() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp)
-            .padding(bottom = 100.dp),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Illustration
         Box(
             modifier = Modifier
-                .size(280.dp)
-                .clip(RoundedCornerShape(24.dp))
+                .size(240.dp)
                 .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            PrimaryGreen.copy(alpha = 0.1f),
-                            SecondaryBlue.copy(alpha = 0.1f)
-                        )
-                    )
+                    Brush.radialGradient(listOf(PrimaryGreen.copy(0.15f), Color.Transparent)),
+                    CircleShape
                 ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Favorite,
                 contentDescription = null,
-                modifier = Modifier.size(140.dp),
+                modifier = Modifier.size(100.dp),
                 tint = PrimaryGreen
             )
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
-        // Title
         Text(
-            text = "Welcome to VitaFlow",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextPrimary,
-            textAlign = TextAlign.Center
+            text = "Your Health,\nFlowing Naturally",
+            style = MaterialTheme.typography.displaySmall.copy(
+                fontWeight = FontWeight.ExtraBold,
+                lineHeight = 40.sp
+            ),
+            textAlign = TextAlign.Center,
+            color = TextPrimary
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Subtitle
         Text(
-            text = "Your all-in-one fitness companion — track workouts, monitor nutrition, and hit your daily goals with confidence.",
-            fontSize = 16.sp,
-            color = TextSecondary,
+            text = "Let's personalize your journey to reach your fitness peaks without the guesswork.",
+            style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
-            lineHeight = 24.sp
+            color = TextSecondary,
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
+    }
+}
+
+@Composable
+private fun PersonalInfoPage(state: OnboardingState, viewModel: OnboardingViewModel) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp)
+    ) {
+        Text(
+            text = "About You",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
+        )
+        Text(
+            text = "Help us understand your body and create personalized targets",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextSecondary
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            BulletPoint(
-                icon = Icons.Default.Star,
-                text = "Personalized fitness and nutrition plans",
-                color = PrimaryGreen
-            )
-            BulletPoint(
-                icon = Icons.Default.Settings,
-                text = "Track calories with food search + barcode scanner",
-                color = SecondaryBlue
-            )
-            BulletPoint(
-                icon = Icons.Default.Settings,
-                text = "Monitor workouts, steps, and daily habits",
-                color = OrangeAccent
-            )
-        }
-    }
-}
-
-@Composable
-private fun BulletPoint(
-    icon: ImageVector,
-    text: String,
-    color: Color
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(color.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
+        // Gender Selection
         Text(
-            text = text,
-            fontSize = 14.sp,
-            color = TextPrimary,
-            modifier = Modifier.weight(1f)
+            text = "Gender",
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Gender.values().forEach { gender ->
+                SelectableChip(
+                    label = gender.name.lowercase().replaceFirstChar { it.uppercase() },
+                    selected = state.gender == gender,
+                    onClick = { viewModel.updateGender(gender) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Age Input
+        InputField(
+            label = "Age",
+            value = state.age.toString(),
+            onValueChange = { viewModel.updateAge(it.toIntOrNull() ?: state.age) },
+            suffix = "years",
+            keyboardType = KeyboardType.Number
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Weight Input
+        InputField(
+            label = "Weight",
+            value = state.weight.toString(),
+            onValueChange = { viewModel.updateWeight(it.toFloatOrNull() ?: state.weight) },
+            suffix = "kg",
+            keyboardType = KeyboardType.Decimal
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Height Input
+        InputField(
+            label = "Height",
+            value = state.height.toString(),
+            onValueChange = { viewModel.updateHeight(it.toFloatOrNull() ?: state.height) },
+            suffix = "cm",
+            keyboardType = KeyboardType.Decimal
         )
     }
 }
 
 @Composable
-private fun GoalSelectionPage(
-    selectedGoal: FitnessGoal?,
-    onGoalSelected: (FitnessGoal) -> Unit
-) {
-    LazyColumn(
+private fun GoalsAndActivityPage(state: OnboardingState, viewModel: OnboardingViewModel) {
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp)
-            .padding(bottom = 100.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp)
     ) {
-        item {
-            // Illustration
-            Box(
-                modifier = Modifier
-                    .size(200.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                PurpleAccent.copy(alpha = 0.1f),
-                                Color.Transparent
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = null,
-                    modifier = Modifier.size(100.dp),
-                    tint = PurpleAccent
+        Text(
+            text = "Your Goals",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
+        )
+        Text(
+            text = "What brings you here?",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextSecondary
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Fitness Goal Selection
+        Text(
+            text = "Fitness Goal",
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        FitnessGoal.values().forEach { goal ->
+            GoalCard(
+                title = when (goal) {
+                    FitnessGoal.LOSE_WEIGHT -> "Lose Weight"
+                    FitnessGoal.MAINTAIN_WEIGHT -> "Maintain Weight"
+                    FitnessGoal.GAIN_MUSCLE -> "Gain Muscle"
+                    FitnessGoal.IMPROVE_FITNESS -> "Improve Fitness"
+                },
+                description = when (goal) {
+                    FitnessGoal.LOSE_WEIGHT -> "Burn fat and shed pounds"
+                    FitnessGoal.MAINTAIN_WEIGHT -> "Stay healthy at current weight"
+                    FitnessGoal.GAIN_MUSCLE -> "Build strength and mass"
+                    FitnessGoal.IMPROVE_FITNESS -> "Boost endurance and health"
+                },
+                icon = when (goal) {
+                    FitnessGoal.LOSE_WEIGHT -> Icons.Default.Settings
+                    FitnessGoal.MAINTAIN_WEIGHT -> Icons.Default.Settings
+                    FitnessGoal.GAIN_MUSCLE -> Icons.Default.Settings
+                    FitnessGoal.IMPROVE_FITNESS -> Icons.Default.Settings
+                },
+                selected = state.fitnessGoal == goal,
+                onClick = { viewModel.updateGoal(goal) }
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Activity Level Selection
+        Text(
+            text = "Activity Level",
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        ActivityLevel.values().forEach { level ->
+            ActivityLevelCard(
+                title = when (level) {
+                    ActivityLevel.SEDENTARY -> "Sedentary"
+                    ActivityLevel.LIGHTLY_ACTIVE -> "Lightly Active"
+                    ActivityLevel.MODERATELY_ACTIVE -> "Moderately Active"
+                    ActivityLevel.VERY_ACTIVE -> "Very Active"
+                    ActivityLevel.EXTREMELY_ACTIVE -> "Extremely Active"
+                },
+                description = when (level) {
+                    ActivityLevel.SEDENTARY -> "Little to no exercise"
+                    ActivityLevel.LIGHTLY_ACTIVE -> "Exercise 1-3 times/week"
+                    ActivityLevel.MODERATELY_ACTIVE -> "Exercise 4-5 times/week"
+                    ActivityLevel.VERY_ACTIVE -> "Intense exercise 6-7 times/week"
+                    ActivityLevel.EXTREMELY_ACTIVE -> "Very intense daily exercise"
+                },
+                selected = state.activityLevel == level,
+                onClick = { viewModel.updateActivityLevel(level) }
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+    }
+}
+
+@Composable
+private fun NutritionTargetsPage(state: OnboardingState, viewModel: OnboardingViewModel) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp)
+    ) {
+        Text(
+            text = "Nutrition Targets",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
+        )
+        Text(
+            text = "Based on your profile, we recommend these daily targets",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextSecondary
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Calories Target
+        NutritionSlider(
+            label = "Daily Calories",
+            value = state.calorieTarget,
+            onValueChange = { viewModel.updateCalorieTarget(it) },
+            range = 1200f..4000f,
+            steps = 55,
+            unit = "kcal",
+            icon = Icons.Default.Settings,
+            color = OrangeAccent
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Protein Target
+        NutritionSlider(
+            label = "Protein",
+            value = state.proteinTarget,
+            onValueChange = { viewModel.updateProteinTarget(it) },
+            range = 50f..300f,
+            steps = 49,
+            unit = "g",
+            icon = Icons.Default.Settings,
+            color = PrimaryGreen
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Carbs Target
+        NutritionSlider(
+            label = "Carbohydrates",
+            value = state.carbsTarget,
+            onValueChange = { viewModel.updateCarbsTarget(it) },
+            range = 100f..500f,
+            steps = 79,
+            unit = "g",
+            icon = Icons.Default.Settings,
+            color = SecondaryBlue
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Fat Target
+        NutritionSlider(
+            label = "Fat",
+            value = state.fatTarget,
+            onValueChange = { viewModel.updateFatTarget(it) },
+            range = 30f..150f,
+            steps = 23,
+            unit = "g",
+            icon = Icons.Default.Settings,
+            color = PurpleAccent
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Water Target
+        NutritionSlider(
+            label = "Water Intake",
+            value = state.waterTarget,
+            onValueChange = { viewModel.updateWaterTarget(it) },
+            range = 1000f..5000f,
+            steps = 79,
+            unit = "ml",
+            icon = Icons.Default.Settings,
+            color = SecondaryBlue
+        )
+
+        Spacer(modifier = Modifier.height(80.dp))
+    }
+}
+
+@Composable
+private fun StepsTargetPage(state: OnboardingState, viewModel: OnboardingViewModel) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Default.Settings,
+            contentDescription = null,
+            modifier = Modifier.size(80.dp),
+            tint = PrimaryGreen
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Daily Activity Goal",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
+        )
+        Text(
+            text = "Movement is medicine. Set a step goal that challenges you.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextSecondary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 32.dp)
+        )
+
+        Spacer(modifier = Modifier.height(48.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(
+                    Brush.verticalGradient(
+                        listOf(PrimaryGreen.copy(0.1f), PrimaryGreen.copy(0.05f))
+                    )
                 )
+                .padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    "Daily Step Goal",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = TextSecondary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    state.stepsTarget.toString(),
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontWeight = FontWeight.Black,
+                        fontSize = 56.sp
+                    ),
+                    color = PrimaryGreen
+                )
+                Text(
+                    "steps",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextSecondary
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Slider(
+                    value = state.stepsTarget.toFloat(),
+                    onValueChange = { viewModel.updateStepsTarget(it.toInt()) },
+                    valueRange = 2000f..20000f,
+                    steps = 35,
+                    colors = SliderDefaults.colors(
+                        thumbColor = PrimaryGreen,
+                        activeTrackColor = PrimaryGreen,
+                        inactiveTrackColor = PrimaryGreen.copy(0.2f)
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("2,000", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Text("20,000", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                }
             }
         }
 
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        Spacer(modifier = Modifier.height(24.dp))
 
-        item {
+        Text(
+            "Recommended: ${when (state.activityLevel) {
+                ActivityLevel.SEDENTARY -> "5,000"
+                ActivityLevel.LIGHTLY_ACTIVE -> "7,500"
+                ActivityLevel.MODERATELY_ACTIVE -> "10,000"
+                ActivityLevel.VERY_ACTIVE -> "12,500"
+                ActivityLevel.EXTREMELY_ACTIVE -> "15,000"
+            }} steps based on your activity level",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSecondary,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun SelectableChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.height(48.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) PrimaryGreen else Color.White,
+        border = BorderStroke(
+            width = 2.dp,
+            color = if (selected) PrimaryGreen else Color.LightGray
+        )
+    ) {
+        Box(contentAlignment = Alignment.Center) {
             Text(
-                text = "What's Your Main Goal?",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary,
-                textAlign = TextAlign.Center
+                text = label,
+                color = if (selected) Color.White else TextSecondary,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
             )
         }
+    }
+}
 
-        item {
-            Text(
-                text = "We'll personalize your recommendations based on what you want to achieve.",
-                fontSize = 14.sp,
-                color = TextSecondary,
-                textAlign = TextAlign.Center,
-                lineHeight = 20.sp
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun InputField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    suffix: String,
+    keyboardType: KeyboardType
+) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            suffix = { Text(suffix) },
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            shape = RoundedCornerShape(12.dp),
+            colors = TextFieldDefaults.colors().copy(
+                focusedIndicatorColor = PrimaryGreen,
+                unfocusedIndicatorColor = Color.LightGray
             )
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        items(FitnessGoal.values().size) { index ->
-            val goal = FitnessGoal.values()[index]
-            GoalCard(
-                goal = goal,
-                isSelected = selectedGoal == goal,
-                onClick = { onGoalSelected(goal) }
-            )
-        }
+        )
     }
 }
 
 @Composable
 private fun GoalCard(
-    goal: FitnessGoal,
-    isSelected: Boolean,
+    title: String,
+    description: String,
+    icon: ImageVector,
+    selected: Boolean,
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) PrimaryGreen.copy(alpha = 0.1f) else Color.White
+            containerColor = if (selected) PrimaryGreen.copy(0.1f) else Color.White
         ),
-        border = if (isSelected) {
-            ButtonDefaults.outlinedButtonBorder.copy(
-                brush = Brush.linearGradient(
-                    colors = listOf(PrimaryGreen, SecondaryBlue)
-                ),
-                width = 2.dp
-            )
-        } else null,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 4.dp else 2.dp
-        )
+        border = BorderStroke(
+            width = 2.dp,
+            color = if (selected) PrimaryGreen else Color.LightGray
+        ),
+        elevation = CardDefaults.cardElevation(if (selected) 4.dp else 1.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(goal.color.copy(alpha = 0.1f)),
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(if (selected) PrimaryGreen else Color.LightGray.copy(0.3f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = goal.icon,
+                    imageVector = icon,
                     contentDescription = null,
-                    tint = goal.color,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = goal.title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
-                )
-                Text(
-                    text = goal.description,
-                    fontSize = 13.sp,
-                    color = TextSecondary,
-                    lineHeight = 18.sp
-                )
-            }
-
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    tint = PrimaryGreen,
+                    tint = if (selected) Color.White else TextSecondary,
                     modifier = Modifier.size(24.dp)
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun PersonalizationPage(
-    age: String,
-    onAgeChange: (String) -> Unit,
-    selectedGender: Gender?,
-    onGenderSelected: (Gender) -> Unit,
-    height: String,
-    onHeightChange: (String) -> Unit,
-    weight: String,
-    onWeightChange: (String) -> Unit,
-    selectedActivityLevel: ActivityLevel?,
-    onActivityLevelSelected: (ActivityLevel) -> Unit,
-    targetWeight: String,
-    onTargetWeightChange: (String) -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp)
-            .padding(bottom = 100.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        item {
-            Box(
-                modifier = Modifier
-                    .size(180.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                OrangeAccent.copy(alpha = 0.1f),
-                                Color.Transparent
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (selected) PrimaryGreen else TextPrimary
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+            if (selected) {
                 Icon(
-                    imageVector = Icons.Default.Person,
+                    imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
-                    modifier = Modifier.size(90.dp),
-                    tint = OrangeAccent
+                    tint = PrimaryGreen
                 )
             }
-        }
-
-        item {
-            Text(
-                text = "Let's Personalize Your Plan",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary,
-                textAlign = TextAlign.Center
-            )
-        }
-
-        item {
-            Text(
-                text = "A few details help us calculate your daily calorie and nutrition targets.",
-                fontSize = 14.sp,
-                color = TextSecondary,
-                textAlign = TextAlign.Center,
-                lineHeight = 20.sp
-            )
-        }
-
-        // Age Input
-        item {
-            OutlinedTextField(
-                value = age,
-                onValueChange = { if (it.isEmpty() || it.all { c -> c.isDigit() }) onAgeChange(it) },
-                label = { Text("Age") },
-                leadingIcon = {
-                    Icon(Icons.Default.DateRange, contentDescription = null)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryGreen,
-                    focusedLabelColor = PrimaryGreen,
-                    cursorColor = PrimaryGreen
-                )
-            )
-        }
-
-        // Gender Selection
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Gender",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = TextPrimary
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Gender.values().forEach { gender ->
-                        GenderChip(
-                            gender = gender,
-                            isSelected = selectedGender == gender,
-                            onClick = { onGenderSelected(gender) },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-        }
-
-        // Height Input
-        item {
-            OutlinedTextField(
-                value = height,
-                onValueChange = { if (it.isEmpty() || it.all { c -> c.isDigit() }) onHeightChange(it) },
-                label = { Text("Height (cm)") },
-                leadingIcon = {
-                    Icon(Icons.Default.Settings, contentDescription = null)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryGreen,
-                    focusedLabelColor = PrimaryGreen,
-                    cursorColor = PrimaryGreen
-                )
-            )
-        }
-
-        // Weight Input
-        item {
-            OutlinedTextField(
-                value = weight,
-                onValueChange = { if (it.isEmpty() || it.all { c -> c.isDigit() }) onWeightChange(it) },
-                label = { Text("Weight (kg)") },
-                leadingIcon = {
-                    Icon(Icons.Default.Settings, contentDescription = null)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryGreen,
-                    focusedLabelColor = PrimaryGreen,
-                    cursorColor = PrimaryGreen
-                )
-            )
-        }
-
-        // Activity Level
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Activity Level",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = TextPrimary
-                )
-            }
-        }
-
-        items(ActivityLevel.values().size) { index ->
-            val level = ActivityLevel.values()[index]
-            ActivityLevelCard(
-                level = level,
-                isSelected = selectedActivityLevel == level,
-                onClick = { onActivityLevelSelected(level) }
-            )
-        }
-
-        // Target Weight (Optional)
-        item {
-            OutlinedTextField(
-                value = targetWeight,
-                onValueChange = { if (it.isEmpty() || it.all { c -> c.isDigit() }) onTargetWeightChange(it) },
-                label = { Text("Target Weight (kg) - Optional") },
-                leadingIcon = {
-                    Icon(Icons.Default.Settings, contentDescription = null)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryGreen,
-                    focusedLabelColor = PrimaryGreen,
-                    cursorColor = PrimaryGreen
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun GenderChip(
-    gender: Gender,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .height(60.dp)
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) PrimaryGreen.copy(alpha = 0.1f) else Color.White
-        ),
-        border = if (isSelected) {
-            ButtonDefaults.outlinedButtonBorder.copy(
-                brush = Brush.linearGradient(colors = listOf(PrimaryGreen, PrimaryGreen)),
-                width = 2.dp
-            )
-        } else null
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = gender.icon,
-                contentDescription = null,
-                tint = if (isSelected) PrimaryGreen else TextSecondary,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = gender.label,
-                fontSize = 14.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                color = if (isSelected) PrimaryGreen else TextPrimary
-            )
         }
     }
 }
 
 @Composable
 private fun ActivityLevelCard(
-    level: ActivityLevel,
-    isSelected: Boolean,
+    title: String,
+    description: String,
+    selected: Boolean,
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) PrimaryGreen.copy(alpha = 0.1f) else Color.White
+            containerColor = if (selected) PrimaryGreen.copy(0.1f) else Color.White
         ),
-        border = if (isSelected) {
-            ButtonDefaults.outlinedButtonBorder.copy(
-                brush = Brush.linearGradient(colors = listOf(PrimaryGreen, SecondaryBlue)),
-                width = 2.dp
-            )
-        } else null,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 2.dp else 1.dp
+        border = BorderStroke(
+            width = 2.dp,
+            color = if (selected) PrimaryGreen else Color.LightGray
         )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = level.icon,
-                contentDescription = null,
-                tint = if (isSelected) PrimaryGreen else TextSecondary,
-                modifier = Modifier.size(24.dp)
-            )
-
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = level.title,
-                    fontSize = 15.sp,
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (isSelected) PrimaryGreen else TextPrimary
+                    color = if (selected) PrimaryGreen else TextPrimary
                 )
                 Text(
-                    text = level.description,
-                    fontSize = 12.sp,
-                    color = TextSecondary,
-                    lineHeight = 16.sp
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
                 )
             }
-
-            if (isSelected) {
+            if (selected) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
-                    tint = PrimaryGreen,
-                    modifier = Modifier.size(20.dp)
+                    tint = PrimaryGreen
                 )
             }
         }
     }
 }
 
-
-enum class FitnessGoal(
-    val title: String,
-    val description: String,
-    val icon: ImageVector,
-    val color: Color
-) {
-    LOSE_WEIGHT(
-        "Lose Weight",
-        "Burn calories and shed pounds with a calorie deficit plan",
-        Icons.Default.Settings,
-        Color(0xFFE91E63)
-    ),
-    MAINTAIN_WEIGHT(
-        "Maintain Weight",
-        "Keep your current weight with balanced nutrition",
-        Icons.Default.Settings,
-        SecondaryBlue
-    ),
-    BUILD_MUSCLE(
-        "Build Muscle",
-        "Gain strength and muscle mass with protein-rich diet",
-        Icons.Default.Settings,
-        PrimaryGreen
-    ),
-    IMPROVE_FITNESS(
-        "Improve Fitness",
-        "Boost endurance and overall health",
-        Icons.Default.Settings,
-        OrangeAccent
-    ),
-    EAT_HEALTHIER(
-        "Eat Healthier",
-        "Focus on nutritious, wholesome foods",
-        Icons.Default.Settings,
-        PurpleAccent
-    )
-}
-
-enum class Gender(val label: String, val icon: ImageVector) {
-    MALE("Male", Icons.Default.Person),
-    FEMALE("Female", Icons.Default.Settings),
-    OTHER("Other", Icons.Outlined.Person)
-}
-
-enum class ActivityLevel(
-    val title: String,
-    val description: String,
-    val icon: ImageVector
-) {
-    SEDENTARY(
-        "Sedentary",
-        "Little to no exercise, desk job",
-        Icons.Default.Settings
-    ),
-    LIGHTLY_ACTIVE(
-        "Lightly Active",
-        "Light exercise 1-3 days/week",
-        Icons.Default.Settings
-    ),
-    MODERATELY_ACTIVE(
-        "Moderately Active",
-        "Moderate exercise 3-5 days/week",
-        Icons.Default.Settings
-    ),
-    VERY_ACTIVE(
-        "Very Active",
-        "Intense exercise 6-7 days/week",
-        Icons.Default.Settings
-    )
-}
-
-@Preview(showBackground = true)
 @Composable
-private fun DefaultPreview() {
-    OnboardingScreen(rememberNavController())
+private fun NutritionSlider(
+    label: String,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    range: ClosedFloatingPointRange<Float>,
+    steps: Int,
+    unit: String,
+    icon: ImageVector,
+    color: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = color.copy(0.05f)),
+        elevation = CardDefaults.cardElevation(0.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = color,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Text(
+                    text = "$value $unit",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = color
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Slider(
+                value = value.toFloat(),
+                onValueChange = { onValueChange(it.toInt()) },
+                valueRange = range,
+                steps = steps,
+                colors = SliderDefaults.colors(
+                    thumbColor = color,
+                    activeTrackColor = color,
+                    inactiveTrackColor = color.copy(0.2f)
+                )
+            )
+        }
+    }
 }
