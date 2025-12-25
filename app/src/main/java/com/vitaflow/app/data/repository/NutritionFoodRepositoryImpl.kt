@@ -13,9 +13,11 @@ import com.vitaflow.app.domain.models.RecipeModel
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import com.vitaflow.app.data.mappers.recipe.toDomainList
 import com.vitaflow.app.domain.models.RecipeDetail
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -49,7 +51,7 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             emit(Result.failure(e))
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun getFoodDetail(foodId: Int, apiKey: String): Flow<Result<NutritionFood>> = flow {
         try {
@@ -65,7 +67,8 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             emit(Result.failure(e))
         }
-    }
+    }.flowOn(Dispatchers.IO)
+
 
     override suspend fun insertNutrition(dailyNutrition: DailyNutrition) {
         dao.insertNutrition(dailyNutrition)
@@ -201,14 +204,16 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         }catch (e: Exception){
             emit(Result.failure(e))
         }
-    }
+    }.flowOn(Dispatchers.IO)
+
 
     override suspend fun searchRecipes(query: String, apiKey: String): Flow<List<RecipeModel>> = flow {
         val response = spoonacularAPI.searchRecipes(query = query, apiKey = apiKey)
         if (!response.isSuccessful) throw Exception("API Error ${response.code()}: ${response.errorBody()?.string()}")
         val body = response.body() ?: throw Exception("Response body is null")
         emit(body.toDomainList())
-    }
+    }.flowOn(Dispatchers.IO)
+
 
     override suspend fun getRecipesDetail(
         recipeId: Int,
@@ -218,7 +223,7 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         if (!res.isSuccessful) throw Exception("API Error ${res.code()}: ${res.errorBody()?.string()}")
         val body = res.body() ?: throw Exception("Response body is null")
         emit(body.toDomain())
-    }
+    }.flowOn(Dispatchers.IO)
 }
 
     private fun mapDetailDtoToNutritionFood(dto: NutritionFoodDetailDTO): NutritionFood {
