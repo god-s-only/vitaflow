@@ -1,17 +1,16 @@
 package com.vitaflow.app.presentation.ui.features.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,19 +23,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.domain.models.Exercise
-import kotlin.random.Random
 
 // App Theme Colors
 val PrimaryGreen = Color(0xFF00C853)
@@ -53,13 +49,10 @@ fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val uiState = viewModel.state.collectAsStateWithLifecycle()
 
-    // Random character image for featured workout
-    val randomAnimeCharacter by remember {
-        mutableStateOf(animeCharacterImages.random())
-    }
+    // Random character image - computed once
+    val randomAnimeCharacter = remember { animeCharacterImages.random() }
 
     Scaffold(
         topBar = {
@@ -93,28 +86,92 @@ fun HomeScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .padding(bottom = 80.dp),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            item {
-                // Welcome Header
+            item(key = "welcome") {
                 WelcomeHeader()
             }
 
-            item {
-                // Featured Workout Card
+            item(key = "featured") {
                 FeaturedWorkoutCard(randomAnimeCharacter)
             }
 
-            item {
-                // Workout Types Section
-                WorkoutTypesSection(uiState, navController)
+            item(key = "workout_header") {
+                WorkoutCategoriesHeader()
+            }
+            item(key = "workout_cards") {
+                when {
+                    uiState.value.isLoading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = PrimaryGreen)
+                        }
+                    }
+
+                    uiState.value.error != null || uiState.value.exercises.isEmpty() -> {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            sampleExercises.forEach { exercise ->
+                                WorkoutTypeCard(
+                                    exercise = exercise,
+                                    onClick = {}
+                                )
+                            }
+                        }
+                    }
+
+                    else -> {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            uiState.value.exercises.forEach { exercise ->
+                                WorkoutTypeCard(
+                                    exercise = exercise,
+                                    onClick = {
+                                        navController.navigate(Routes.WORKOUTSCREEN + "/${exercise.exerciseId}")
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
-            item {
-                // Quick Training Section (Redesigned Additional Training)
-                QuickTrainingSection()
+            item(key = "quick_training_header") {
+                Text(
+                    text = "Quick Training Sessions",
+                    fontSize = 22.sp,
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            // Quick Training Cards - directly in LazyColumn
+            items(
+                items = quickTrainingItems,
+                key = { it.name }
+            ) { training ->
+                QuickTrainingCard(training = training)
+            }
+
+            // Bottom spacer for better scrolling
+            item(key = "bottom_spacer") {
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -140,6 +197,30 @@ private fun WelcomeHeader() {
 }
 
 @Composable
+private fun WorkoutCategoriesHeader() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Workout Categories",
+            fontSize = 22.sp,
+            color = TextPrimary,
+            fontWeight = FontWeight.Bold
+        )
+
+        TextButton(onClick = { /* TODO: See all */ }) {
+            Text(
+                text = "See All",
+                color = PrimaryGreen,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Composable
 private fun FeaturedWorkoutCard(character: AnimeCharacter) {
     Card(
         modifier = Modifier
@@ -149,9 +230,7 @@ private fun FeaturedWorkoutCard(character: AnimeCharacter) {
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
             // Background Image
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
@@ -184,10 +263,7 @@ private fun FeaturedWorkoutCard(character: AnimeCharacter) {
                     .padding(24.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Top badges
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Badge(
                         text = "Featured",
                         backgroundColor = CardWhite.copy(alpha = 0.9f),
@@ -200,7 +276,6 @@ private fun FeaturedWorkoutCard(character: AnimeCharacter) {
                     )
                 }
 
-                // Bottom content
                 Column {
                     Text(
                         text = "Today's Featured Workout",
@@ -211,106 +286,12 @@ private fun FeaturedWorkoutCard(character: AnimeCharacter) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(20.dp)
-                    ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                         InfoChip(icon = "🔥", text = "350 kcal")
                         InfoChip(icon = "⏱️", text = "45 min")
                         InfoChip(icon = "⭐", text = "4.8")
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun WorkoutTypesSection(
-    uiState: State<com.vitaflow.app.presentation.ui.features.home.HomeState>,
-    navController: NavController
-) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Workout Categories",
-                fontSize = 22.sp,
-                color = TextPrimary,
-                fontWeight = FontWeight.Bold
-            )
-
-            TextButton(onClick = { /* TODO: See all */ }) {
-                Text(
-                    text = "See All",
-                    color = PrimaryGreen,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        when {
-            uiState.value.isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = PrimaryGreen)
-                }
-            }
-
-            uiState.value.error != null -> {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(sampleExercises) { exercise ->
-                        WorkoutTypeCard(exercise = exercise) {}
-                    }
-                }
-            }
-
-            uiState.value.exercises.isEmpty() -> {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(sampleExercises) { exercise ->
-                        WorkoutTypeCard(exercise = exercise) {}
-                    }
-                }
-            }
-
-            else -> {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(uiState.value.exercises) { exercise ->
-                        WorkoutTypeCard(exercise = exercise) {
-                            navController.navigate(Routes.WORKOUTSCREEN + "/${exercise.exerciseId}")
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun QuickTrainingSection() {
-    Column {
-        Text(
-            text = "Quick Training Sessions",
-            fontSize = 22.sp,
-            color = TextPrimary,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            quickTrainingItems.forEach { training ->
-                QuickTrainingCard(training = training)
             }
         }
     }
@@ -332,7 +313,6 @@ private fun QuickTrainingCard(training: QuickTraining) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon/Image placeholder
             Box(
                 modifier = Modifier
                     .size(60.dp)
@@ -344,18 +324,12 @@ private fun QuickTrainingCard(training: QuickTraining) {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = training.emoji,
-                    fontSize = 24.sp
-                )
+                Text(text = training.emoji, fontSize = 24.sp)
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Content
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = training.name,
                     fontSize = 16.sp,
@@ -373,16 +347,13 @@ private fun QuickTrainingCard(training: QuickTraining) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     InfoTag(text = "${training.duration} min", color = PrimaryGreen)
                     InfoTag(text = "${training.calories} kcal", color = LightGreen)
                     InfoTag(text = training.level, color = DarkGreen)
                 }
             }
 
-            // Arrow
             Icon(
                 painter = painterResource(id = android.R.drawable.ic_menu_send),
                 contentDescription = "Start workout",
@@ -433,10 +404,7 @@ private fun InfoChip(icon: String, text: String) {
 private fun InfoTag(text: String, color: Color) {
     Box(
         modifier = Modifier
-            .background(
-                color.copy(alpha = 0.1f),
-                RoundedCornerShape(8.dp)
-            )
+            .background(color.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
@@ -451,19 +419,19 @@ private fun InfoTag(text: String, color: Color) {
 @Composable
 fun WorkoutTypeCard(
     exercise: Exercise,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
-            .width(160.dp)
-            .height(200.dp)
+        modifier = modifier
+            .width(280.dp)
+            .height(180.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = CardWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Background Image
             if (exercise.gifUrl.isNotEmpty()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -485,8 +453,6 @@ fun WorkoutTypeCard(
                         )
                 )
             }
-
-            // Green gradient overlay
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -501,8 +467,6 @@ fun WorkoutTypeCard(
                         )
                     )
             )
-
-            // Content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -510,7 +474,7 @@ fun WorkoutTypeCard(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Text(
-                    text = exercise.name.take(20),
+                    text = exercise.name.take(25),
                     color = CardWhite,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
@@ -547,7 +511,7 @@ data class AnimeCharacter(
     val imageUrl: String
 )
 
-// Sample data with updated content
+// Sample data
 val quickTrainingItems = listOf(
     QuickTraining(
         name = "Morning Energy Boost",
@@ -601,7 +565,6 @@ val animeCharacterImages = listOf(
     )
 )
 
-// Sample exercises with green theme
 val sampleExercises = listOf(
     Exercise(
         exerciseId = "1",
@@ -644,9 +607,3 @@ val sampleExercises = listOf(
         targetMuscles = listOf("legs", "arms")
     )
 )
-
-@Preview
-@Composable
-fun HomeScreenPreview() {
-    HomeScreen(navController = rememberNavController())
-}

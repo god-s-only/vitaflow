@@ -1,26 +1,19 @@
 package com.vitaflow.app.presentation.ui
 
 import android.animation.ObjectAnimator
-import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.animation.OvershootInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,6 +27,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,6 +37,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -71,13 +66,8 @@ import com.vitaflow.app.presentation.ui.features.steps.StepsTrackerScreenContain
 import com.vitaflow.app.presentation.ui.features.workout.WorkoutBodyPartsScreen
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
-
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -101,7 +91,6 @@ class MainActivity : ComponentActivity() {
         }
 
         super.onCreate(savedInstanceState)
-
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
 
@@ -112,74 +101,44 @@ class MainActivity : ComponentActivity() {
         }
         actionBar?.hide()
 
-        CoroutineScope(Dispatchers.IO).launch {
-            delay(3000)
+        lifecycleScope.launch {
+            delay(2000)
             showSplashScreen = false
         }
     }
 }
 
+private val ROUTES_WITH_BOTTOM_BAR = setOf(
+    Routes.HOMESCREEN,
+    Routes.NUTRITIONSCREEN,
+    Routes.WORKOUT_BODY_PARTS_SCREEN,
+    Routes.STEPS_CONTAINER_SCREEN,
+    Routes.PROFILESCREEN
+)
+
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainContent() {
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryAsState()
 
-    val viewModel: SignInViewModel = hiltViewModel()
-    val state by viewModel.state.collectAsState()
-
-    
-
-    val shouldShowBottomBar = currentRoute?.destination?.route?.let { route ->
-        route != Routes.SIGNINSCREEN &&
-                route != Routes.FOODSEARCHSCREEN + "/{mealType}" &&
-                route != Routes.SIGNUPSCREEN &&
-                route != Routes.BARCODE_SCREEN + "/{mealType}" &&
-                route != Routes.ONBOARDINGSCREEN &&
-                route != Routes.RECIPES_SCREEN &&
-                route != Routes.STEPS_SETTINGS_SCREEN &&
-                route != Routes.WORKOUT_BODY_PARTS_SELECTED_SCREEN + "/{bodyPart}" &&
-                route != Routes.RECIPE_START_COOKING + "/{recipeId}" &&
-                route != Routes.RECIPES_DETAIL_SCREEN + "/{recipeId}" &&
-                route != Routes.NUTRITIONSCREENSETTINGS &&
-                !route.startsWith(Routes.WORKOUTSCREEN)
-    } ?: false
+    val shouldShowBottomBar = remember(currentRoute?.destination?.route) {
+        currentRoute?.destination?.route in ROUTES_WITH_BOTTOM_BAR
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF8F9FA))
     ) {
-
         NavHost(
             navController = navController,
-            startDestination = Routes.ONBOARDINGSCREEN,
+            startDestination = Routes.SIGNINSCREEN,
             modifier = Modifier.fillMaxSize(),
-            enterTransition = {
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(300)
-                ) + fadeIn(animationSpec = tween(300))
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(300)
-                ) + fadeOut(animationSpec = tween(300))
-            },
-            popEnterTransition = {
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(300)
-                ) + fadeIn(animationSpec = tween(300))
-            },
-            popExitTransition = {
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(300)
-                ) + fadeOut(animationSpec = tween(300))
-            }
+            enterTransition = { fadeIn(animationSpec = tween(200)) },
+            exitTransition = { fadeOut(animationSpec = tween(200)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(200)) },
+            popExitTransition = { fadeOut(animationSpec = tween(200)) }
         ) {
             composable(Routes.SIGNINSCREEN) {
                 SignInScreen(navController)
@@ -188,34 +147,18 @@ private fun MainContent() {
                 SignUpScreen(navController)
             }
             composable(Routes.HOMESCREEN) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = if (shouldShowBottomBar) 80.dp else 0.dp)
-                ) {
-                    HomeScreen(navController)
-                }
+                HomeScreen(navController)
             }
             composable(Routes.NUTRITIONSCREEN) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = if (shouldShowBottomBar) 80.dp else 0.dp)
-                ) {
-                    NutritionScreen(navController)
-                }
+                NutritionScreen(navController)
             }
             composable(Routes.WORKOUTSCREEN + "/{exerciseId}") {
                 ExerciseDetailScreen(navController = navController)
             }
             composable(
                 route = Routes.FOODSEARCHSCREEN + "/{mealType}",
-                arguments = listOf(
-                    navArgument("mealType"){
-                        type = NavType.StringType
-                    }
-                )
-            ){ backStackEntry ->
+                arguments = listOf(navArgument("mealType") { type = NavType.StringType })
+            ) { backStackEntry ->
                 val mealType = backStackEntry.arguments?.getString("mealType") ?: "breakfast"
                 FoodSearchScreen(navController = navController, mealType)
             }
@@ -232,7 +175,7 @@ private fun MainContent() {
             composable(Routes.RECIPES_SCREEN) {
                 RecipeScreen(navController = navController)
             }
-            composable(Routes.RECIPES_DETAIL_SCREEN +"/{recipeId}") {
+            composable(Routes.RECIPES_DETAIL_SCREEN + "/{recipeId}") {
                 RecipeDetailScreen(navController = navController)
             }
             composable(Routes.RECIPE_START_COOKING + "/{recipeId}") {
@@ -244,11 +187,10 @@ private fun MainContent() {
             composable(Routes.WORKOUT_BODY_PARTS_SCREEN) {
                 WorkoutBodyPartsScreen(navController = navController)
             }
-            composable(Routes.WORKOUT_BODY_PARTS_SELECTED_SCREEN + "/{bodyPart}", arguments = listOf(
-                navArgument("bodyPart"){
-                    type = NavType.StringType
-                }
-            )) {
+            composable(
+                Routes.WORKOUT_BODY_PARTS_SELECTED_SCREEN + "/{bodyPart}",
+                arguments = listOf(navArgument("bodyPart") { type = NavType.StringType })
+            ) {
                 val bodyPart = it.arguments?.getString("bodyPart") ?: ""
                 ExercisesScreen(bodyPart)
             }
@@ -257,103 +199,90 @@ private fun MainContent() {
             }
         }
 
-        if (shouldShowBottomBar) {
-            ProfessionalBottomBar(
-                navController = navController,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
+        AnimatedBottomBar(
+            visible = shouldShowBottomBar,
+            navController = navController,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+}
+
+@Composable
+private fun AnimatedBottomBar(
+    visible: Boolean,
+    navController: NavController,
+    modifier: Modifier = Modifier
+) {
+    val offsetY by animateDpAsState(
+        targetValue = if (visible) 0.dp else 100.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "bottom_bar_offset"
+    )
+
+    val alpha by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "bottom_bar_alpha"
+    )
+
+    if (visible || offsetY < 100.dp) {
+        Surface(
+            modifier = modifier
+                .fillMaxWidth()
+                .offset(y = offsetY)
+                .graphicsLayer { this.alpha = alpha }
+                .windowInsetsPadding(WindowInsets.navigationBars),
+            color = Color.White,
+            shadowElevation = 16.dp,
+            tonalElevation = 8.dp
+        ) {
+            ProfessionalBottomBarContent(navController)
         }
     }
 }
 
 @Composable
-private fun ProfessionalBottomBar(
-    navController: NavController,
-    modifier: Modifier = Modifier
-) {
+private fun ProfessionalBottomBarContent(navController: NavController) {
     val currentRoute by navController.currentBackStackEntryAsState()
     val currentDestination = currentRoute?.destination?.route
 
-    Surface(
-        modifier = modifier
+    Row(
+        modifier = Modifier
             .fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.navigationBars),
-        color = Color.White,
-        shadowElevation = 16.dp,
-        tonalElevation = 8.dp
+            .height(70.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp)
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            bottomNavItems.forEach { item ->
-                val isSelected = when (item.title) {
-                    "Home" -> currentDestination == Routes.HOMESCREEN
-                    "Nutrition" -> currentDestination == Routes.NUTRITIONSCREEN
-                    "Workout" -> currentDestination == Routes.WORKOUT_BODY_PARTS_SCREEN
-                    "Steps" -> currentDestination == Routes.STEPS_CONTAINER_SCREEN
-                    "Profile" -> currentDestination?.startsWith("profile") == true
-                    else -> false
-                }
-
-                BottomNavItem(
-                    item = item,
-                    isSelected = isSelected,
-                    onClick = {
-                        when (item.title) {
-                            "Home" -> {
-                                if (currentDestination != Routes.HOMESCREEN) {
-                                    navController.navigate(Routes.HOMESCREEN) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            }
-                            "Nutrition" -> {
-                                if (currentDestination != Routes.NUTRITIONSCREEN) {
-                                    navController.navigate(Routes.NUTRITIONSCREEN) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            }
-                            "Workout" -> {
-                                if (currentDestination != Routes.WORKOUT_BODY_PARTS_SCREEN) {
-                                    navController.navigate(Routes.WORKOUT_BODY_PARTS_SCREEN) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            }
-                            "Steps" -> {
-                                if (currentDestination != Routes.STEPS_CONTAINER_SCREEN) {
-                                    navController.navigate(Routes.STEPS_CONTAINER_SCREEN) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    modifier = Modifier.weight(1f)
-                )
+        bottomNavItems.forEach { item ->
+            val isSelected = when (item.route) {
+                Routes.HOMESCREEN -> currentDestination == Routes.HOMESCREEN
+                Routes.NUTRITIONSCREEN -> currentDestination == Routes.NUTRITIONSCREEN
+                Routes.WORKOUT_BODY_PARTS_SCREEN -> currentDestination == Routes.WORKOUT_BODY_PARTS_SCREEN
+                Routes.STEPS_CONTAINER_SCREEN -> currentDestination == Routes.STEPS_CONTAINER_SCREEN
+                Routes.PROFILESCREEN -> currentDestination == Routes.PROFILESCREEN
+                else -> false
             }
+
+            BottomNavItem(
+                item = item,
+                isSelected = isSelected,
+                onClick = {
+                    if (currentDestination != item.route) {
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
@@ -365,17 +294,41 @@ private fun BottomNavItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) Color(0xFF00C853) else Color.Transparent,
+        animationSpec = tween(durationMillis = 300),
+        label = "nav_bg_color"
+    )
+
+    val iconTint by animateColorAsState(
+        targetValue = if (isSelected) Color.White else Color.Gray,
+        animationSpec = tween(durationMillis = 300),
+        label = "nav_icon_tint"
+    )
+
+    val textColor by animateColorAsState(
+        targetValue = if (isSelected) Color(0xFF00C853) else Color.Gray,
+        animationSpec = tween(durationMillis = 300),
+        label = "nav_text_color"
+    )
+
     Column(
         modifier = modifier
-            .padding(vertical = 4.dp)
-            .clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
+            .clickable(
+                onClick = onClick,
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            )
+            .padding(horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
+        // Icon Container
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(44.dp)
                 .background(
-                    color = if (isSelected) Color.Black else Color.Transparent,
+                    color = backgroundColor,
                     shape = RoundedCornerShape(12.dp)
                 ),
             contentAlignment = Alignment.Center
@@ -383,18 +336,18 @@ private fun BottomNavItem(
             Icon(
                 imageVector = item.icon,
                 contentDescription = item.title,
-                modifier = Modifier.size(20.dp),
-                tint = if (isSelected) Color.White else Color.Gray
+                modifier = Modifier.size(22.dp),
+                tint = iconTint
             )
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
         Text(
             text = item.title,
-            fontSize = 10.sp,
+            fontSize = 11.sp,
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (isSelected) Color.Black else Color.Gray,
+            color = textColor,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -403,13 +356,14 @@ private fun BottomNavItem(
 
 data class BottomNavItem(
     val title: String,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val route: String
 )
 
 private val bottomNavItems = listOf(
-    BottomNavItem("Home", Icons.Outlined.Home),
-    BottomNavItem("Nutrition", Icons.Outlined.FavoriteBorder),
-    BottomNavItem("Workout", Icons.Default.Star),
-    BottomNavItem("Steps", Icons.Default.Menu),
-    BottomNavItem("Profile", Icons.Outlined.Person)
+    BottomNavItem("Home", Icons.Outlined.Home, Routes.HOMESCREEN),
+    BottomNavItem("Nutrition", Icons.Outlined.FavoriteBorder, Routes.NUTRITIONSCREEN),
+    BottomNavItem("Workout", Icons.Default.Star, Routes.WORKOUT_BODY_PARTS_SCREEN),
+    BottomNavItem("Steps", Icons.Default.Menu, Routes.STEPS_CONTAINER_SCREEN),
+    BottomNavItem("Profile", Icons.Outlined.Person, Routes.PROFILESCREEN)
 )

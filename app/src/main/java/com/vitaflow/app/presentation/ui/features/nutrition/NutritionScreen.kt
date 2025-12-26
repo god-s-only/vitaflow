@@ -1,3 +1,4 @@
+
 package com.vitaflow.app.presentation.ui.features.nutrition
 
 import android.widget.Toast
@@ -7,11 +8,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,17 +28,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -47,6 +43,7 @@ import com.vitaflow.app.common.Routes
 import com.vitaflow.app.domain.models.Food
 import java.text.SimpleDateFormat
 import java.util.*
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NutritionScreen(
@@ -56,8 +53,6 @@ fun NutritionScreen(
     val uiState = viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-
-
 
     // Handle navigation events
     LaunchedEffect(Unit) {
@@ -93,9 +88,7 @@ fun NutritionScreen(
         savedStateHandle?.getStateFlow<Food?>("scanned_food", null)?.collect { food ->
             if (food != null) {
                 val mealType = savedStateHandle.get<String>("meal_type") ?: "breakfast"
-
                 viewModel.addFoodToMeal(food, mealType, 100.0)
-
                 savedStateHandle.remove<Food>("scanned_food")
                 savedStateHandle.remove<String>("meal_type")
             }
@@ -127,20 +120,14 @@ fun NutritionScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        navController.navigate("food_search/all")
-                    }) {
+                    IconButton(onClick = { navController.navigate("food_search/all") }) {
                         Icon(
                             imageVector = Icons.Filled.Search,
                             contentDescription = "Search Food",
                             tint = Color.Black
                         )
                     }
-                    IconButton(
-                        onClick = {
-                        navController.navigate(Routes.NUTRITIONSCREENSETTINGS)
-                    }
-                    ) {
+                    IconButton(onClick = { navController.navigate(Routes.NUTRITIONSCREENSETTINGS) }) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Settings",
@@ -154,7 +141,6 @@ fun NutritionScreen(
         containerColor = Color(0xFFF8F9FA)
     ) { paddingValues ->
 
-        // Show loading indicator
         if (uiState.value.isLoading) {
             Box(
                 modifier = Modifier
@@ -165,22 +151,24 @@ fun NutritionScreen(
                 CircularProgressIndicator()
             }
         } else {
+            // CRITICAL: Single LazyColumn with NO nested LazyRows
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
+                    .padding(paddingValues)
+                    .padding(bottom = 80.dp), // Space for bottom nav
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Show error if any
+                // Error Card
                 uiState.value.error?.let { error ->
-                    item {
+                    item(key = "error") {
                         ErrorCard(error = error)
                     }
                 }
 
-                // Calorie Overview Card
-                item {
+                // Calorie Overview
+                item(key = "calorie_overview") {
                     CalorieOverviewCard(
                         totalCalories = uiState.value.totalCalories,
                         targetCalories = uiState.value.targetCalories,
@@ -189,8 +177,8 @@ fun NutritionScreen(
                     )
                 }
 
-                // Macronutrients Card
-                item {
+                // Macronutrients
+                item(key = "macronutrients") {
                     MacronutrientsCard(
                         carbs = uiState.value.carbs,
                         protein = uiState.value.protein,
@@ -198,52 +186,122 @@ fun NutritionScreen(
                     )
                 }
 
-                // Quick Add Buttons
-                item {
-                    QuickAddSection(
-                        onActionClick = { action ->
-                            viewModel.onQuickAddClick(action)
-                        }
+                // Quick Add Section Header
+                item(key = "quick_add_header") {
+                    Text(
+                        text = "Quick Add",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
 
-                // Meals Section
-                item {
-                    MealsSection(
-                        meals = uiState.value.meals,
-                        onAddMeal = { mealType ->
-                            viewModel.onAddMealClick(mealType)
-                        },
-                        onRemoveFood = { entryId ->
-                            viewModel.removeFoodEntry(entryId)
+                // Quick Add Buttons - HORIZONTAL ROW (not LazyRow)
+                item(key = "quick_add_buttons") {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        quickAddItems.forEach { item ->
+                            QuickAddButton(
+                                icon = item.icon,
+                                label = item.label,
+                                color = item.color,
+                                onClick = { viewModel.onQuickAddClick(item.action) }
+                            )
                         }
+                    }
+                }
+
+                // Meals Section Header
+                item(key = "meals_header") {
+                    Text(
+                        text = "Today's Meals",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+
+                // Meal Cards - directly in LazyColumn
+                items(
+                    items = mealTypes,
+                    key = { it.type }
+                ) { mealType ->
+                    val meal = uiState.value.meals.find { it.type == mealType.type }
+                    MealCard(
+                        mealType = mealType,
+                        meal = meal,
+                        onAddClick = { viewModel.onAddMealClick(mealType.type) },
+                        onRemoveFood = { viewModel.removeFoodEntry(it) }
                     )
                 }
 
                 // Water Intake
-                item {
+                item(key = "water_intake") {
                     WaterIntakeCard(
                         currentIntake = uiState.value.waterIntake,
                         targetIntake = uiState.value.targetWaterIntake,
-                        onAddWater = { amount ->
-                            viewModel.addWater(amount)
-                        }
+                        onAddWater = { viewModel.addWater(it) }
                     )
                 }
 
-                // Recent Foods
-                item {
-                    RecentFoodsSection(
-                        recentFoods = uiState.value.recentFoods,
-                        onFoodClick = { food ->
-                            viewModel.onRecentFoodClick(food)
+                // Recent Foods Header
+                if (uiState.value.recentFoods.isNotEmpty()) {
+                    item(key = "recent_foods_header") {
+                        Text(
+                            text = "Recent Foods",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+
+                    // Recent Foods - directly in LazyColumn (2 columns)
+                    val recentFoods = uiState.value.recentFoods
+                    items(
+                        count = (recentFoods.size + 1) / 2,
+                        key = { index -> "recent_row_$index" }
+                    ) { rowIndex ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            val firstIndex = rowIndex * 2
+                            val secondIndex = firstIndex + 1
+
+                            RecentFoodCard(
+                                food = recentFoods[firstIndex],
+                                onClick = { viewModel.onRecentFoodClick(recentFoods[firstIndex]) },
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            if (secondIndex < recentFoods.size) {
+                                RecentFoodCard(
+                                    food = recentFoods[secondIndex],
+                                    onClick = { viewModel.onRecentFoodClick(recentFoods[secondIndex]) },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
                         }
-                    )
+                    }
                 }
 
                 // Nutrition Tips
-                item {
+                item(key = "nutrition_tips") {
                     NutritionTipsCard()
+                }
+
+                // Bottom spacer
+                item(key = "bottom_spacer") {
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -255,9 +313,7 @@ fun ErrorCard(error: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFEBEE)
-        )
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -316,7 +372,6 @@ fun CalorieOverviewCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Circular Progress
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(160.dp)
@@ -335,9 +390,7 @@ fun CalorieOverviewCard(
                     strokeWidth = 12.dp,
                     trackColor = Color.Transparent
                 )
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "$remainingCalories",
                         fontSize = 28.sp,
@@ -358,64 +411,36 @@ fun CalorieOverviewCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                CalorieInfo(
-                    label = "Target",
-                    value = targetCalories,
-                    color = Color(0xFF2196F3)
-                )
-                CalorieInfo(
-                    label = "Food",
-                    value = consumedCalories,
-                    color = Color(0xFF4CAF50)
-                )
-                CalorieInfo(
-                    label = "Exercise",
-                    value = burnedCalories,
-                    color = Color(0xFFFF9800)
-                )
+                CalorieInfo("Target", targetCalories, Color(0xFF2196F3))
+                CalorieInfo("Food", consumedCalories, Color(0xFF4CAF50))
+                CalorieInfo("Exercise", burnedCalories, Color(0xFFFF9800))
             }
         }
     }
 }
 
 @Composable
-fun CalorieInfo(
-    label: String,
-    value: Int,
-    color: Color
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+fun CalorieInfo(label: String, value: Int, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = "$value",
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             color = color
         )
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color.Gray
-        )
+        Text(text = label, fontSize = 12.sp, color = Color.Gray)
     }
 }
 
 @Composable
-fun MacronutrientsCard(
-    carbs: MacroNutrient,
-    protein: MacroNutrient,
-    fat: MacroNutrient
-) {
+fun MacronutrientsCard(carbs: MacroNutrient, protein: MacroNutrient, fat: MacroNutrient) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Text(
                 text = "Macronutrients",
                 fontSize = 18.sp,
@@ -425,9 +450,7 @@ fun MacronutrientsCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 MacroProgressBar("Carbs", carbs, Color(0xFF2196F3))
                 MacroProgressBar("Protein", protein, Color(0xFF4CAF50))
                 MacroProgressBar("Fat", fat, Color(0xFFFF9800))
@@ -437,11 +460,7 @@ fun MacronutrientsCard(
 }
 
 @Composable
-fun MacroProgressBar(
-    name: String,
-    macro: MacroNutrient,
-    color: Color
-) {
+fun MacroProgressBar(name: String, macro: MacroNutrient, color: Color) {
     val progress = (macro.current.toFloat() / macro.target.toFloat()).coerceIn(0f, 1f)
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
@@ -474,58 +493,14 @@ fun MacroProgressBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(8.dp)
-                .background(
-                    Color.Gray.copy(alpha = 0.2f),
-                    RoundedCornerShape(4.dp)
-                )
+                .background(Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(animatedProgress)
                     .fillMaxHeight()
-                    .background(
-                        color,
-                        RoundedCornerShape(4.dp)
-                    )
+                    .background(color, RoundedCornerShape(4.dp))
             )
-        }
-    }
-}
-
-@Composable
-fun QuickAddSection(
-    onActionClick: (QuickAddAction) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Text(
-                text = "Quick Add",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(quickAddItems) { item ->
-                    QuickAddButton(
-                        icon = item.icon,
-                        label = item.label,
-                        color = item.color,
-                        onClick = { onActionClick(item.action) }
-                    )
-                }
-            }
         }
     }
 }
@@ -556,60 +531,27 @@ fun QuickAddButton(
     ) {
         Box(
             modifier = Modifier
-                .size(60.dp)
-                .background(
-                    color.copy(alpha = 0.1f),
-                    CircleShape
-                ),
+                .size(56.dp)
+                .background(color.copy(alpha = 0.1f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = label,
                 tint = color,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(26.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Text(
             text = label,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             color = Color.Gray,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            maxLines = 1
         )
-    }
-}
-
-@Composable
-fun MealsSection(
-    meals: List<MealWithEntries>,
-    onAddMeal: (String) -> Unit,
-    onRemoveFood: (Long) -> Unit
-) {
-    Column {
-        Text(
-            text = "Today's Meals",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            mealTypes.forEach { mealType ->
-                val meal = meals.find { it.type == mealType.type }
-                MealCard(
-                    mealType = mealType,
-                    meal = meal,
-                    onAddClick = { onAddMeal(mealType.type) },
-                    onRemoveFood = onRemoveFood
-                )
-            }
-        }
     }
 }
 
@@ -632,7 +574,9 @@ fun MealCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { if (meal != null && meal.entries.isNotEmpty()) isExpanded = !isExpanded }
+                    .clickable {
+                        if (meal != null && meal.entries.isNotEmpty()) isExpanded = !isExpanded
+                    }
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -672,7 +616,6 @@ fun MealCard(
                 }
             }
 
-            // Expandable food entries
             if (isExpanded && meal != null && meal.entries.isNotEmpty()) {
                 HorizontalDivider(color = Color.Gray.copy(alpha = 0.2f))
                 Column(
@@ -692,10 +635,7 @@ fun MealCard(
 }
 
 @Composable
-fun FoodEntryItem(
-    entry: FoodEntryWithDetails,
-    onRemove: () -> Unit
-) {
+fun FoodEntryItem(entry: FoodEntryWithDetails, onRemove: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -715,10 +655,7 @@ fun FoodEntryItem(
             )
         }
 
-        IconButton(
-            onClick = onRemove,
-            modifier = Modifier.size(24.dp)
-        ) {
+        IconButton(onClick = onRemove, modifier = Modifier.size(24.dp)) {
             Icon(
                 imageVector = Icons.Filled.Close,
                 contentDescription = "Remove",
@@ -730,11 +667,7 @@ fun FoodEntryItem(
 }
 
 @Composable
-fun WaterIntakeCard(
-    currentIntake: Int,
-    targetIntake: Int,
-    onAddWater: (Int) -> Unit
-) {
+fun WaterIntakeCard(currentIntake: Int, targetIntake: Int, onAddWater: (Int) -> Unit) {
     val progress = (currentIntake.toFloat() / targetIntake.toFloat()).coerceIn(0f, 1f)
 
     Card(
@@ -743,9 +676,7 @@ fun WaterIntakeCard(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -778,15 +709,11 @@ fun WaterIntakeCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Water Progress Bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(12.dp)
-                    .background(
-                        Color.Gray.copy(alpha = 0.2f),
-                        RoundedCornerShape(6.dp)
-                    )
+                    .background(Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
             ) {
                 Box(
                     modifier = Modifier
@@ -794,10 +721,7 @@ fun WaterIntakeCard(
                         .fillMaxHeight()
                         .background(
                             Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF2196F3),
-                                    Color(0xFF03DAC6)
-                                )
+                                colors = listOf(Color(0xFF2196F3), Color(0xFF03DAC6))
                             ),
                             RoundedCornerShape(6.dp)
                         )
@@ -806,7 +730,6 @@ fun WaterIntakeCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Water Add Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -817,47 +740,10 @@ fun WaterIntakeCard(
                         shape = RoundedCornerShape(20.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = Color(0xFF2196F3)
-                        ),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            brush = Brush.linearGradient(
-                                colors = listOf(Color(0xFF2196F3), Color(0xFF03DAC6))
-                            )
                         )
                     ) {
-                        Text(
-                            text = "+${amount}ml",
-                            fontSize = 12.sp
-                        )
+                        Text(text = "+${amount}ml", fontSize = 12.sp)
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun RecentFoodsSection(
-    recentFoods: List<FoodItem>,
-    onFoodClick: (FoodItem) -> Unit
-) {
-    if (recentFoods.isNotEmpty()) {
-        Column {
-            Text(
-                text = "Recent Foods",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(recentFoods) { food ->
-                    RecentFoodCard(
-                        food = food,
-                        onClick = { onFoodClick(food) }
-                    )
                 }
             }
         }
@@ -867,19 +753,18 @@ fun RecentFoodsSection(
 @Composable
 fun RecentFoodCard(
     food: FoodItem,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
-            .width(140.dp)
+        modifier = modifier
+            .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
-        ) {
+        Column(modifier = Modifier.padding(12.dp)) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(food.imageUrl)
@@ -888,7 +773,7 @@ fun RecentFoodCard(
                 contentDescription = food.name,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp)
+                    .height(100.dp)
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
@@ -937,9 +822,7 @@ fun NutritionTipsCard() {
                 modifier = Modifier.size(32.dp)
             )
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Daily Tip",
                     fontSize = 16.sp,
@@ -998,8 +881,3 @@ val quickAddItems = listOf(
     QuickAddItemData("Quick Cal", Icons.Filled.Add, Color(0xFF9C27B0), QuickAddAction.QUICK_CALORIES)
 )
 
-@Preview
-@Composable
-fun NutritionScreenPreview() {
-    NutritionScreen(navController = rememberNavController())
-}
