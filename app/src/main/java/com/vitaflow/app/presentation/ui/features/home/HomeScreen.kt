@@ -32,7 +32,10 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.vitaflow.app.common.Routes
+import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.models.Exercise
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 // App Theme Colors
 val PrimaryGreen = Color(0xFF00C853)
@@ -51,10 +54,30 @@ fun HomeScreen(
 ) {
     val uiState = viewModel.state.collectAsStateWithLifecycle()
 
-    // Random character image - computed once
     val randomAnimeCharacter = remember { animeCharacterImages.random() }
 
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collectLatest { result ->
+            when(result){
+                is UIEvent.ShowSnackBar  -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(message = result.message)
+                    }
+                }
+                else -> {
+
+                }
+            }
+        }
+    }
+
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(

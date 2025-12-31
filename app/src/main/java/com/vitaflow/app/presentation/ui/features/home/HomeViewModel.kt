@@ -1,8 +1,10 @@
 package com.vitaflow.app.presentation.ui.features.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.common.Resource
+import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.models.Exercise
 import com.vitaflow.app.domain.repository.AuthRepository
 import com.vitaflow.app.domain.usecase.exercise.GetExerciseUseCase
@@ -30,7 +32,7 @@ class HomeViewModel @Inject constructor(
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
-    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    private val _navigationEvent = MutableSharedFlow<UIEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
     init {
@@ -42,14 +44,14 @@ class HomeViewModel @Inject constructor(
     private fun getExercises(){
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
-            val res = getExerciseUseCase()
-            when(res){
+            when(val res = getExerciseUseCase()){
                 is Resource.Success -> {
                     _state.value = _state.value.copy(exercises = res.data ?: emptyList(), isLoading = false)
                 }
 
                 is Resource.Error -> {
                     _state.value = _state.value.copy(error = res.message, isLoading = false)
+                    sendUIEvent(UIEvent.ShowSnackBar(res.message ?: "Unknown error"))
 
                 }
 
@@ -75,6 +77,11 @@ class HomeViewModel @Inject constructor(
                     isLoading = false
                 )
             }
+        }
+    }
+    private fun sendUIEvent(event: UIEvent){
+        viewModelScope.launch {
+            _navigationEvent.emit(event)
         }
     }
 }
