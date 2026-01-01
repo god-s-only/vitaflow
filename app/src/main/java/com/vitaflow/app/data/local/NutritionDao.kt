@@ -19,7 +19,10 @@ interface NutritionDao {
     fun getDailyNutrition(date: String): Flow<DailyNutrition?>
 
     @Query("UPDATE DailyNutrition SET water = :water WHERE date = :date")
+
     suspend fun updateWaterIntake(date: String, water: Double)
+    @Query("SELECT * FROM DailyNutrition WHERE date = :date")
+    suspend fun getDailyNutritionSync(date: String): DailyNutrition?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFoodEntry(entry: FoodEntry)

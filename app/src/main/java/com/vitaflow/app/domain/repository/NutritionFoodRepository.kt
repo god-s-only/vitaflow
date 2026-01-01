@@ -46,6 +46,7 @@ interface NutritionFoodRepository {
     suspend fun getFoodProductByUPC(upc: String, apiKey: String): Flow<Result<NutritionFood>>
     suspend fun searchRecipes(query: String, apiKey: String): Flow<List<RecipeModel>>
     suspend fun getRecipesDetail(recipeId: Int, apiKey: String): Flow<RecipeDetail>
+    suspend fun getDailyNutritionSync(date: String): DailyNutrition?
 }
 
 fun getTodayDate(): String {

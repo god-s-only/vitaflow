@@ -365,5 +365,4 @@ private val bottomNavItems = listOf(
     BottomNavItem("Nutrition", Icons.Outlined.FavoriteBorder, Routes.NUTRITIONSCREEN),
     BottomNavItem("Workout", Icons.Default.Star, Routes.WORKOUT_BODY_PARTS_SCREEN),
     BottomNavItem("Steps", Icons.Default.Menu, Routes.STEPS_CONTAINER_SCREEN),
-    BottomNavItem("Profile", Icons.Outlined.Person, Routes.PROFILESCREEN)
 )

@@ -128,7 +128,7 @@ class NutritionFoodRepositoryImpl @Inject constructor(
     override suspend fun calculateAndSaveDailyNutrition(date: String) {
         val totals = dao.calculateDailyTotals(date)
         if (totals != null) {
-            val existingNutrition = dao.getDailyNutrition(date).first()
+            val existingNutrition = dao.getDailyNutritionSync(date)
             val existingWater = existingNutrition?.water ?: 0.0
 
             val dailyNutrition = DailyNutrition(
@@ -141,6 +141,8 @@ class NutritionFoodRepositoryImpl @Inject constructor(
                 water = existingWater
             )
             dao.insertNutrition(dailyNutrition)
+
+            android.util.Log.d("Repository", "Saved DailyNutrition for $date: calories=${dailyNutrition.calories}")
         }
     }
 
@@ -224,6 +226,10 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         val body = res.body() ?: throw Exception("Response body is null")
         emit(body.toDomain())
     }.flowOn(Dispatchers.IO)
+
+    override suspend fun getDailyNutritionSync(date: String): DailyNutrition? {
+        return dao.getDailyNutritionSync(date)
+    }
 }
 
     private fun mapDetailDtoToNutritionFood(dto: NutritionFoodDetailDTO): NutritionFood {

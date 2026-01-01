@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
@@ -11,6 +12,7 @@ import androidx.work.WorkerParameters
 import com.vitaflow.app.R
 import com.vitaflow.app.common.CHANNEL_ID
 import com.vitaflow.app.domain.usecase.nutrition.GetCalorieTargetUseCase
+import com.vitaflow.app.domain.usecase.nutrition.GetDailyNutritionSyncUseCase
 import com.vitaflow.app.domain.usecase.nutrition.GetDailyNutritionUseCase
 import com.vitaflow.app.presentation.ui.MainActivity
 import dagger.assisted.Assisted
@@ -27,7 +29,7 @@ class NotificationWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted private val params: WorkerParameters,
     private val getCalorieTargetUseCase: GetCalorieTargetUseCase,
-    private val getDailyNutritionUseCase: GetDailyNutritionUseCase
+    private val getDailyNutritionSyncUseCase: GetDailyNutritionSyncUseCase
 ): CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -38,17 +40,22 @@ class NotificationWorker @AssistedInject constructor(
                     return@withContext Result.success()
                 }
 
-                val todayNutrition = getDailyNutritionUseCase
-                    .invoke(getCurrentDate())
-                    .firstOrNull()
+                val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    .format(Date())
+                val todayNutrition = getDailyNutritionSyncUseCase.invoke(currentDate)
 
-                val currentCalories = todayNutrition?.calories ?: 0
-                if (currentCalories.toInt() < targetCalories) {
-                    showTargetUpdateNotification(targetCalories, currentCalories.toInt())
+                Log.d("NotificationWorker", "Date: $currentDate")
+                Log.d("NotificationWorker", "Calories: ${todayNutrition?.calories}")
+
+                val currentCalories = todayNutrition?.calories?.toInt() ?: 0
+
+                if (currentCalories < targetCalories) {
+                    showTargetUpdateNotification(targetCalories, currentCalories)
                 }
 
                 Result.success()
             } catch (e: Exception) {
+                Log.e("NotificationWorker", "Error", e)
                 if (runAttemptCount < 3) {
                     Result.retry()
                 } else {
