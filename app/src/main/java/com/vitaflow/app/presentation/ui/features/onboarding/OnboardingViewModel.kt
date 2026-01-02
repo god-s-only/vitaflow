@@ -3,6 +3,7 @@ package com.vitaflow.app.presentation.ui.features.onboarding
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vitaflow.app.data.local.VitaFlowSession
 import com.vitaflow.app.domain.usecase.nutrition.SetCalorieTargetUseCase
 import com.vitaflow.app.domain.usecase.nutrition.SetMacroTargetsUseCase
 import com.vitaflow.app.domain.usecase.nutrition.SetWaterTargetUseCase
@@ -19,7 +20,8 @@ class OnboardingViewModel @Inject constructor(
     private val setCalorieTargetUseCase: SetCalorieTargetUseCase,
     private val setMacroTargetsUseCase: SetMacroTargetsUseCase,
     private val setWaterTargetUseCase: SetWaterTargetUseCase,
-    private val updateTargetStepsUseCase: UpdateTargetStepsUseCase
+    private val updateTargetStepsUseCase: UpdateTargetStepsUseCase,
+    private val vitaFlowSession: VitaFlowSession
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(OnboardingState())
@@ -170,6 +172,9 @@ class OnboardingViewModel @Inject constructor(
 
                 Log.d(TAG, "Saving steps target...")
                 updateTargetStepsUseCase(currentState.stepsTarget)
+
+                Log.d(TAG, "Marking onboarding as completed...")
+                vitaFlowSession.storeToken("onboarding_completed")
 
                 _state.update { it.copy(isLoading = false) }
                 _navigationEvent.emit(OnboardingNavigationEvent.NavigateToHome)
