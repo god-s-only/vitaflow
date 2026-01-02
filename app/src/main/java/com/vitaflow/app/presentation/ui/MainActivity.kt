@@ -47,6 +47,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.vitaflow.app.common.Routes
+import com.vitaflow.app.data.local.VitaFlowSession
 import com.vitaflow.app.presentation.ui.auth.signin.SignInScreen
 import com.vitaflow.app.presentation.ui.auth.signin.SignInViewModel
 import com.vitaflow.app.presentation.ui.auth.signup.SignUpScreen
@@ -68,10 +69,14 @@ import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     var showSplashScreen = true
+
+    @Inject
+    lateinit var vitaFlowSession: VitaFlowSession
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,7 +101,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             VitaFlowTheme {
-                MainContent()
+                MainContent(vitaFlowSession)
             }
         }
         actionBar?.hide()
@@ -118,12 +123,25 @@ private val ROUTES_WITH_BOTTOM_BAR = setOf(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun MainContent() {
+private fun MainContent(vitaFlowSession: VitaFlowSession) {
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryAsState()
 
+    val token by vitaFlowSession.getTokenFlow().collectAsState(initial = null)
+    val startDestination = remember(token) {
+        if (!token.isNullOrEmpty()) Routes.HOMESCREEN else Routes.SIGNINSCREEN
+    }
+
     val shouldShowBottomBar = remember(currentRoute?.destination?.route) {
         currentRoute?.destination?.route in ROUTES_WITH_BOTTOM_BAR
+    }
+
+    LaunchedEffect(startDestination) {
+        if (!token.isNullOrEmpty() && currentRoute?.destination?.route == Routes.SIGNINSCREEN) {
+            navController.navigate(Routes.HOMESCREEN) {
+                popUpTo(Routes.SIGNINSCREEN) { inclusive = true }
+            }
+        }
     }
 
     Box(
@@ -133,7 +151,7 @@ private fun MainContent() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = Routes.SIGNINSCREEN,
+            startDestination = startDestination,
             modifier = Modifier.fillMaxSize(),
             enterTransition = { fadeIn(animationSpec = tween(200)) },
             exitTransition = { fadeOut(animationSpec = tween(200)) },

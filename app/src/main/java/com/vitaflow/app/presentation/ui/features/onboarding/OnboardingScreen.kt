@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.vitaflow.app.common.Routes
 import com.vitaflow.app.presentation.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -43,8 +44,8 @@ fun OnboardingScreen(
         viewModel.navigationEvent.collect { event ->
             when (event) {
                 is OnboardingNavigationEvent.NavigateToHome -> {
-                    navController.navigate("home") {
-                        popUpTo("onboarding") { inclusive = true }
+                    navController.navigate(Routes.HOMESCREEN) {
+                        popUpTo(Routes.ONBOARDINGSCREEN) { inclusive = true }
                     }
                 }
             }
