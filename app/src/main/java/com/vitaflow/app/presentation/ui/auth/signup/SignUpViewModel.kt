@@ -111,7 +111,7 @@ class SignUpViewModel @Inject constructor(
                         error = null
                     )
                     emitUIEvent(UIEvent.ShowSnackBar("Account created successfully!"))
-                    emitUIEvent(UIEvent.Navigate(Routes.SIGNINSCREEN))
+                    emitUIEvent(UIEvent.Navigate(Routes.ONBOARDINGSCREEN))
                 }
 
                 is Resource.Error -> {
