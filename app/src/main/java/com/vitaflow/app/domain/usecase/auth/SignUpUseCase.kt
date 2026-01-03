@@ -53,11 +53,6 @@ class SignUpUseCase @Inject constructor(
             // Attempt sign up
             val result = authRepository.signUpWithEmailAndPassword(email, password)
 
-            if (result is Resource.Success && result.data != null) {
-                // Store user session
-                vitaFlowSession.storeToken(result.data.uid)
-            }
-
             result
         } catch (e: Exception) {
             Resource.Error("An unexpected error occurred: ${e.message}")

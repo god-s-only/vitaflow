@@ -5,7 +5,7 @@ data class NutritionState(
     val error: String? = null,
 
     // Calorie Data
-    val targetCalories: Int = 2000,
+    val targetCalories: Int = 0,
     val consumedCalories: Int = 0,
     val burnedCalories: Int = 0,
     val totalCalories: Int = targetCalories - consumedCalories + burnedCalories,
