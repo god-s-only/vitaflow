@@ -1,5 +1,6 @@
 package com.vitaflow.app.domain.repository
 
+import android.graphics.Bitmap
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
 import com.vitaflow.app.domain.models.DailyNutrition
 import com.vitaflow.app.domain.models.Food
@@ -7,6 +8,7 @@ import com.vitaflow.app.domain.models.FoodEntry
 import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.models.RecipeDetail
 import com.vitaflow.app.domain.models.RecipeModel
+import com.vitaflow.app.presentation.ui.features.capture.FoodAnalysisResult
 import kotlinx.coroutines.flow.Flow
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -47,6 +49,7 @@ interface NutritionFoodRepository {
     suspend fun searchRecipes(query: String, apiKey: String): Flow<List<RecipeModel>>
     suspend fun getRecipesDetail(recipeId: Int, apiKey: String): Flow<RecipeDetail>
     suspend fun getDailyNutritionSync(date: String): DailyNutrition?
+    suspend fun analyzeFoodImage(bitmap: Bitmap): Result<FoodAnalysisResult>
 }
 
 fun getTodayDate(): String {

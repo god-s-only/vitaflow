@@ -20,4 +20,5 @@ object Routes {
     const val WORKOUT_BODY_PARTS_SCREEN = "workout_body_parts_screen"
     const val WORKOUT_BODY_PARTS_SELECTED_SCREEN = "workout_body_parts_selected_screen"
     const val STEPS_SETTINGS_SCREEN = "steps_settings_screen"
+    const val PHOTO_CAPTURE = "photo_capture"
 }
