@@ -26,7 +26,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -44,11 +43,9 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.vitaflow.app.domain.models.Food
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.coroutines.resume
@@ -89,61 +86,66 @@ fun PhotoCaptureScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        when {
-            !cameraPermissionState.status.isGranted -> {
-                PermissionRequestScreen(
-                    onRequestPermission = { cameraPermissionState.launchPermissionRequest() },
-                    onUseGallery = { imagePickerLauncher.launch("image/*") },
-                    onBack = { navController.popBackStack() }
-                )
+    Scaffold(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Box(modifier = Modifier.fillMaxSize()
+            .padding(it)) {
+            when {
+                !cameraPermissionState.status.isGranted -> {
+                    PermissionRequestScreen(
+                        onRequestPermission = { cameraPermissionState.launchPermissionRequest() },
+                        onUseGallery = { imagePickerLauncher.launch("image/*") },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                uiState.capturedBitmap != null -> {
+                    ReviewScreen(
+                        bitmap = uiState.capturedBitmap!!,
+                        analysisResult = uiState.analysisResult,
+                        isAnalyzing = uiState.isAnalyzing,
+                        selectedMealType = uiState.selectedMealType,
+                        quantity = uiState.quantity,
+                        onRetake = { viewModel.resetCapture() },
+                        onSave = { mealType, qty -> viewModel.saveFoodEntry(mealType, qty) },
+                        onMealTypeChange = { viewModel.updateMealType(it) },
+                        onQuantityChange = { viewModel.updateQuantity(it) },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                else -> {
+                    CameraScreen(
+                        onImageCaptured = { bitmap -> viewModel.onImageCaptured(bitmap) },
+                        onGalleryClick = { imagePickerLauncher.launch("image/*") },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
             }
-            uiState.capturedBitmap != null -> {
-                ReviewScreen(
-                    bitmap = uiState.capturedBitmap!!,
-                    analysisResult = uiState.analysisResult,
-                    isAnalyzing = uiState.isAnalyzing,
-                    selectedMealType = uiState.selectedMealType,
-                    quantity = uiState.quantity,
-                    onRetake = { viewModel.resetCapture() },
-                    onSave = { mealType, qty -> viewModel.saveFoodEntry(mealType, qty) },
-                    onMealTypeChange = { viewModel.updateMealType(it) },
-                    onQuantityChange = { viewModel.updateQuantity(it) },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            else -> {
-                CameraScreen(
-                    onImageCaptured = { bitmap -> viewModel.onImageCaptured(bitmap) },
-                    onGalleryClick = { imagePickerLauncher.launch("image/*") },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-        }
 
-        // Loading overlay
-        if (uiState.isAnalyzing) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+            // Loading overlay
+            if (uiState.isAnalyzing) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.7f)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(56.dp),
-                        color = Color.White,
-                        strokeWidth = 4.dp
-                    )
-                    Text(
-                        text = "Analyzing food...",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(56.dp),
+                            color = Color.White,
+                            strokeWidth = 4.dp
+                        )
+                        Text(
+                            text = "Analyzing food...",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }

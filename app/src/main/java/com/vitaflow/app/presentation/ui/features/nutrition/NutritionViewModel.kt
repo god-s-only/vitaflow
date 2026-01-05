@@ -368,6 +368,45 @@ class NutritionViewModel @Inject constructor(
         }
     }
 
+    fun addQuickCalories(calories: Int, mealType: String, note: String) {
+        viewModelScope.launch {
+            try {
+                Log.d(TAG, "Adding quick calories - Calories: $calories, MealType: $mealType, Note: $note")
+
+                val quickFood = Food(
+                    id = 0,
+                    name = if (note.isNotBlank()) note else "Quick Calories",
+                    caloriesPer100g = calories.toDouble(),
+                    proteinPer100g = 0.0,
+                    carbsPer100g = 0.0,
+                    fatPer100g = 0.0,
+                    imageUrl = null,
+                    barcode = null,
+                )
+
+                addFoodEntryUseCase(quickFood, mealType, 100.0).fold(
+                    onSuccess = {
+                        Log.d(TAG, "Quick calories added successfully")
+                        _navigationEvent.emit(
+                            NavigationEvent.ShowMessage("$calories calories added to $mealType")
+                        )
+                    },
+                    onFailure = { error ->
+                        Log.e(TAG, "Failed to add quick calories", error)
+                        _state.update {
+                            it.copy(error = "Failed to add calories: ${error.message}")
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error adding quick calories", e)
+                _state.update {
+                    it.copy(error = "Failed to add calories: ${e.message}")
+                }
+            }
+        }
+    }
+
     fun refreshData() {
         loadTargets()
     }

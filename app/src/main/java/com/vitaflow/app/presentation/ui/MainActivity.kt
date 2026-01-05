@@ -52,6 +52,7 @@ import com.vitaflow.app.presentation.ui.auth.signin.SignInScreen
 import com.vitaflow.app.presentation.ui.auth.signin.SignInViewModel
 import com.vitaflow.app.presentation.ui.auth.signup.SignUpScreen
 import com.vitaflow.app.presentation.ui.features.barcode.BarcodeScanScreen
+import com.vitaflow.app.presentation.ui.features.capture.PhotoCaptureScreen
 import com.vitaflow.app.presentation.ui.features.detail.ExerciseDetailScreen
 import com.vitaflow.app.presentation.ui.features.exercisebodypart.ExercisesScreen
 import com.vitaflow.app.presentation.ui.features.home.HomeScreen
@@ -215,6 +216,10 @@ private fun MainContent(vitaFlowSession: VitaFlowSession) {
             composable(Routes.STEPS_SETTINGS_SCREEN) {
                 StepsSettingsScreen(navController = navController)
             }
+            composable(Routes.PHOTO_CAPTURE) {
+                PhotoCaptureScreen(navController = navController)
+            }
+
         }
 
         AnimatedBottomBar(
