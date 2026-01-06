@@ -20,7 +20,7 @@ interface NutritionFoodRepository {
     suspend fun insertNutrition(dailyNutrition: DailyNutrition)
     suspend fun deleteNutrition(dailyNutrition: DailyNutrition)
     suspend fun insertFoodEntry(foodEntry: FoodEntry)
-    suspend fun insertFood(food: Food)
+    suspend fun insertFood(food: Food): Long
     suspend fun deleteFood(food: Food)
 
 

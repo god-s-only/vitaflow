@@ -40,7 +40,7 @@ interface NutritionDao {
     fun getFoodEntriesForMealType(date: String, mealType: String): Flow<List<FoodEntry>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFood(food: Food)
+    suspend fun insertFood(food: Food): Long
 
     @Delete
     suspend fun deleteFood(food: Food)

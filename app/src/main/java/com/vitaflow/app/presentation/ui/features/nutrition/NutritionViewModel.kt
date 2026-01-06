@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.repository.getTodayDate
 import com.vitaflow.app.domain.usecase.nutrition.AddFoodEntryUseCase
+import com.vitaflow.app.domain.usecase.nutrition.AddFoodUseCase
 import com.vitaflow.app.domain.usecase.nutrition.CalculateAndSaveDailyNutritionUseCase
 import com.vitaflow.app.domain.usecase.nutrition.GetCalorieTargetUseCase
 import com.vitaflow.app.domain.usecase.nutrition.GetDailyNutritionUseCase
@@ -41,7 +42,8 @@ class NutritionViewModel @Inject constructor(
     private val getMacroTargetsUseCase: GetMacroTargetsUseCase,
     private val setMacroTargetsUseCase: SetMacroTargetsUseCase,
     private val getWaterTargetUseCase: GetWaterTargetUseCase,
-    private val setWaterTargetUseCase: SetWaterTargetUseCase
+    private val setWaterTargetUseCase: SetWaterTargetUseCase,
+    private val addFoodUseCase: AddFoodUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NutritionState())
@@ -384,19 +386,27 @@ class NutritionViewModel @Inject constructor(
                     barcode = null,
                 )
 
-                addFoodEntryUseCase(quickFood, mealType, 100.0).fold(
+                addFoodUseCase.invoke(quickFood).fold(
                     onSuccess = {
-                        Log.d(TAG, "Quick calories added successfully")
-                        _navigationEvent.emit(
-                            NavigationEvent.ShowMessage("$calories calories added to $mealType")
+                        addFoodToMeal(
+                            quickFood.copy(id = it.toInt()),
+                            mealType,
+                            100.0
                         )
                     },
                     onFailure = { error ->
-                        Log.e(TAG, "Failed to add quick calories", error)
                         _state.update {
-                            it.copy(error = "Failed to add calories: ${error.message}")
+                            it.copy(
+                                error = "Failed to add to calories ${error.message}"
+                            )
                         }
                     }
+                )
+
+                addFoodToMeal(
+                    quickFood,
+                    mealType,
+                    100.0
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Error adding quick calories", e)

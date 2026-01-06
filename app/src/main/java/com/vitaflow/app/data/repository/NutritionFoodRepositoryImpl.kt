@@ -93,8 +93,8 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         dao.insertFoodEntry(foodEntry)
     }
 
-    override suspend fun insertFood(food: Food) {
-        dao.insertFood(food)
+    override suspend fun insertFood(food: Food): Long {
+        return dao.insertFood(food)
     }
 
     override suspend fun deleteFood(food: Food) {

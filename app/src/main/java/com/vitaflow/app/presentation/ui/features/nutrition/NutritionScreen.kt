@@ -1,4 +1,3 @@
-
 package com.vitaflow.app.presentation.ui.features.nutrition
 
 import android.widget.Toast
@@ -14,6 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -29,10 +30,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -53,6 +57,7 @@ fun NutritionScreen(
     val uiState = viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    var showQuickCaloriesDialog by remember { mutableStateOf(false) }
 
     // Handle navigation events
     LaunchedEffect(Unit) {
@@ -77,7 +82,7 @@ fun NutritionScreen(
                     navController.navigate(Routes.RECIPES_SCREEN)
                 }
                 NavigationEvent.ShowQuickCaloriesDialog -> {
-                    Toast.makeText(context, "Quick Calories", Toast.LENGTH_SHORT).show()
+                    showQuickCaloriesDialog = true
                 }
             }
         }
@@ -302,6 +307,191 @@ fun NutritionScreen(
                 // Bottom spacer
                 item(key = "bottom_spacer") {
                     Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+        }
+    }
+
+    // Quick Calories Dialog
+    if (showQuickCaloriesDialog) {
+        QuickCaloriesDialog(
+            onDismiss = { showQuickCaloriesDialog = false },
+            onSave = { calories, mealType, note ->
+                viewModel.addQuickCalories(calories, mealType, note)
+                showQuickCaloriesDialog = false
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QuickCaloriesDialog(
+    onDismiss: () -> Unit,
+    onSave: (calories: Int, mealType: String, note: String) -> Unit
+) {
+    var caloriesText by remember { mutableStateOf("") }
+    var selectedMealType by remember { mutableStateOf("snacks") }
+    var noteText by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+    var errorText by remember { mutableStateOf<String?>(null) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Quick Calories",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "Close",
+                            tint = Color.Gray
+                        )
+                    }
+                }
+
+                // Calories Input
+                OutlinedTextField(
+                    value = caloriesText,
+                    onValueChange = {
+                        caloriesText = it
+                        errorText = null
+                    },
+                    label = { Text("Calories") },
+                    placeholder = { Text("Enter calories") },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    singleLine = true,
+                    isError = errorText != null,
+                    supportingText = errorText?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF9C27B0),
+                        focusedLabelColor = Color(0xFF9C27B0),
+                        cursorColor = Color(0xFF9C27B0)
+                    )
+                )
+
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = selectedMealType.replaceFirstChar { it.uppercase() },
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Meal Type") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF9C27B0),
+                            focusedLabelColor = Color(0xFF9C27B0)
+                        )
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        listOf("breakfast", "lunch", "dinner", "snacks").forEach { mealType ->
+                            DropdownMenuItem(
+                                text = { Text(mealType.replaceFirstChar { it.uppercase() }) },
+                                onClick = {
+                                    selectedMealType = mealType
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Optional Note
+                OutlinedTextField(
+                    value = noteText,
+                    onValueChange = { noteText = it },
+                    label = { Text("Note (Optional)") },
+                    placeholder = { Text("e.g., Protein shake, Snack bar") },
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            val calories = caloriesText.toIntOrNull()
+                            if (calories != null && calories > 0) {
+                                onSave(calories, selectedMealType, noteText)
+                            }
+                        }
+                    ),
+                    maxLines = 2,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF9C27B0),
+                        focusedLabelColor = Color(0xFF9C27B0),
+                        cursorColor = Color(0xFF9C27B0)
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Cancel")
+                    }
+
+                    Button(
+                        onClick = {
+                            val calories = caloriesText.toIntOrNull()
+                            when {
+                                calories == null -> errorText = "Please enter a valid number"
+                                calories <= 0 -> errorText = "Calories must be greater than 0"
+                                calories > 10000 -> errorText = "Calories seem too high"
+                                else -> onSave(calories, selectedMealType, noteText)
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF9C27B0)
+                        )
+                    ) {
+                        Text("Add", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
@@ -849,9 +1039,6 @@ data class MacroNutrient(
     val target: Int
 )
 
-
-
-
 data class MealType(
     val type: String,
     val name: String,
@@ -880,4 +1067,3 @@ val quickAddItems = listOf(
     QuickAddItemData("Recipe", Icons.Filled.Menu, Color(0xFFFF9800), QuickAddAction.ADD_RECIPE),
     QuickAddItemData("Quick Cal", Icons.Filled.Add, Color(0xFF9C27B0), QuickAddAction.QUICK_CALORIES)
 )
-
