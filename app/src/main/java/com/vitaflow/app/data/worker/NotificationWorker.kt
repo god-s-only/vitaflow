@@ -11,13 +11,14 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.vitaflow.app.R
 import com.vitaflow.app.common.CHANNEL_ID
-import com.vitaflow.app.domain.usecase.nutrition.CalculateAndSaveDailyNutritionUseCase
 import com.vitaflow.app.domain.usecase.nutrition.GetCalorieTargetUseCase
-import com.vitaflow.app.domain.usecase.nutrition.GetDailyNutritionSyncUseCase
+import com.vitaflow.app.domain.usecase.nutrition.GetFoodEntriesForDateUseCase
+import com.vitaflow.app.domain.usecase.nutrition.GetFoodByIdUseCase
 import com.vitaflow.app.presentation.ui.MainActivity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -28,8 +29,8 @@ class NotificationWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted private val params: WorkerParameters,
     private val getCalorieTargetUseCase: GetCalorieTargetUseCase,
-    private val getDailyNutritionSyncUseCase: GetDailyNutritionSyncUseCase,
-    private val calculateAndSaveDailyNutritionUseCase: CalculateAndSaveDailyNutritionUseCase
+    private val getFoodEntriesForDateUseCase: GetFoodEntriesForDateUseCase,
+    private val getFoodByIdUseCase: GetFoodByIdUseCase
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
@@ -39,32 +40,38 @@ class NotificationWorker @AssistedInject constructor(
                 Log.d(TAG, "No calorie target set, skipping notification")
                 return@withContext Result.success()
             }
+            val foodEntries = getFoodEntriesForDateUseCase().firstOrNull() ?: emptyList()
 
-            val currentDate = getCurrentDate()
-            calculateAndSaveDailyNutritionUseCase()
-
-            val todayNutrition = getDailyNutritionSyncUseCase(currentDate)
-            val currentCalories = todayNutrition?.calories?.toInt() ?: 0
+            var totalCalories = 0
+            for (entry in foodEntries) {
+                val food = getFoodByIdUseCase(entry.foodId)
+                if (food != null) {
+                    val multiplier = entry.quantity / 100.0
+                    val entryCalories = (food.caloriesPer100g * multiplier).toInt()
+                    totalCalories += entryCalories
+                }
+            }
 
             Log.d(TAG, """
                 Notification check:
-                - Date: $currentDate
+                - Date: ${getCurrentDate()}
                 - Target: $targetCalories cal
-                - Current: $currentCalories cal
-                - Remaining: ${targetCalories - currentCalories} cal
+                - Current: $totalCalories cal
+                - Remaining: ${targetCalories - totalCalories} cal
+                - Entries: ${foodEntries.size}
             """.trimIndent())
 
             when {
-                currentCalories >= targetCalories -> {
+                totalCalories >= targetCalories -> {
                     Log.d(TAG, "Target met or exceeded, no notification needed")
                 }
-                currentCalories == 0 -> {
+                totalCalories == 0 -> {
                     Log.d(TAG, "No calories logged yet today")
                     showNoCaloriesLoggedNotification(targetCalories)
                 }
                 else -> {
-                    val remaining = targetCalories - currentCalories
-                    showCalorieReminderNotification(remaining, targetCalories, currentCalories)
+                    val remaining = targetCalories - totalCalories
+                    showCalorieReminderNotification(remaining, targetCalories, totalCalories)
                     Log.d(TAG, "Reminder notification sent")
                 }
             }
