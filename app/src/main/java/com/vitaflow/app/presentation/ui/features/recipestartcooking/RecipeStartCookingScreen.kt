@@ -6,7 +6,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.LocalDining
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -72,8 +85,8 @@ fun RecipeStartCookingScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = null,
+                        imageVector = Icons.Default.MenuBook,
+                        contentDescription = "Recipe",
                         modifier = Modifier.size(64.dp),
                         tint = CookingColors.OnSurfaceVariant
                     )
@@ -315,7 +328,7 @@ fun IngredientCard(
                         )
                 ) {
                     Icon(
-                        imageVector = if (isCompleted) Icons.Default.CheckCircle else Icons.Default.Settings,
+                        imageVector = if (isCompleted) Icons.Default.CheckCircle else Icons.Default.AccessTime,
                         contentDescription = "Mark complete",
                         tint = if (isCompleted) Color.White else CookingColors.OnSurfaceVariant,
                         modifier = Modifier.size(28.dp)
@@ -341,10 +354,10 @@ fun IngredientCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = null,
-                    modifier = Modifier.size(60.dp),
-                    tint = CookingColors.Primary
+                    imageVector = Icons.Default.LocalDining,
+                contentDescription = "Cooking",
+                modifier = Modifier.size(60.dp),
+                tint = CookingColors.Primary
                 )
             }
 

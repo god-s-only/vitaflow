@@ -17,8 +17,12 @@ class AddFoodEntryUseCase @Inject constructor(
         date: String = getTodayDate()
     ): Result<Unit> {
         return try {
+            // First, insert the food to get a proper ID
+            val foodId = repository.insertFood(food)
+            
+            // Create food entry with the actual food ID
             val foodEntry = FoodEntry(
-                foodId = food.id.toString(),
+                foodId = foodId.toString(),
                 mealType = mealType,
                 quantity = quantity,
                 timestamp = System.currentTimeMillis(),
@@ -26,6 +30,10 @@ class AddFoodEntryUseCase @Inject constructor(
             )
 
             repository.insertFoodEntry(foodEntry)
+            
+            // Update daily nutrition totals
+            repository.calculateAndSaveDailyNutrition(date)
+            
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

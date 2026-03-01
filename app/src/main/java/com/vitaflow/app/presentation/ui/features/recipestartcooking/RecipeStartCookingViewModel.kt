@@ -3,6 +3,7 @@ package com.vitaflow.app.presentation.ui.features.recipestartcooking
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vitaflow.app.BuildConfig
 import com.vitaflow.app.domain.usecase.recipes.GetRecipeDetailUseCase
 import com.vitaflow.app.presentation.ui.features.recipedetail.RecipeDetailState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +23,8 @@ class RecipeStartCookingViewModel @Inject constructor(
     private val _state = MutableStateFlow(RecipeDetailState())
     val state = _state.asStateFlow()
 
-    private val apiKey = "d2c131a9ef64479c80be1352a98a6028"
+    // Use API key from BuildConfig (loaded from local.properties)
+    private val apiKey = BuildConfig.SPOONACULAR_API_KEY
 
     init {
         savedStateHandle.get<String>("recipeId")?.let {

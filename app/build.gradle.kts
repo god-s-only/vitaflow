@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -21,6 +23,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        val properties = Properties()
+        properties.load(project.rootProject.file("local.properties").inputStream())
+        buildConfigField("String", "SPOONACULAR_API_KEY", "\"${properties.getProperty("SPOONACULAR_API_KEY")}\"")
+
         buildConfigField(
             "String",
             "RAPIDAPI_KEY",
@@ -30,11 +36,6 @@ android {
             "String",
             "RAPIDAPI_HOST",
             "\"${project.findProperty("RAPIDAPI_HOST") ?: ""}\""
-        )
-        buildConfigField(
-            "String",
-            "SPOONACULAR_API_KEY",
-            "\"${project.findProperty("SPOONACULAR_API_KEY") ?: "default_empty"}\""
         )
     }
 
@@ -123,4 +124,11 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     ksp("androidx.hilt:hilt-compiler:1.1.0")
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+
+    // ML Kit for on-device image labeling (free, no API key needed)
+    implementation("com.google.mlkit:image-labeling:17.0.9")
+    implementation("com.google.mlkit:image-labeling-custom:17.0.3")
+
+    // Material Icons Extended
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
 }

@@ -30,6 +30,8 @@ import com.vitaflow.app.common.Routes
 import com.vitaflow.app.presentation.ui.theme.*
 import kotlinx.coroutines.launch
 
+
+val BackgroundWhite = Color.White
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(

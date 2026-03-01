@@ -17,11 +17,18 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.outlined.DirectionsWalk
+import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -148,7 +155,7 @@ private fun MainContent(vitaFlowSession: VitaFlowSession) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         NavHost(
             navController = navController,
@@ -258,7 +265,7 @@ private fun AnimatedBottomBar(
                 .offset(y = offsetY)
                 .graphicsLayer { this.alpha = alpha }
                 .windowInsetsPadding(WindowInsets.navigationBars),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surfaceContainerHighest,
             shadowElevation = 16.dp,
             tonalElevation = 8.dp
         ) {
@@ -318,19 +325,19 @@ private fun BottomNavItem(
     modifier: Modifier = Modifier
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) Color(0xFF00C853) else Color.Transparent,
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
         animationSpec = tween(durationMillis = 300),
         label = "nav_bg_color"
     )
 
     val iconTint by animateColorAsState(
-        targetValue = if (isSelected) Color.White else Color.Gray,
+        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(durationMillis = 300),
         label = "nav_icon_tint"
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) Color(0xFF00C853) else Color.Gray,
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(durationMillis = 300),
         label = "nav_text_color"
     )
@@ -385,7 +392,7 @@ data class BottomNavItem(
 
 private val bottomNavItems = listOf(
     BottomNavItem("Home", Icons.Outlined.Home, Routes.HOMESCREEN),
-    BottomNavItem("Nutrition", Icons.Outlined.FavoriteBorder, Routes.NUTRITIONSCREEN),
-    BottomNavItem("Workout", Icons.Default.Star, Routes.WORKOUT_BODY_PARTS_SCREEN),
-    BottomNavItem("Steps", Icons.Default.Menu, Routes.STEPS_CONTAINER_SCREEN),
+    BottomNavItem("Nutrition", Icons.Outlined.Restaurant, Routes.NUTRITIONSCREEN),
+    BottomNavItem("Workout", Icons.Outlined.FitnessCenter, Routes.WORKOUT_BODY_PARTS_SCREEN),
+    BottomNavItem("Steps", Icons.AutoMirrored.Default.DirectionsWalk, Routes.STEPS_CONTAINER_SCREEN),
 )

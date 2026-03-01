@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Splash theme for Android 12+ (API 31+) with proper icon sizing -->
+    <style name="SplashTheme" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="postSplashScreenTheme">@style/Theme.VitaFlow</item>
+        <!-- Use the properly sized splash icon for API 31+ -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <!-- Icon background tint (optional, set to null for transparent) -->
+        <item name="windowSplashScreenIconBackgroundColor">@null</item>
+    </style>
+</resources>

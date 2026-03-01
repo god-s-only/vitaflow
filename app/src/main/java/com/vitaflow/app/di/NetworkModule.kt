@@ -1,5 +1,6 @@
 package com.vitaflow.app.di
 
+import com.vitaflow.app.BuildConfig
 import com.vitaflow.app.common.BASE_URL
 import com.vitaflow.app.common.SPOONACULAR_API
 import com.vitaflow.app.data.remote.SpoonacularAPI
@@ -48,9 +49,6 @@ object NetworkModule {
         }
     }
 
-    private const val RAPIDAPI_KEY = "a65d1be0e9mshf05431a65c41954p1a2950jsn2d27cf267aa8"
-    private const val RAPIDAPI_HOST = "exercisedb.p.rapidapi.com"
-
     @Provides
     @Singleton
     @RapidApiClient
@@ -65,10 +63,10 @@ object NetworkModule {
             .addInterceptor { chain ->
                 val originalRequest = chain.request()
 
-                // Add RapidAPI headers
+                // Add RapidAPI headers from BuildConfig (loaded from local.properties)
                 val requestWithHeaders = originalRequest.newBuilder()
-                    .addHeader("X-RapidAPI-Key", RAPIDAPI_KEY)
-                    .addHeader("X-RapidAPI-Host", RAPIDAPI_HOST)
+                    .addHeader("X-RapidAPI-Key", BuildConfig.RAPIDAPI_KEY)
+                    .addHeader("X-RapidAPI-Host", BuildConfig.RAPIDAPI_HOST)
                     .addHeader("Content-Type", "application/json")
                     .build()
 

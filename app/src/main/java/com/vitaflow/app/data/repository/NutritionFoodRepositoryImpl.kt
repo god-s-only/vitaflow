@@ -1,8 +1,10 @@
 package com.vitaflow.app.data.repository
 
 import android.graphics.Bitmap
-import android.util.Base64
 import android.util.Log
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.label.ImageLabeling
+import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
 import com.vitaflow.app.data.local.NutritionDao
 import com.vitaflow.app.data.local.NutritionPreferences
 import com.vitaflow.app.data.mappers.recipe.toDomain
@@ -22,16 +24,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
-import java.io.ByteArrayOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 class NutritionFoodRepositoryImpl @Inject constructor(
     private val spoonacularAPI: SpoonacularAPI,
@@ -257,9 +256,8 @@ class NutritionFoodRepositoryImpl @Inject constructor(
     override suspend fun analyzeFoodImage(bitmap: Bitmap): Result<FoodAnalysisResult> {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d("AnalyzeFoodImage", "Starting food image analysis")
-                val base64Image = convertBitmapToBase64(bitmap)
-                val analysisResult = analyzeFoodWithClaude(base64Image)
+                Log.d("AnalyzeFoodImage", "Starting food image analysis with ML Kit")
+                val analysisResult = analyzeFoodWithMLKit(bitmap)
                 Log.d("AnalyzeFoodImage", "Analysis completed: ${analysisResult.foodName}")
                 Result.success(analysisResult)
             } catch (e: Exception) {
@@ -269,147 +267,177 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun convertBitmapToBase64(bitmap: Bitmap): String {
-        val maxSize = 800
-        val ratio = maxSize.toFloat() / maxOf(bitmap.width, bitmap.height)
-        val resizedBitmap = Bitmap.createScaledBitmap(
-            bitmap,
-            (bitmap.width * ratio).toInt(),
-            (bitmap.height * ratio).toInt(),
-            true
-        )
+    private suspend fun analyzeFoodWithMLKit(bitmap: Bitmap): FoodAnalysisResult =
+        suspendCancellableCoroutine { continuation ->
+            val image = InputImage.fromBitmap(bitmap, 0)
+            val labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS)
 
-        val outputStream = ByteArrayOutputStream()
-        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
-        val byteArray = outputStream.toByteArray()
+            labeler.process(image)
+                .addOnSuccessListener { labels ->
+                    // Get the top label with highest confidence
+                    val topLabel = labels.maxByOrNull { it.confidence }
 
-        return Base64.encodeToString(byteArray, Base64.NO_WRAP)
-    }
+                    if (topLabel != null && topLabel.confidence > 0.5) {
+                        val foodName = topLabel.text
+                        val confidence = topLabel.confidence
 
-    private fun analyzeFoodWithClaude(base64Image: String): FoodAnalysisResult {
-        val url = URL("https://api.anthropic.com/v1/messages")
-        val connection = url.openConnection() as HttpURLConnection
+                        // Map common food labels to estimated nutrition data
+                        val nutritionData = getEstimatedNutrition(foodName)
 
-        try {
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.doOutput = true
-            val requestBody = JSONObject().apply {
-                put("model", "claude-sonnet-4-20250514")
-                put("max_tokens", 1000)
-                put("messages", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("role", "user")
-                        put("content", JSONArray().apply {
-                            put(JSONObject().apply {
-                                put("type", "image")
-                                put("source", JSONObject().apply {
-                                    put("type", "base64")
-                                    put("media_type", "image/jpeg")
-                                    put("data", base64Image)
-                                })
-                            })
-                            put(JSONObject().apply {
-                                put("type", "text")
-                                put(
-                                    "text", """
-                                    Analyze this food image and provide nutritional information.
-                                    
-                                    Respond ONLY with a JSON object in this exact format (no markdown, no extra text):
-                                    {
-                                      "foodName": "name of the food",
-                                      "estimatedPortionGrams": 100,
-                                      "caloriesPer100g": 250.0,
-                                      "carbsPer100g": 45.0,
-                                      "proteinPer100g": 8.0,
-                                      "fatPer100g": 6.0
-                                    }
-                                    
-                                    Important:
-                                    - Identify the main food item in the image
-                                    - Provide realistic nutritional values per 100g
-                                    - If multiple foods, focus on the primary/main item
-                                    - Estimate portion size in grams (default 100g if uncertain)
-                                    - Use standard USDA nutritional data as reference
-                                """.trimIndent()
-                                )
-                            })
-                        })
-                    })
-                })
-            }
+                        val result = FoodAnalysisResult(
+                            foodName = foodName,
+                            calories = nutritionData.calories,
+                            carbs = nutritionData.carbs,
+                            protein = nutritionData.protein,
+                            fat = nutritionData.fat,
+                            caloriesPer100g = nutritionData.caloriesPer100g,
+                            carbsPer100g = nutritionData.carbsPer100g,
+                            proteinPer100g = nutritionData.proteinPer100g,
+                            fatPer100g = nutritionData.fatPer100g,
+                            confidence = confidence
+                        )
+                        continuation.resume(result)
+                    } else {
+                        // Low confidence - return unknown with default values
+                        continuation.resume(
+                            FoodAnalysisResult(
+                                foodName = "Unknown Food",
+                                calories = 200,
+                                carbs = 30,
+                                protein = 10,
+                                fat = 8,
+                                caloriesPer100g = 200.0,
+                                carbsPer100g = 30.0,
+                                proteinPer100g = 10.0,
+                                fatPer100g = 8.0,
+                                confidence = topLabel?.confidence ?: 0f
+                            )
+                        )
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("AnalyzeFoodImage", "ML Kit labeling failed", e)
+                    continuation.resume(
+                        FoodAnalysisResult(
+                            foodName = "Unknown Food",
+                            calories = 200,
+                            carbs = 30,
+                            protein = 10,
+                            fat = 8,
+                            caloriesPer100g = 200.0,
+                            carbsPer100g = 30.0,
+                            proteinPer100g = 10.0,
+                            fatPer100g = 8.0,
+                            confidence = 0.5f
+                        )
+                    )
+                }
+        }
 
-            connection.outputStream.use { os ->
-                os.write(requestBody.toString().toByteArray())
-            }
+    private data class EstimatedNutrition(
+        val calories: Int,
+        val carbs: Int,
+        val protein: Int,
+        val fat: Int,
+        val caloriesPer100g: Double,
+        val carbsPer100g: Double,
+        val proteinPer100g: Double,
+        val fatPer100g: Double
+    )
 
-            val responseCode = connection.responseCode
-            Log.d("AnalyzeFoodImage", "API Response code: $responseCode")
+    private fun getEstimatedNutrition(foodName: String): EstimatedNutrition {
+        val lowerFoodName = foodName.lowercase()
 
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
-                Log.d("AnalyzeFoodImage", "API Response: $response")
+        return when {
+            // Fruits
+            lowerFoodName.contains("apple") -> EstimatedNutrition(52, 14, 0, 0, 52.0, 14.0, 0.3, 0.2)
+            lowerFoodName.contains("banana") -> EstimatedNutrition(89, 23, 1, 0, 89.0, 22.8, 1.1, 0.3)
+            lowerFoodName.contains("orange") -> EstimatedNutrition(47, 12, 1, 0, 47.0, 11.8, 0.9, 0.1)
+            lowerFoodName.contains("grape") -> EstimatedNutrition(69, 18, 1, 0, 69.0, 18.1, 0.7, 0.2)
+            lowerFoodName.contains("strawberry") -> EstimatedNutrition(32, 8, 1, 0, 32.0, 7.7, 0.7, 0.3)
+            lowerFoodName.contains("blueberry") -> EstimatedNutrition(57, 14, 1, 0, 57.0, 14.5, 0.7, 0.3)
+            lowerFoodName.contains("watermelon") -> EstimatedNutrition(30, 8, 1, 0, 30.0, 7.6, 0.6, 0.2)
+            lowerFoodName.contains("pineapple") -> EstimatedNutrition(50, 13, 1, 0, 50.0, 13.1, 0.5, 0.1)
+            lowerFoodName.contains("mango") -> EstimatedNutrition(60, 15, 1, 0, 60.0, 14.8, 0.8, 0.4)
+            lowerFoodName.contains("peach") -> EstimatedNutrition(39, 10, 1, 0, 39.0, 9.5, 0.9, 0.3)
 
-                return parseClaudeResponse(response)
-            } else {
-                val errorResponse = connection.errorStream?.bufferedReader()?.use { it.readText() }
-                Log.e("AnalyzeFoodImage", "API Error: $errorResponse")
-                throw Exception("API request failed: $responseCode - $errorResponse")
-            }
-        } finally {
-            connection.disconnect()
+            // Vegetables
+            lowerFoodName.contains("broccoli") -> EstimatedNutrition(34, 7, 3, 0, 34.0, 6.6, 2.8, 0.4)
+            lowerFoodName.contains("carrot") -> EstimatedNutrition(41, 10, 1, 0, 41.0, 9.6, 0.9, 0.2)
+            lowerFoodName.contains("spinach") -> EstimatedNutrition(23, 4, 3, 0, 23.0, 3.6, 2.9, 0.4)
+            lowerFoodName.contains("lettuce") -> EstimatedNutrition(15, 3, 1, 0, 15.0, 2.9, 1.4, 0.2)
+            lowerFoodName.contains("tomato") -> EstimatedNutrition(18, 4, 1, 0, 18.0, 3.9, 0.9, 0.2)
+            lowerFoodName.contains("cucumber") -> EstimatedNutrition(16, 4, 1, 0, 16.0, 3.6, 0.7, 0.1)
+            lowerFoodName.contains("pepper") -> EstimatedNutrition(31, 6, 1, 0, 31.0, 6.0, 1.0, 0.3)
+            lowerFoodName.contains("onion") -> EstimatedNutrition(40, 9, 1, 0, 40.0, 9.3, 1.1, 0.1)
+            lowerFoodName.contains("potato") -> EstimatedNutrition(77, 17, 2, 0, 77.0, 17.5, 2.0, 0.1)
+            lowerFoodName.contains("sweet potato") -> EstimatedNutrition(86, 20, 2, 0, 86.0, 20.1, 1.6, 0.1)
+
+            // Proteins
+            lowerFoodName.contains("chicken") -> EstimatedNutrition(165, 0, 31, 3, 165.0, 0.0, 31.0, 3.6)
+            lowerFoodName.contains("beef") -> EstimatedNutrition(250, 0, 26, 15, 250.0, 0.0, 26.0, 15.0)
+            lowerFoodName.contains("pork") -> EstimatedNutrition(242, 0, 27, 14, 242.0, 0.0, 27.0, 14.0)
+            lowerFoodName.contains("fish") || lowerFoodName.contains("salmon") -> EstimatedNutrition(208, 0, 20, 13, 208.0, 0.0, 20.0, 13.0)
+            lowerFoodName.contains("tuna") -> EstimatedNutrition(132, 0, 28, 1, 132.0, 0.0, 28.0, 1.0)
+            lowerFoodName.contains("shrimp") -> EstimatedNutrition(99, 0, 24, 0, 99.0, 0.2, 24.0, 0.3)
+            lowerFoodName.contains("egg") -> EstimatedNutrition(155, 1, 13, 11, 155.0, 1.1, 13.0, 11.0)
+            lowerFoodName.contains("tofu") -> EstimatedNutrition(76, 2, 8, 5, 76.0, 1.9, 8.1, 4.8)
+
+            // Grains & Starches
+            lowerFoodName.contains("rice") -> EstimatedNutrition(130, 28, 3, 0, 130.0, 28.2, 2.7, 0.3)
+            lowerFoodName.contains("pasta") || lowerFoodName.contains("noodle") -> EstimatedNutrition(131, 25, 5, 1, 131.0, 25.0, 5.0, 1.1)
+            lowerFoodName.contains("bread") -> EstimatedNutrition(265, 49, 9, 3, 265.0, 49.0, 9.0, 3.2)
+            lowerFoodName.contains("oats") || lowerFoodName.contains("oatmeal") -> EstimatedNutrition(389, 66, 17, 7, 389.0, 66.3, 16.9, 6.9)
+            lowerFoodName.contains("cereal") -> EstimatedNutrition(379, 83, 8, 3, 379.0, 83.0, 8.0, 3.0)
+            lowerFoodName.contains("quinoa") -> EstimatedNutrition(120, 21, 4, 2, 120.0, 21.3, 4.4, 1.9)
+
+            // Dairy
+            lowerFoodName.contains("milk") -> EstimatedNutrition(65, 5, 3, 4, 65.0, 4.8, 3.4, 3.6)
+            lowerFoodName.contains("cheese") -> EstimatedNutrition(402, 1, 25, 33, 402.0, 1.3, 25.0, 33.0)
+            lowerFoodName.contains("yogurt") -> EstimatedNutrition(59, 4, 10, 0, 59.0, 3.6, 10.0, 0.4)
+            lowerFoodName.contains("butter") -> EstimatedNutrition(717, 1, 1, 81, 717.0, 0.1, 0.9, 81.1)
+            lowerFoodName.contains("ice cream") -> EstimatedNutrition(207, 24, 4, 11, 207.0, 23.6, 3.5, 11.0)
+
+            // Fast Food & Prepared Foods
+            lowerFoodName.contains("pizza") -> EstimatedNutrition(266, 33, 11, 10, 266.0, 33.0, 11.0, 10.0)
+            lowerFoodName.contains("burger") || lowerFoodName.contains("hamburger") -> EstimatedNutrition(295, 30, 17, 14, 295.0, 30.0, 17.0, 14.0)
+            lowerFoodName.contains("sandwich") -> EstimatedNutrition(250, 28, 12, 10, 250.0, 28.0, 12.0, 10.0)
+            lowerFoodName.contains("fries") || lowerFoodName.contains("french fry") -> EstimatedNutrition(312, 41, 3, 15, 312.0, 41.0, 3.4, 15.0)
+            lowerFoodName.contains("hot dog") -> EstimatedNutrition(290, 2, 10, 26, 290.0, 2.2, 10.0, 26.0)
+            lowerFoodName.contains("taco") -> EstimatedNutrition(226, 20, 9, 13, 226.0, 19.9, 8.9, 13.0)
+            lowerFoodName.contains("burrito") -> EstimatedNutrition(290, 32, 12, 13, 290.0, 32.0, 12.0, 13.0)
+
+            // Snacks & Sweets
+            lowerFoodName.contains("chocolate") -> EstimatedNutrition(546, 61, 5, 31, 546.0, 61.0, 4.9, 31.0)
+            lowerFoodName.contains("cookie") -> EstimatedNutrition(502, 64, 7, 25, 502.0, 64.0, 7.0, 25.0)
+            lowerFoodName.contains("cake") -> EstimatedNutrition(371, 53, 3, 15, 371.0, 53.0, 3.5, 15.0)
+            lowerFoodName.contains("donut") || lowerFoodName.contains("doughnut") -> EstimatedNutrition(452, 51, 4, 25, 452.0, 51.0, 4.0, 25.0)
+            lowerFoodName.contains("candy") -> EstimatedNutrition(400, 90, 0, 5, 400.0, 90.0, 0.0, 5.0)
+            lowerFoodName.contains("chip") || lowerFoodName.contains("crisp") -> EstimatedNutrition(536, 53, 7, 35, 536.0, 53.0, 7.0, 35.0)
+            lowerFoodName.contains("popcorn") -> EstimatedNutrition(387, 78, 13, 4, 387.0, 78.0, 12.9, 4.5)
+
+            // Beverages
+            lowerFoodName.contains("coffee") -> EstimatedNutrition(2, 0, 0, 0, 2.0, 0.0, 0.3, 0.0)
+            lowerFoodName.contains("tea") -> EstimatedNutrition(1, 0, 0, 0, 1.0, 0.0, 0.1, 0.0)
+            lowerFoodName.contains("juice") -> EstimatedNutrition(45, 11, 1, 0, 45.0, 10.4, 0.7, 0.2)
+            lowerFoodName.contains("soda") || lowerFoodName.contains("soft drink") -> EstimatedNutrition(42, 11, 0, 0, 42.0, 10.6, 0.0, 0.0)
+            lowerFoodName.contains("beer") -> EstimatedNutrition(43, 3, 0, 0, 43.0, 3.6, 0.5, 0.0)
+            lowerFoodName.contains("wine") -> EstimatedNutrition(82, 3, 0, 0, 82.0, 2.6, 0.1, 0.0)
+
+            // Soups & Salads
+            lowerFoodName.contains("soup") -> EstimatedNutrition(75, 10, 3, 3, 75.0, 9.9, 3.0, 2.9)
+            lowerFoodName.contains("salad") -> EstimatedNutrition(33, 5, 2, 1, 33.0, 5.0, 2.1, 0.5)
+
+            // Nuts & Seeds
+            lowerFoodName.contains("almond") -> EstimatedNutrition(579, 22, 21, 50, 579.0, 21.6, 21.2, 49.9)
+            lowerFoodName.contains("peanut") -> EstimatedNutrition(567, 16, 26, 49, 567.0, 16.1, 25.8, 49.2)
+            lowerFoodName.contains("walnut") -> EstimatedNutrition(654, 14, 15, 65, 654.0, 13.7, 15.2, 65.2)
+            lowerFoodName.contains("cashew") -> EstimatedNutrition(553, 30, 18, 44, 553.0, 30.2, 18.2, 43.9)
+
+            // Default fallback
+            else -> EstimatedNutrition(200, 30, 10, 8, 200.0, 30.0, 10.0, 8.0)
         }
     }
-
-    private fun parseClaudeResponse(response: String): FoodAnalysisResult {
-        try {
-            val jsonResponse = JSONObject(response)
-            val content = jsonResponse.getJSONArray("content")
-            val textContent = content.getJSONObject(0).getString("text")
-            val cleanJson = textContent
-                .replace("```json", "")
-                .replace("```", "")
-                .trim()
-
-            Log.d("AnalyzeFoodImage", "Parsed JSON: $cleanJson")
-
-            val nutritionData = JSONObject(cleanJson)
-
-            val portionGrams = nutritionData.optDouble("estimatedPortionGrams", 100.0)
-            val caloriesPer100g = nutritionData.getDouble("caloriesPer100g")
-            val carbsPer100g = nutritionData.optDouble("carbsPer100g", 0.0)
-            val proteinPer100g = nutritionData.getDouble("proteinPer100g")
-            val fatPer100g = nutritionData.getDouble("fatPer100g")
-            val multiplier = portionGrams / 100.0
-
-            return FoodAnalysisResult(
-                foodName = nutritionData.getString("foodName"),
-                calories = (caloriesPer100g * multiplier).toInt(),
-                carbs = (carbsPer100g * multiplier).toInt(),
-                protein = (proteinPer100g * multiplier).toInt(),
-                fat = (fatPer100g * multiplier).toInt(),
-                caloriesPer100g = caloriesPer100g,
-                carbsPer100g = carbsPer100g,
-                proteinPer100g = proteinPer100g,
-                fatPer100g = fatPer100g
-            )
-        } catch (e: Exception) {
-            Log.e("AnalyzeFoodImage", "Error parsing Claude response", e)
-            return FoodAnalysisResult(
-                foodName = "Unknown Food",
-                calories = 200,
-                carbs = 30,
-                protein = 10,
-                fat = 8,
-                caloriesPer100g = 200.0,
-                carbsPer100g = 30.0,
-                proteinPer100g = 10.0,
-                fatPer100g = 8.0,
-                confidence = 0.5f
-            )
-        }
-    }
-}
 
     private fun mapDetailDtoToNutritionFood(dto: NutritionFoodDetailDTO): NutritionFood {
         val nutrients = dto.nutrition?.nutrients ?: emptyList()
@@ -422,5 +450,6 @@ class NutritionFoodRepositoryImpl @Inject constructor(
             fat = nutrients.find { it.name == "Fat" }?.amount,
         )
     }
+}
 
 fun getTodayDate(): String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())

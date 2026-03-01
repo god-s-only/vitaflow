@@ -10,7 +10,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,52 +53,44 @@ object WorkoutColors {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutBodyPartsScreen(
-    viewModel: WorkoutBodyPartsViewModel = hiltViewModel(),
-    navController: NavController
+    navController: NavController,
+    viewModel: WorkoutBodyPartsViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
+    val bodyPartsWithUI = state.value.bodyParts.map { it.toBodyPart() }
 
-    LaunchedEffect(Unit) {
-        viewModel.uiEvent.collectLatest { result ->
-            when(result){
-                is UIEvent.PopBackStack -> {
-                    navController.popBackStack()
-                }
+    LaunchedEffect(key1 = true) {
+        viewModel.uiEvent.collectLatest { event ->
+            when (event) {
                 is UIEvent.Navigate -> {
-                    navController.navigate(result.route)
+                    navController.navigate(event.route)
                 }
                 else -> {}
             }
         }
     }
 
-    val bodyPartsWithUI = remember(state.value.bodyParts) {
-        state.value.bodyParts.map { it.toBodyPart() }
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            text = "Body Parts",
+                    Text(
+                        text = "Workouts",
+                        style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp
+                            color = WorkoutColors.OnSurface
                         )
-                        Text(
-                            text = "Choose a muscle group to train",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = WorkoutColors.OnSurfaceVariant
-                        )
-                    }
+                    )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { viewModel.onEvent(WorkoutBodyPartsEvent.PopBackStack) }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = WorkoutColors.OnSurface
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Text(
+                            text = "←",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = WorkoutColors.OnSurface
+                            ),
+                            modifier = Modifier.padding(start = 16.dp)
                         )
                     }
                 },
@@ -106,8 +100,8 @@ fun WorkoutBodyPartsScreen(
                 actions = {
                     IconButton(onClick = { /* Filter/Settings */ }) {
                         Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
+                            imageVector = Icons.Outlined.FilterList,
+                            contentDescription = "Filter",
                             tint = WorkoutColors.OnSurface
                         )
                     }
@@ -148,27 +142,26 @@ fun WorkoutBodyPartsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = WorkoutColors.OnSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = state.value.error ?: "An error occurred",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = WorkoutColors.OnSurfaceVariant,
-                            textAlign = TextAlign.Center
+                            text = "⚠️",
+                            fontSize = 48.sp,
+                            modifier = Modifier.padding(bottom = 16.dp)
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.getBodyParts() }) {
-                            Text("Retry")
-                        }
+                        Text(
+                            text = "Oops! Something went wrong",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = WorkoutColors.OnSurface,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = state.value.error ?: "Unknown error",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = WorkoutColors.OnSurfaceVariant,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
                     }
                 }
             } else {
-                // Body Parts Grid
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier
@@ -182,7 +175,9 @@ fun WorkoutBodyPartsScreen(
                         BodyPartCard(
                             bodyPart = bodyPart,
                             onClick = {
-                                viewModel.onEvent(WorkoutBodyPartsEvent.OnBodyPartClick(bodyPart = bodyPart.name))
+                                viewModel.onEvent(
+                                    WorkoutBodyPartsEvent.OnBodyPartClick(bodyPart.name)
+                                )
                             }
                         )
                     }
@@ -193,205 +188,244 @@ fun WorkoutBodyPartsScreen(
 }
 
 @Composable
-fun StatsCard(bodyPartCount: Int = 0) {
+private fun StatsCard(bodyPartCount: Int) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = WorkoutColors.Primary),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = WorkoutColors.CardBg),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(
-                    text = "Ready to Train?",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "$bodyPartCount muscle groups available",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.9f)
-                )
-            }
-
-            Box(
+            StatItem(
+                value = bodyPartCount.toString(),
+                label = "Body Parts",
+                color = WorkoutColors.Primary
+            )
+            Divider(
                 modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
+                    .height(40.dp)
+                    .width(1.dp),
+                color = WorkoutColors.SkeletonBase
+            )
+            StatItem(
+                value = "50+",
+                label = "Exercises",
+                color = WorkoutColors.AccentOrange
+            )
+            Divider(
+                modifier = Modifier
+                    .height(40.dp)
+                    .width(1.dp),
+                color = WorkoutColors.SkeletonBase
+            )
+            StatItem(
+                value = "∞",
+                label = "Possibilities",
+                color = WorkoutColors.AccentPurple
+            )
         }
     }
 }
 
 @Composable
-fun BodyPartCard(
+private fun StatItem(value: String, label: String, color: Color) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall.copy(
+                color = WorkoutColors.OnSurfaceVariant
+            ),
+            modifier = Modifier.padding(top = 4.dp)
+        )
+    }
+}
+
+@Composable
+private fun BodyPartCard(
     bodyPart: BodyPart,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
+            .height(140.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = bodyPart.color.copy(alpha = 0.1f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White,
-                            bodyPart.color.copy(alpha = 0.05f)
-                        )
-                    )
-                )
+            modifier = Modifier.fillMaxSize()
         ) {
+            // Decorative gradient circle
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .offset(x = (-20).dp, y = (-20).dp)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                bodyPart.color.copy(alpha = 0.2f),
+                                bodyPart.color.copy(alpha = 0.0f)
+                            ),
+                            center = Offset(40f, 40f),
+                            radius = 40f
+                        ),
+                        shape = CircleShape
+                    )
+            )
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Icon Container
+                // Icon container
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(48.dp)
                         .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    bodyPart.color.copy(alpha = 0.2f),
-                                    bodyPart.color.copy(alpha = 0.1f)
-                                )
-                            )
-                        ),
+                        .background(bodyPart.color.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = bodyPart.icon,
                         contentDescription = bodyPart.name,
-                        modifier = Modifier.size(40.dp),
-                        tint = bodyPart.color
+                        tint = bodyPart.color,
+                        modifier = Modifier.size(28.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Body Part Name
-                Text(
-                    text = bodyPart.name.replaceFirstChar { it.uppercase() },
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = WorkoutColors.OnSurface,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2
-                )
+                // Text content
+                Column {
+                    Text(
+                        text = bodyPart.name.replaceFirstChar { it.uppercase() },
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = WorkoutColors.OnSurface
+                        )
+                    )
+                    Text(
+                        text = "${bodyPart.exerciseCount} exercises",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = WorkoutColors.OnSurfaceVariant
+                        ),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
 
             // Arrow indicator
-            Icon(
-                imageVector = Icons.Default.ArrowForward,
-                contentDescription = null,
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(12.dp)
-                    .size(20.dp),
-                tint = bodyPart.color.copy(alpha = 0.5f)
-            )
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.8f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "→",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = bodyPart.color
+                        )
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun BodyPartCardSkeleton() {
+private fun BodyPartCardSkeleton() {
+    val shimmerColors = listOf(
+        WorkoutColors.SkeletonBase,
+        WorkoutColors.SkeletonHighlight,
+        WorkoutColors.SkeletonBase
+    )
+
     val transition = rememberInfiniteTransition(label = "shimmer")
-    val translateAnim by transition.animateFloat(
+    val translateAnimation = transition.animateFloat(
         initialValue = 0f,
-        targetValue = 1000f,
+        targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1200, easing = LinearEasing),
+            animation = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "shimmer"
     )
 
-    val shimmerBrush = Brush.linearGradient(
-        colors = listOf(
-            WorkoutColors.SkeletonBase,
-            WorkoutColors.SkeletonHighlight,
-            WorkoutColors.SkeletonBase
-        ),
-        start = Offset(translateAnim - 1000f, translateAnim - 1000f),
-        end = Offset(translateAnim, translateAnim)
+    val brush = Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(0f, 0f),
+        end = Offset(
+            x = translateAnimation.value * 200f,
+            y = translateAnimation.value * 200f
+        )
     )
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .height(140.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = WorkoutColors.SkeletonBase),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Icon skeleton
             Box(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
-                    .background(shimmerBrush)
+                    .background(brush)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Title skeleton
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .height(20.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(shimmerBrush)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Subtitle skeleton
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.5f)
-                    .height(14.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(shimmerBrush)
-            )
+            Column {
+                Box(
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(20.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(brush)
+                )
+                Box(
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .width(80.dp)
+                        .height(14.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(brush)
+                )
+            }
         }
     }
 }

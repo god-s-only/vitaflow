@@ -2,7 +2,7 @@ package com.vitaflow.app.presentation.ui.features.recipes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.util.query
+import com.vitaflow.app.BuildConfig
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.usecase.recipes.SearchRecipesUseCase
@@ -25,7 +25,7 @@ class RecipesViewModel @Inject constructor(private val searchRecipesUseCase: Sea
     private val _uiEvent = MutableSharedFlow<UIEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
-    private val apiKey = "d2c131a9ef64479c80be1352a98a6028"
+    private val apiKey = BuildConfig.SPOONACULAR_API_KEY
 
     fun onEvent(event: RecipesEvent){
         when(event){

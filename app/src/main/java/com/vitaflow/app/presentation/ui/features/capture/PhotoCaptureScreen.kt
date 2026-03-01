@@ -21,7 +21,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -242,8 +251,8 @@ fun PermissionRequestScreen(
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Star,
-                    contentDescription = null,
+                    imageVector = Icons.Filled.AutoAwesome,
+                    contentDescription = "AI Analysis",
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -375,7 +384,7 @@ fun CameraScreen(
                     .background(Color.White.copy(alpha = 0.3f), CircleShape)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Star,
+                    imageVector = Icons.Filled.PhotoLibrary,
                     contentDescription = "Gallery",
                     tint = Color.White,
                     modifier = Modifier.size(28.dp)
@@ -547,7 +556,11 @@ fun ReviewScreen(
                                     color = Color.Gray
                                 )
                                 Text(
-                                    text = selectedMealType.capitalize(Locale.getDefault()),
+                                    text = selectedMealType.replaceFirstChar {
+                                        if (it.isLowerCase()) it.titlecase(
+                                            Locale.getDefault()
+                                        ) else it.toString()
+                                    },
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = Color.Black

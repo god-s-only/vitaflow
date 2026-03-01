@@ -3,6 +3,7 @@ package com.vitaflow.app.presentation.ui.features.barcode
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vitaflow.app.BuildConfig
 import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.usecase.nutrition.AddFoodEntryUseCase
 import com.vitaflow.app.domain.usecase.nutrition.ScanBarcodeUseCase
@@ -31,7 +32,8 @@ class BarcodeScanViewModel @Inject constructor(private val scanBarcodeUseCase: S
     private val _events = MutableSharedFlow<BarcodeScanEvent>()
     val events: SharedFlow<BarcodeScanEvent> = _events.asSharedFlow()
 
-    private val apiKey = "d2c131a9ef64479c80be1352a98a6028"
+    // Use API key from BuildConfig (loaded from local.properties)
+    private val apiKey = BuildConfig.SPOONACULAR_API_KEY
 
     fun onBarcodeScanned(barcode: String) {
         // Prevent duplicate scans

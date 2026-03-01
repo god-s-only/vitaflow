@@ -2,6 +2,7 @@ package com.vitaflow.app.presentation.ui.features.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vitaflow.app.BuildConfig
 import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.usecase.nutrition.AddFoodUseCase
@@ -30,7 +31,7 @@ class FoodSearchViewModel @Inject constructor(
     private val _uiEvent = MutableSharedFlow<UIEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
-    private val apiKey = "d2c131a9ef64479c80be1352a98a6028"
+    private val apiKey = BuildConfig.SPOONACULAR_API_KEY
     private var searchJob: Job? = null
 
 
