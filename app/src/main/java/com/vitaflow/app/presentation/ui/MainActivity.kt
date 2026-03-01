@@ -73,6 +73,7 @@ import com.vitaflow.app.presentation.ui.features.settings.NutritionSettingsScree
 import com.vitaflow.app.presentation.ui.features.steps.StepsSettingsScreen
 import com.vitaflow.app.presentation.ui.features.steps.StepsTrackerScreenContainer
 import com.vitaflow.app.presentation.ui.features.workout.WorkoutBodyPartsScreen
+import com.vitaflow.app.presentation.ui.features.workout.WorkoutDetailScreen
 import com.vitaflow.app.presentation.ui.theme.VitaFlowTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -225,6 +226,16 @@ private fun MainContent(vitaFlowSession: VitaFlowSession) {
             }
             composable(Routes.PHOTO_CAPTURE) {
                 PhotoCaptureScreen(navController = navController)
+            }
+            composable(
+                route = Routes.WORKOUT_DETAIL_SCREEN + "/{workoutId}",
+                arguments = listOf(navArgument("workoutId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val workoutId = backStackEntry.arguments?.getString("workoutId") ?: ""
+                WorkoutDetailScreen(
+                    navController = navController,
+                    workoutId = workoutId
+                )
             }
 
         }

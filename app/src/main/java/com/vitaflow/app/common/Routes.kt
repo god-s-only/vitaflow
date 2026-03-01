@@ -21,4 +21,9 @@ object Routes {
     const val WORKOUT_BODY_PARTS_SELECTED_SCREEN = "workout_body_parts_selected_screen"
     const val STEPS_SETTINGS_SCREEN = "steps_settings_screen"
     const val PHOTO_CAPTURE = "photo_capture"
+
+    // New routes for Featured Workout and Quick Training
+    const val FEATURED_WORKOUT_SCREEN = "featured_workout_screen"
+    const val QUICK_TRAINING_SCREEN = "quick_training_screen"
+    const val WORKOUT_DETAIL_SCREEN = "workout_detail_screen"
 }

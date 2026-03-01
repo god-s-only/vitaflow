@@ -130,7 +130,7 @@ fun HomeScreen(
                         FeaturedWorkoutCard(
                             workout = uiState.value.featuredWorkout!!,
                             onClick = {
-                                navController.navigate(Routes.WORKOUTSCREEN + "/${uiState.value.featuredWorkout!!.id}")
+                                navController.navigate(Routes.WORKOUT_DETAIL_SCREEN + "/${uiState.value.featuredWorkout!!.id}")
                             }
                         )
                     }
@@ -247,7 +247,7 @@ fun HomeScreen(
                             training = training,
                             onClick = {
                                 // Navigate to training detail
-                                navController.navigate(Routes.WORKOUTSCREEN + "/${training.id}")
+                                navController.navigate(Routes.WORKOUT_DETAIL_SCREEN + "/${training.id}")
                             }
                         )
                     }
