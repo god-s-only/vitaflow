@@ -144,7 +144,6 @@ class HomeViewModel @Inject constructor(
 
                     is Resource.Error -> {
                         Log.e(TAG, "Quick trainings error: ${result.message}")
-                        // Use fallback data when API fails
                         _state.value = _state.value.copy(
                             quickTrainings = getFallbackQuickTrainings(),
                             isQuickTrainingsLoading = false
