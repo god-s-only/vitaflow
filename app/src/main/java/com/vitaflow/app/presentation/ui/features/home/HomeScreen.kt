@@ -5,11 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -34,6 +33,8 @@ import coil3.request.crossfade
 import com.vitaflow.app.common.Routes
 import com.vitaflow.app.common.UIEvent
 import com.vitaflow.app.domain.models.Exercise
+import com.vitaflow.app.domain.models.FeaturedWorkout
+import com.vitaflow.app.domain.models.QuickTraining
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -41,10 +42,6 @@ import kotlinx.coroutines.launch
 val PrimaryGreen = Color(0xFF00C853)
 val LightGreen = Color(0xFF4CAF50)
 val DarkGreen = Color(0xFF2E7D32)
-val BackgroundWhite = Color(0xFFFAFAFA)
-val CardWhite = Color.White
-val TextPrimary = Color(0xFF1A1A1A)
-val TextSecondary = Color(0xFF666666)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,22 +51,19 @@ fun HomeScreen(
 ) {
     val uiState = viewModel.state.collectAsStateWithLifecycle()
 
-    val randomAnimeCharacter = remember { animeCharacterImages.random() }
-
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collectLatest { result ->
-            when(result){
-                is UIEvent.ShowSnackBar  -> {
+            when (result) {
+                is UIEvent.ShowSnackBar -> {
                     scope.launch {
                         snackbarHostState.showSnackbar(message = result.message)
                     }
                 }
-                else -> {
 
-                }
+                else -> {}
             }
         }
     }
@@ -81,8 +75,8 @@ fun HomeScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = CardWhite,
-                    titleContentColor = TextPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = {
                     Text(
@@ -104,7 +98,7 @@ fun HomeScreen(
                 }
             )
         },
-        containerColor = BackgroundWhite
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -115,16 +109,46 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item(key = "welcome") {
-                WelcomeHeader()
+                WelcomeHeader(userName = uiState.value.userName)
             }
 
+            // Featured Workout Section
             item(key = "featured") {
-                FeaturedWorkoutCard(randomAnimeCharacter)
+                when {
+                    uiState.value.isFeaturedWorkoutLoading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(220.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = PrimaryGreen)
+                        }
+                    }
+
+                    uiState.value.featuredWorkout != null -> {
+                        FeaturedWorkoutCard(
+                            workout = uiState.value.featuredWorkout!!,
+                            onClick = {
+                                navController.navigate(Routes.WORKOUTSCREEN + "/${uiState.value.featuredWorkout!!.id}")
+                            }
+                        )
+                    }
+
+                    else -> {
+                        // Show default featured workout with fallback data
+                        FeaturedWorkoutCard(
+                            workout = getDefaultFeaturedWorkout(),
+                            onClick = {}
+                        )
+                    }
+                }
             }
 
             item(key = "workout_header") {
                 WorkoutCategoriesHeader()
             }
+
             item(key = "workout_cards") {
                 when {
                     uiState.value.isLoading -> {
@@ -148,7 +172,9 @@ fun HomeScreen(
                             sampleExercises.forEach { exercise ->
                                 WorkoutTypeCard(
                                     exercise = exercise,
-                                    onClick = {}
+                                    onClick = {
+                                        navController.navigate(Routes.WORKOUTSCREEN + "/${exercise.exerciseId}")
+                                    }
                                 )
                             }
                         }
@@ -174,22 +200,71 @@ fun HomeScreen(
                 }
             }
 
+            // Quick Training Section
             item(key = "quick_training_header") {
-                Text(
-                    text = "Quick Training Sessions",
-                    fontSize = 22.sp,
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Quick Training Sessions",
+                        fontSize = 22.sp,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    TextButton(onClick = { /* TODO: See all */ }) {
+                        Text(
+                            text = "See All",
+                            color = PrimaryGreen,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
             }
 
-            // Quick Training Cards - directly in LazyColumn
-            items(
-                items = quickTrainingItems,
-                key = { it.name }
-            ) { training ->
-                QuickTrainingCard(training = training)
+            when {
+                uiState.value.isQuickTrainingsLoading -> {
+                    item(key = "quick_training_loading") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = PrimaryGreen)
+                        }
+                    }
+                }
+
+                uiState.value.quickTrainings.isNotEmpty() -> {
+                    items(
+                        items = uiState.value.quickTrainings,
+                        key = { it.id }
+                    ) { training ->
+                        QuickTrainingCard(
+                            training = training,
+                            onClick = {
+                                // Navigate to training detail
+                                navController.navigate(Routes.WORKOUTSCREEN + "/${training.id}")
+                            }
+                        )
+                    }
+                }
+
+                else -> {
+                    // Show default quick trainings as fallback
+                    items(
+                        items = defaultQuickTrainings,
+                        key = { it.id }
+                    ) { training ->
+                        QuickTrainingCard(
+                            training = training,
+                            onClick = {}
+                        )
+                    }
+                }
             }
 
             // Bottom spacer for better scrolling
@@ -201,19 +276,19 @@ fun HomeScreen(
 }
 
 @Composable
-private fun WelcomeHeader() {
+private fun WelcomeHeader(userName: String?) {
     Column {
         Text(
-            text = "Hello, Fitness Enthusiast! 👋",
+            text = "Hello, ${userName ?: "Fitness Enthusiast"}! 👋",
             fontSize = 16.sp,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Normal
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "Let's Get Moving Today",
             fontSize = 28.sp,
-            color = TextPrimary,
+            color = MaterialTheme.colorScheme.onBackground,
             fontWeight = FontWeight.Bold
         )
     }
@@ -229,7 +304,7 @@ private fun WorkoutCategoriesHeader() {
         Text(
             text = "Workout Categories",
             fontSize = 22.sp,
-            color = TextPrimary,
+            color = MaterialTheme.colorScheme.onBackground,
             fontWeight = FontWeight.Bold
         )
 
@@ -244,11 +319,12 @@ private fun WorkoutCategoriesHeader() {
 }
 
 @Composable
-private fun FeaturedWorkoutCard(character: AnimeCharacter) {
+private fun FeaturedWorkoutCard(workout: FeaturedWorkout, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(220.dp),
+            .height(220.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -257,10 +333,10 @@ private fun FeaturedWorkoutCard(character: AnimeCharacter) {
             // Background Image
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(character.imageUrl)
+                    .data(workout.imageUrl)
                     .crossfade(true)
                     .build(),
-                contentDescription = character.name,
+                contentDescription = workout.title,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -289,30 +365,32 @@ private fun FeaturedWorkoutCard(character: AnimeCharacter) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Badge(
                         text = "Featured",
-                        backgroundColor = CardWhite.copy(alpha = 0.9f),
+                        backgroundColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
                         textColor = PrimaryGreen
                     )
                     Badge(
-                        text = "Full Body",
+                        text = workout.category,
                         backgroundColor = PrimaryGreen.copy(alpha = 0.8f),
-                        textColor = CardWhite
+                        textColor = Color.White
                     )
                 }
 
                 Column {
                     Text(
-                        text = "Today's Featured Workout",
-                        fontSize = 18.sp,
-                        color = CardWhite,
-                        fontWeight = FontWeight.Bold
+                        text = workout.title,
+                        fontSize = 20.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                        InfoChip(icon = "🔥", text = "350 kcal")
-                        InfoChip(icon = "⏱️", text = "45 min")
-                        InfoChip(icon = "⭐", text = "4.8")
+                        InfoChip(icon = "🔥", text = "${workout.calories} kcal")
+                        InfoChip(icon = "⏱️", text = "${workout.duration} min")
+                        InfoChip(icon = "⭐", text = "${workout.rating}")
                     }
                 }
             }
@@ -321,13 +399,13 @@ private fun FeaturedWorkoutCard(character: AnimeCharacter) {
 }
 
 @Composable
-private fun QuickTrainingCard(training: QuickTraining) {
+private fun QuickTrainingCard(training: QuickTraining, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* TODO: Navigate to workout */ },
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
@@ -356,7 +434,7 @@ private fun QuickTrainingCard(training: QuickTraining) {
                 Text(
                     text = training.name,
                     fontSize = 16.sp,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
 
@@ -365,7 +443,9 @@ private fun QuickTrainingCard(training: QuickTraining) {
                 Text(
                     text = training.description,
                     fontSize = 14.sp,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -373,15 +453,15 @@ private fun QuickTrainingCard(training: QuickTraining) {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     InfoTag(text = "${training.duration} min", color = PrimaryGreen)
                     InfoTag(text = "${training.calories} kcal", color = LightGreen)
-                    InfoTag(text = training.level, color = DarkGreen)
+                    InfoTag(text = training.difficulty, color = DarkGreen)
                 }
             }
 
             Icon(
-                painter = painterResource(id = android.R.drawable.ic_menu_send),
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = "Start workout",
                 tint = PrimaryGreen,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -416,7 +496,7 @@ private fun InfoChip(icon: String, text: String) {
         Text(text = icon, fontSize = 14.sp)
         Text(
             text = text,
-            color = CardWhite,
+            color = Color.White,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium
         )
@@ -451,7 +531,7 @@ fun WorkoutTypeCard(
             .height(180.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -498,7 +578,7 @@ fun WorkoutTypeCard(
             ) {
                 Text(
                     text = exercise.name.take(25),
-                    color = CardWhite,
+                    color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
@@ -509,7 +589,7 @@ fun WorkoutTypeCard(
 
                 Text(
                     text = "Start Workout",
-                    color = CardWhite.copy(alpha = 0.9f),
+                    color = Color.White.copy(alpha = 0.9f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -518,77 +598,76 @@ fun WorkoutTypeCard(
     }
 }
 
-// Data classes
-data class QuickTraining(
-    val name: String,
-    val description: String,
-    val duration: Int,
-    val calories: Int,
-    val level: String,
-    val emoji: String
-)
+// Fallback data functions
+private fun getDefaultFeaturedWorkout(): FeaturedWorkout {
+    return FeaturedWorkout(
+        id = "featured_default",
+        title = "Today's Featured Workout",
+        description = "Full body workout to boost your energy and strength",
+        imageUrl = "https://img.freepik.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666671.jpg",
+        category = "Full Body",
+        difficulty = "Intermediate",
+        duration = 45,
+        calories = 350,
+        rating = 4.8,
+        exercises = emptyList()
+    )
+}
 
-data class AnimeCharacter(
-    val name: String,
-    val anime: String,
-    val imageUrl: String
-)
-
-// Sample data
-val quickTrainingItems = listOf(
+// Fallback quick training data
+private val defaultQuickTrainings = listOf(
     QuickTraining(
+        id = "qt_1",
         name = "Morning Energy Boost",
-        description = "Quick cardio to start your day",
+        description = "Quick cardio to start your day with energy",
         duration = 15,
         calories = 120,
-        level = "Beginner",
-        emoji = "🌅"
+        difficulty = "Beginner",
+        emoji = "🌅",
+        category = "Cardio",
+        imageUrl = null,
+        exerciseCount = 5
     ),
     QuickTraining(
+        id = "qt_2",
         name = "Core Power Session",
-        description = "Strengthen your core muscles",
+        description = "Strengthen your core muscles for better stability",
         duration = 20,
         calories = 150,
-        level = "Intermediate",
-        emoji = "💪"
+        difficulty = "Intermediate",
+        emoji = "💪",
+        category = "Strength",
+        imageUrl = null,
+        exerciseCount = 6
     ),
     QuickTraining(
+        id = "qt_3",
         name = "HIIT Fat Burner",
-        description = "High intensity interval training",
+        description = "High intensity interval training for maximum burn",
         duration = 25,
         calories = 200,
-        level = "Advanced",
-        emoji = "🔥"
+        difficulty = "Advanced",
+        emoji = "🔥",
+        category = "HIIT",
+        imageUrl = null,
+        exerciseCount = 8
     ),
     QuickTraining(
+        id = "qt_4",
         name = "Flexibility Flow",
-        description = "Improve mobility and flexibility",
+        description = "Improve mobility and flexibility with yoga",
         duration = 18,
         calories = 80,
-        level = "All Levels",
-        emoji = "🧘"
+        difficulty = "All Levels",
+        emoji = "🧘",
+        category = "Yoga",
+        imageUrl = null,
+        exerciseCount = 7
     )
 )
 
-val animeCharacterImages = listOf(
-    AnimeCharacter(
-        "Fitness Hero",
-        "Training Legends",
-        "https://img.freepik.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666671.jpg"
-    ),
-    AnimeCharacter(
-        "Workout Master",
-        "Gym Champions",
-        "https://img.freepik.com/free-photo/portrait-anime-character-doing-fitness-exercising_23-2151666669.jpg"
-    ),
-    AnimeCharacter(
-        "Strength Builder",
-        "Power Training",
-        "https://img.freepik.com/free-photo/fit-cartoon-character-training_23-2151149035.jpg"
-    )
-)
-
-val sampleExercises = listOf(
+// Sample exercises for fallback
+private val sampleExercises = listOf(
     Exercise(
         exerciseId = "1",
         name = "Push Ups",

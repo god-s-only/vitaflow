@@ -48,11 +48,19 @@ import com.vitaflow.app.domain.models.Exercise
 private val PrimaryGreen = Color(0xFF00C853)
 private val LightGreen = Color(0xFF4CAF50)
 private val DarkGreen = Color(0xFF2E7D32)
-private val BackgroundWhite = Color(0xFFFAFAFA)
-private val CardWhite = Color.White
-private val TextPrimary = Color(0xFF1A1A1A)
-private val TextSecondary = Color(0xFF666666)
 private val AccentGreen = Color(0xFF66BB6A)
+
+@Composable
+private fun backgroundColor() = MaterialTheme.colorScheme.background
+
+@Composable
+private fun cardBackgroundColor() = MaterialTheme.colorScheme.surface
+
+@Composable
+private fun textPrimaryColor() = MaterialTheme.colorScheme.onSurface
+
+@Composable
+private fun textSecondaryColor() = MaterialTheme.colorScheme.onSurfaceVariant
 
 @Composable
 private fun ExerciseMediaCard(exercise: Exercise) {
@@ -61,7 +69,7 @@ private fun ExerciseMediaCard(exercise: Exercise) {
             .fillMaxWidth()
             .height(300.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -99,7 +107,7 @@ private fun ExerciseMediaCard(exercise: Exercise) {
                     .align(Alignment.Center)
                     .size(72.dp)
                     .clip(CircleShape)
-                    .background(CardWhite.copy(alpha = 0.9f)),
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -116,7 +124,7 @@ private fun ExerciseMediaCard(exercise: Exercise) {
                     .align(Alignment.TopEnd)
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
-                color = CardWhite.copy(alpha = 0.95f)
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -131,7 +139,7 @@ private fun ExerciseMediaCard(exercise: Exercise) {
                     )
                     Text(
                         text = "4.8",
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -146,7 +154,7 @@ private fun ExerciseInfoCard(exercise: Exercise) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -157,7 +165,7 @@ private fun ExerciseInfoCard(exercise: Exercise) {
                 text = exercise.name,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             // Stats Row
@@ -211,14 +219,14 @@ private fun StartWorkoutButton() {
             Icon(
                 Icons.Default.PlayArrow,
                 contentDescription = null,
-                tint = CardWhite,
+                tint = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.size(24.dp)
             )
             Text(
                 text = "Start Workout",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = CardWhite
+                color = MaterialTheme.colorScheme.surface
             )
         }
     }
@@ -234,7 +242,7 @@ private fun SectionCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -257,12 +265,12 @@ private fun SectionCard(
                         text = title,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = subtitle,
                         fontSize = 14.sp,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -310,7 +318,7 @@ private fun StatItem(
             Text(
                 text = label,
                 fontSize = 12.sp,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -323,7 +331,7 @@ private fun MuscleChip(
     isPrimary: Boolean
 ) {
     val backgroundColor = if (isPrimary) PrimaryGreen else AccentGreen.copy(alpha = 0.15f)
-    val textColor = if (isPrimary) CardWhite else PrimaryGreen
+    val textColor = if (isPrimary) MaterialTheme.colorScheme.surface else PrimaryGreen
 
     Surface(
         shape = RoundedCornerShape(20.dp),
@@ -381,7 +389,7 @@ private fun InstructionItem(
         ) {
             Text(
                 text = stepNumber.toString(),
-                color = CardWhite,
+                color = MaterialTheme.colorScheme.surface,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -391,7 +399,7 @@ private fun InstructionItem(
             text = instruction,
             modifier = Modifier.weight(1f),
             fontSize = 15.sp,
-            color = TextPrimary,
+            color = MaterialTheme.colorScheme.onSurface,
             lineHeight = 22.sp,
             fontWeight = FontWeight.Normal
         )
@@ -439,7 +447,7 @@ private fun ExerciseDetailShimmer(paddingValues: PaddingValues) {
                     .fillMaxWidth()
                     .height(300.dp),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = CardWhite),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Box(
@@ -453,7 +461,7 @@ private fun ExerciseDetailShimmer(paddingValues: PaddingValues) {
                             .align(Alignment.Center)
                             .size(72.dp)
                             .clip(CircleShape)
-                            .background(CardWhite.copy(alpha = 0.9f)),
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -472,7 +480,7 @@ private fun ExerciseDetailShimmer(paddingValues: PaddingValues) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = CardWhite),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
@@ -531,7 +539,7 @@ private fun ExerciseDetailShimmer(paddingValues: PaddingValues) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardWhite),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(
@@ -620,7 +628,7 @@ fun ExerciseDetailScreen(
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = TextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
@@ -637,7 +645,7 @@ fun ExerciseDetailScreen(
                         Icon(
                             if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Favorite",
-                            tint = if (isFavorite) PrimaryGreen else TextSecondary
+                            tint = if (isFavorite) PrimaryGreen else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     IconButton(onClick = { /* Handle share */ }) {
@@ -649,13 +657,13 @@ fun ExerciseDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CardWhite,
-                    titleContentColor = TextPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 scrollBehavior = scrollBehavior
             )
         },
-        containerColor = BackgroundWhite
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         when {
             state.isLoading -> {
@@ -671,7 +679,7 @@ fun ExerciseDetailScreen(
                 ) {
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardWhite),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                         modifier = Modifier.padding(24.dp)
                     ) {
@@ -689,13 +697,13 @@ fun ExerciseDetailScreen(
                                 text = "Something went wrong",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextPrimary,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 textAlign = TextAlign.Center
                             )
 
                             Text(
                                 text = state.error,
-                                color = TextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
                                 fontSize = 14.sp
                             )
@@ -709,7 +717,7 @@ fun ExerciseDetailScreen(
                             ) {
                                 Text(
                                     "Go Back",
-                                    color = CardWhite,
+                                    color = MaterialTheme.colorScheme.surface,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }

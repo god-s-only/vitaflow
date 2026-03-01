@@ -41,6 +41,8 @@ import java.util.concurrent.Executors
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+import androidx.compose.material3.MaterialTheme
+
 private const val TAG = "BarcodeScanScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,18 +111,18 @@ fun BarcodeScanScreen(
                             Icon(
                                 imageVector = if (flashEnabled) Icons.Filled.Settings else Icons.Filled.Settings,
                                 contentDescription = "Toggle Flash",
-                                tint = Color.Black
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
-        containerColor = Color(0xFFF8F9FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -348,11 +350,10 @@ fun ScanningOverlay(modifier: Modifier = Modifier) {
 
 @Composable
 fun LoadingOverlay(modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier.padding(32.dp),
+            Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
@@ -361,11 +362,12 @@ fun LoadingOverlay(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             Text(
                 text = "Looking up product...",
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -377,13 +379,13 @@ fun ErrorOverlay(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+            Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(16.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFEBEE)
+            containerColor = MaterialTheme.colorScheme.errorContainer
         ),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
@@ -401,12 +403,12 @@ fun ErrorOverlay(
                     text = "Error",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFD32F2F)
+                    color = MaterialTheme.colorScheme.error
                 )
                 Text(
                     text = error,
                     fontSize = 14.sp,
-                    color = Color(0xFFD32F2F)
+                    color = MaterialTheme.colorScheme.error
                 )
             }
             TextButton(onClick = onDismiss) {
@@ -434,12 +436,13 @@ fun PermissionRequiredView(
             text = "Camera Permission Required",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onBackground
         )
         Text(
             text = "We need camera access to scan barcodes",
             fontSize = 14.sp,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
         Button(
@@ -459,7 +462,7 @@ fun ScannedProductCard(
     onScanAgain: () -> Unit,
     isAddingToMeal: Boolean
 ) {
-    Column(
+        Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
@@ -471,7 +474,7 @@ fun ScannedProductCard(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(
@@ -481,7 +484,7 @@ fun ScannedProductCard(
                 Text(
                     text = "✓",
                     fontSize = 48.sp,
-                    color = Color(0xFF4CAF50)
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -490,7 +493,7 @@ fun ScannedProductCard(
                     text = food.title,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
 
@@ -534,14 +537,14 @@ fun ScannedProductCard(
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF4CAF50)
+                containerColor = MaterialTheme.colorScheme.primary
             ),
             enabled = !isAddingToMeal
         ) {
             if (isAddingToMeal) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     strokeWidth = 2.dp
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -578,20 +581,20 @@ fun NutrientInfo(label: String, value: String, unit: String) {
             text = value,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF4CAF50)
+            color = MaterialTheme.colorScheme.primary
         )
         if (unit.isNotEmpty()) {
             Text(
                 text = unit,
                 fontSize = 12.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
             fontSize = 14.sp,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Medium
         )
     }

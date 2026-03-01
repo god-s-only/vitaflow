@@ -142,10 +142,10 @@ fun ExerciseCardSkeleton() {
         end = Offset(translateAnim, 0f)
     )
 
-    Card(
+            Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column {
             // Image skeleton
@@ -227,12 +227,12 @@ fun ExerciseCard(
     exercise: Exercise,
     onClick: () -> Unit
 ) {
-    Card(
+            Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column {
             Box {
@@ -246,12 +246,12 @@ fun ExerciseCard(
                     contentScale = ContentScale.Crop
                 )
 
-                Surface(
+                                    Surface(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(12.dp),
                     shape = RoundedCornerShape(20.dp),
-                    color = Color.White.copy(alpha = 0.9f)
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
                 ) {
                     Text(
                         text = exercise.equipments.first().replaceFirstChar { it.uppercase() },

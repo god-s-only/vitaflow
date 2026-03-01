@@ -170,7 +170,7 @@ fun PermissionRequestScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         IconButton(
             onClick = onBack,
@@ -181,7 +181,7 @@ fun PermissionRequestScreen(
             Icon(
                 imageVector = Icons.Filled.ArrowBack,
                 contentDescription = "Back",
-                tint = Color.Black
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -205,7 +205,7 @@ fun PermissionRequestScreen(
                 text = "Camera Permission Required",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
 
@@ -214,7 +214,7 @@ fun PermissionRequestScreen(
             Text(
                 text = "To analyze food from photos, we need access to your camera.",
                 fontSize = 16.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 lineHeight = 24.sp
             )
@@ -457,7 +457,7 @@ fun ReviewScreen(
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Close",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -465,7 +465,7 @@ fun ReviewScreen(
                 text = "Review Food",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             IconButton(onClick = onRetake) {

@@ -104,9 +104,9 @@ fun NutritionScreen(
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black,
-                    actionIconContentColor = Color.Black
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = {
                     Column {
@@ -114,12 +114,12 @@ fun NutritionScreen(
                             text = "Nutrition",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = SimpleDateFormat("EEEE, MMM dd", Locale.getDefault()).format(Date()),
                             fontSize = 12.sp,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Normal
                         )
                     }
@@ -129,21 +129,21 @@ fun NutritionScreen(
                         Icon(
                             imageVector = Icons.Filled.Search,
                             contentDescription = "Search Food",
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     IconButton(onClick = { navController.navigate(Routes.NUTRITIONSCREENSETTINGS) }) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Settings",
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
                 scrollBehavior = scrollBehavior
             )
         },
-        containerColor = Color(0xFFF8F9FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
 
         if (uiState.value.isLoading) {
@@ -197,7 +197,7 @@ fun NutritionScreen(
                         text = "Quick Add",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -227,7 +227,7 @@ fun NutritionScreen(
                         text = "Today's Meals",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
@@ -262,7 +262,7 @@ fun NutritionScreen(
                             text = "Recent Foods",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(top = 8.dp)
                         )
                     }
@@ -342,7 +342,7 @@ fun QuickCaloriesDialog(
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(
@@ -361,7 +361,7 @@ fun QuickCaloriesDialog(
                         text = "Quick Calories",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     IconButton(
                         onClick = onDismiss,
@@ -370,7 +370,7 @@ fun QuickCaloriesDialog(
                         Icon(
                             imageVector = Icons.Filled.Close,
                             contentDescription = "Close",
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -546,7 +546,7 @@ fun CalorieOverviewCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -557,7 +557,7 @@ fun CalorieOverviewCard(
                 text = "Daily Calories",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -569,7 +569,7 @@ fun CalorieOverviewCard(
                 CircularProgressIndicator(
                     progress = { 1f },
                     modifier = Modifier.fillMaxSize(),
-                    color = Color.Gray.copy(alpha = 0.2f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                     strokeWidth = 12.dp,
                     trackColor = Color.Transparent
                 )
@@ -585,12 +585,12 @@ fun CalorieOverviewCard(
                         text = "$remainingCalories",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = if (remainingCalories >= 0) "remaining" else "over",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -618,7 +618,7 @@ fun CalorieInfo(label: String, value: Int, color: Color) {
             fontWeight = FontWeight.Bold,
             color = color
         )
-        Text(text = label, fontSize = 12.sp, color = Color.Gray)
+        Text(text = label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -627,7 +627,7 @@ fun MacronutrientsCard(carbs: MacroNutrient, protein: MacroNutrient, fat: MacroN
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -635,7 +635,7 @@ fun MacronutrientsCard(carbs: MacroNutrient, protein: MacroNutrient, fat: MacroN
                 text = "Macronutrients",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -668,12 +668,12 @@ fun MacroProgressBar(name: String, macro: MacroNutrient, color: Color) {
                 text = name,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = "${macro.current}g / ${macro.target}g",
                 fontSize = 12.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -683,7 +683,7 @@ fun MacroProgressBar(name: String, macro: MacroNutrient, color: Color) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(8.dp)
-                .background(Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
         ) {
             Box(
                 modifier = Modifier
@@ -738,7 +738,7 @@ fun QuickAddButton(
         Text(
             text = label,
             fontSize = 11.sp,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             maxLines = 1
         )
@@ -757,7 +757,7 @@ fun MealCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -787,12 +787,12 @@ fun MealCard(
                             text = mealType.name,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = if (meal != null) "${meal.totalCalories} cal" else "0 cal",
                             fontSize = 12.sp,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -801,13 +801,13 @@ fun MealCard(
                     Icon(
                         imageVector = Icons.Filled.Add,
                         contentDescription = "Add ${mealType.name}",
-                        tint = Color.Gray
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
             if (isExpanded && meal != null && meal.entries.isNotEmpty()) {
-                HorizontalDivider(color = Color.Gray.copy(alpha = 0.2f))
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
                 Column(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -836,12 +836,12 @@ fun FoodEntryItem(entry: FoodEntryWithDetails, onRemove: () -> Unit) {
                 text = entry.food.name,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = "${entry.quantity.toInt()}g • ${entry.calculatedCalories} cal",
                 fontSize = 12.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -849,7 +849,7 @@ fun FoodEntryItem(entry: FoodEntryWithDetails, onRemove: () -> Unit) {
             Icon(
                 imageVector = Icons.Filled.Close,
                 contentDescription = "Remove",
-                tint = Color.Gray,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -863,7 +863,7 @@ fun WaterIntakeCard(currentIntake: Int, targetIntake: Int, onAddWater: (Int) -> 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -886,14 +886,14 @@ fun WaterIntakeCard(currentIntake: Int, targetIntake: Int, onAddWater: (Int) -> 
                         text = "Water Intake",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 Text(
                     text = "$currentIntake / $targetIntake ml",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -903,7 +903,7 @@ fun WaterIntakeCard(currentIntake: Int, targetIntake: Int, onAddWater: (Int) -> 
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(12.dp)
-                    .background(Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
             ) {
                 Box(
                     modifier = Modifier
@@ -951,7 +951,7 @@ fun RecentFoodCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -974,7 +974,7 @@ fun RecentFoodCard(
                 text = food.name,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -984,7 +984,7 @@ fun RecentFoodCard(
             Text(
                 text = "${food.caloriesPer100g.toInt()} cal/100g",
                 fontSize = 12.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -1017,7 +1017,7 @@ fun NutritionTipsCard() {
                     text = "Daily Tip",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -1025,7 +1025,7 @@ fun NutritionTipsCard() {
                 Text(
                     text = "Stay hydrated! Drinking water before meals can help with portion control and digestion.",
                     fontSize = 14.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 20.sp
                 )
             }

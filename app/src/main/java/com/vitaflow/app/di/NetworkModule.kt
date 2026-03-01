@@ -5,6 +5,7 @@ import com.vitaflow.app.common.BASE_URL
 import com.vitaflow.app.common.SPOONACULAR_API
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.WorkoutAPI
+import com.vitaflow.app.data.remote.WorkoutApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,8 +17,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton
-
-
 
 @Qualifier
 @Retention(AnnotationRetention.RUNTIME)
@@ -39,6 +38,16 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(WorkoutAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkoutApiService(): WorkoutApiService {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(WorkoutApiService::class.java)
     }
 
     @Provides

@@ -29,10 +29,15 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 private val PrimaryGreen = Color(0xFF00C853)
-private val BackgroundWhite = Color(0xFFFAFAFA)
-private val CardWhite = Color.White
-private val TextPrimary = Color(0xFF1A1A1A)
-private val TextSecondary = Color(0xFF666666)
+
+@Composable
+private fun cardBackgroundColor() = MaterialTheme.colorScheme.surface
+
+@Composable
+private fun textPrimaryColor() = MaterialTheme.colorScheme.onSurface
+
+@Composable
+private fun textSecondaryColor() = MaterialTheme.colorScheme.onSurfaceVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,8 +91,8 @@ fun FoodSearchScreen(
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CardWhite,
-                    titleContentColor = TextPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = {
                     Text(
@@ -103,7 +108,7 @@ fun FoodSearchScreen(
                 }
             )
         },
-        containerColor = BackgroundWhite
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -148,7 +153,7 @@ fun FoodSearchScreen(
             Text(
                 text = if (showSampleFoods) resultType else "$totalCount $resultType",
                 fontSize = 14.sp,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
@@ -233,7 +238,7 @@ private fun SearchBar(
         placeholder = {
             Text(
                 text = "Search foods from Spoonacular...",
-                color = TextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
         leadingIcon = {
@@ -259,7 +264,7 @@ private fun EmptySearchPrompt() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -281,7 +286,7 @@ private fun EmptySearchPrompt() {
                 text = "Search for Foods",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -289,7 +294,7 @@ private fun EmptySearchPrompt() {
             Text(
                 text = "Type in the search bar to find foods from Spoonacular database",
                 fontSize = 14.sp,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
         }
@@ -301,7 +306,7 @@ private fun EmptySearchResult(searchQuery: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -323,7 +328,7 @@ private fun EmptySearchResult(searchQuery: String) {
                 text = "No foods found for \"$searchQuery\"",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -331,7 +336,7 @@ private fun EmptySearchResult(searchQuery: String) {
             Text(
                 text = "Try searching with different keywords or check the spelling",
                 fontSize = 14.sp,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
         }
@@ -356,7 +361,7 @@ private fun NutritionFoodCard(
             .fillMaxWidth()
             .clickable { onFoodClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -373,7 +378,7 @@ private fun NutritionFoodCard(
                     text = nutritionFood.title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -412,7 +417,7 @@ private fun NutritionFoodCard(
                 Text(
                     text = "per 100g",
                     fontSize = 12.sp,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -440,12 +445,12 @@ private fun NutrientInfo(
             text = value,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
-            color = TextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = label,
             fontSize = 10.sp,
-            color = TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -472,7 +477,7 @@ private fun QuantityDialog(
                 Text(
                     text = "Add to: ${mealType.replaceFirstChar { it.uppercase() }}",
                     fontSize = 14.sp,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -509,7 +514,7 @@ private fun QuantityDialog(
                             text = "Nutrition for ${qty.toInt()}g:",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = TextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -518,7 +523,7 @@ private fun QuantityDialog(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Calories:", fontSize = 14.sp, color = TextSecondary)
+                            Text("Calories:", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 "${(foodData.caloriesPer100g * multiplier).toInt()}",
                                 fontSize = 14.sp,
@@ -531,7 +536,7 @@ private fun QuantityDialog(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Carbs:", fontSize = 14.sp, color = TextSecondary)
+                                Text("Carbs:", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(
                                     "${(it * multiplier).toInt()}g",
                                     fontSize = 14.sp,
@@ -544,7 +549,7 @@ private fun QuantityDialog(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Protein:", fontSize = 14.sp, color = TextSecondary)
+                            Text("Protein:", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 "${(foodData.proteinPer100g * multiplier).toInt()}g",
                                 fontSize = 14.sp,
@@ -556,7 +561,7 @@ private fun QuantityDialog(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Fat:", fontSize = 14.sp, color = TextSecondary)
+                            Text("Fat:", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 "${(foodData.fatPer100g * multiplier).toInt()}g",
                                 fontSize = 14.sp,
@@ -580,7 +585,7 @@ private fun QuantityDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )

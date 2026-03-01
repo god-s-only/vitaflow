@@ -31,10 +31,18 @@ private val PrimaryGreen = Color(0xFF4CAF50)
 private val SecondaryBlue = Color(0xFF2196F3)
 private val OrangeAccent = Color(0xFFFF9800)
 private val PurpleAccent = Color(0xFF9C27B0)
-private val BackgroundWhite = Color(0xFFF8F9FA)
-private val CardWhite = Color.White
-private val TextPrimary = Color(0xFF1A1A1A)
-private val TextSecondary = Color(0xFF666666)
+
+@Composable
+private fun backgroundColor() = MaterialTheme.colorScheme.background
+
+@Composable
+private fun cardBackgroundColor() = MaterialTheme.colorScheme.surface
+
+@Composable
+private fun textPrimaryColor() = MaterialTheme.colorScheme.onSurface
+
+@Composable
+private fun textSecondaryColor() = MaterialTheme.colorScheme.onSurfaceVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,8 +82,8 @@ fun NutritionSettingsScreen(
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CardWhite,
-                    titleContentColor = TextPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = {
                     Text(
@@ -89,7 +97,7 @@ fun NutritionSettingsScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextPrimary
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
@@ -123,7 +131,7 @@ fun NutritionSettingsScreen(
                 }
             )
         },
-        containerColor = BackgroundWhite
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -162,7 +170,7 @@ fun NutritionSettingsScreen(
                     text = "Macronutrient Goals",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
@@ -230,7 +238,7 @@ fun NutritionSettingsScreen(
                     text = "Hydration Goal",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
@@ -290,7 +298,7 @@ fun NutritionSettingsScreen(
                     Text(
                         text = "Your nutrition goals have been saved successfully. Keep tracking to reach your targets!",
                         textAlign = TextAlign.Center,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 confirmButton = {
@@ -308,7 +316,7 @@ fun NutritionSettingsScreen(
                         Text("Continue")
                     }
                 },
-                containerColor = CardWhite,
+                containerColor = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(16.dp)
             )
         }
@@ -321,7 +329,7 @@ private fun HeaderCard() {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = CardWhite
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -354,13 +362,13 @@ private fun HeaderCard() {
                     text = "Personalize Your Goals",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Set targets that align with your health and fitness objectives",
                     fontSize = 13.sp,
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 18.sp
                 )
             }
@@ -385,7 +393,7 @@ private fun SettingSection(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -425,12 +433,12 @@ private fun SettingSection(
                             text = title,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = TextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = subtitle,
                             fontSize = 12.sp,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -448,7 +456,7 @@ private fun SettingSection(
                     Icon(
                         imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = null,
-                        tint = TextSecondary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -474,7 +482,7 @@ private fun SettingSection(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text("Enter $title") },
-                        suffix = { Text(unit, color = TextSecondary) },
+                        suffix = { Text(unit, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
@@ -491,7 +499,7 @@ private fun SettingSection(
                             text = "Quick Select",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Row(
@@ -507,7 +515,7 @@ private fun SettingSection(
                                         containerColor = if (value == quickValue.toString())
                                             iconColor.copy(alpha = 0.1f) else Color.Transparent,
                                         contentColor = if (value == quickValue.toString())
-                                            iconColor else TextSecondary
+                                            iconColor else MaterialTheme.colorScheme.onSurfaceVariant
                                     ),
                                     border = ButtonDefaults.outlinedButtonBorder.copy(
                                         brush = if (value == quickValue.toString())
@@ -557,7 +565,7 @@ private fun InfoCard() {
             Text(
                 text = "Your goals can be adjusted anytime. Listen to your body and modify targets as needed.",
                 fontSize = 13.sp,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 18.sp,
                 modifier = Modifier.weight(1f)
             )

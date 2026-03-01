@@ -9,14 +9,17 @@ import com.vitaflow.app.data.local.VitaFlowSession
 import com.vitaflow.app.data.remote.HealthConnectService
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.WorkoutAPI
+import com.vitaflow.app.data.remote.WorkoutApiService
 import com.vitaflow.app.data.repository.AuthRepositoryImpl
 import com.vitaflow.app.data.repository.ExerciseRepositoryImpl
 import com.vitaflow.app.data.repository.NutritionFoodRepositoryImpl
 import com.vitaflow.app.data.repository.StepCounterRepositoryImpl
+import com.vitaflow.app.data.repository.WorkoutRepositoryImpl
 import com.vitaflow.app.domain.repository.AuthRepository
 import com.vitaflow.app.domain.repository.ExerciseRepository
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import com.vitaflow.app.domain.repository.StepCounterRepository
+import com.vitaflow.app.domain.repository.WorkoutRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -64,5 +67,11 @@ object RepsitoryModule {
     @Singleton
     fun provideStepsDao(database: NutritionDatabase): StepsDAO {
         return database.stepsDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkoutRepository(api: WorkoutApiService): WorkoutRepository {
+        return WorkoutRepositoryImpl(api)
     }
 }
