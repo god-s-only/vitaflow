@@ -374,7 +374,7 @@ fun WeeklyBarChart(
     data: List<DailySteps>,
     modifier: Modifier = Modifier
 ) {
-    val maxSteps = data.maxOfOrNull { it.steps } ?: 10000
+    val maxSteps = (data.maxOfOrNull { it.steps } ?: 10000).coerceAtLeast(1)
 
     Row(
         modifier = modifier.fillMaxWidth(),

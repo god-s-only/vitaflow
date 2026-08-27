@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.flow
 import java.time.LocalDate
 import javax.inject.Inject
 
+private const val DEFAULT_STEPS_TARGET = 10000
+
 class StepCounterRepositoryImpl @Inject constructor(
     private val dao: StepsDAO,
     private val healthConnectService: HealthConnectService,
@@ -89,6 +91,7 @@ class StepCounterRepositoryImpl @Inject constructor(
             }
 
             val today = LocalDate.now()
+            val savedTarget = stepsPreferences.getStepsTarget() ?: DEFAULT_STEPS_TARGET
             for (daysAgo in 0..6) {
                 val date = today.minusDays(daysAgo.toLong())
                 val healthData = healthConnectService.getDailyHealthData(date)
@@ -96,7 +99,7 @@ class StepCounterRepositoryImpl @Inject constructor(
                 val entity = DailyStepsEntity(
                     date = date.toString(),
                     steps = healthData.steps,
-                    targetSteps = 10000,
+                    targetSteps = savedTarget,
                     caloriesBurned = healthData.caloriesBurned,
                     distanceMeters = healthData.distanceMeters,
                     activeMinutes = healthData.activeMinutes,
@@ -129,15 +132,14 @@ class StepCounterRepositoryImpl @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun updateTargetSteps(targetSteps: Int): Resource<Boolean> {
         return try {
+            stepsPreferences.storeStepsTarget(targetSteps)
+
             val today = LocalDate.now()
             val entity = dao.getStepsByDate(today.toString())
-
             if (entity != null) {
                 dao.insertSteps(entity.copy(targetSteps = targetSteps))
-                Resource.Success(true)
-            } else {
-                Resource.Error("No data for today")
             }
+            Resource.Success(true)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Error updating target")
         }

@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.vitaflow.app.data.local.StepsDAO
+import com.vitaflow.app.data.local.StepsPreferences
 import com.vitaflow.app.data.local.entity.DailyStepsEntity
 import com.vitaflow.app.data.remote.HealthConnectService
 import dagger.assisted.Assisted
@@ -20,7 +21,8 @@ class StepsSyncWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted private val workerParams: WorkerParameters,
     private val healthConnectService: HealthConnectService,
-    private val stepsDao: StepsDAO
+    private val stepsDao: StepsDAO,
+    private val stepsPreferences: StepsPreferences
 ) : CoroutineWorker(context, workerParams) {
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -62,7 +64,7 @@ class StepsSyncWorker @AssistedInject constructor(
             val entity = DailyStepsEntity(
                 date = date.toString(),
                 steps = healthData.steps,
-                targetSteps = 10000, // You can make this configurable
+                targetSteps = stepsPreferences.getStepsTarget() ?: 10000,
                 caloriesBurned = healthData.caloriesBurned,
                 distanceMeters = healthData.distanceMeters,
                 activeMinutes = healthData.activeMinutes,

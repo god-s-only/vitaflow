@@ -40,12 +40,9 @@ class StepCounter @Inject constructor(@ApplicationContext val context: Context) 
         Log.d(TAG, "Sensor listener registered: $supportedAndEnabled")
 
         if (!supportedAndEnabled) {
-            // Sensor unavailable (e.g. TYPE_STEP_COUNTER missing) - fail instead of hanging forever
             continuation.resume(-1L)
         }
 
-        // Make sure the listener is unregistered when the coroutine is cancelled,
-        // otherwise the SensorManager keeps a hard reference to it (leak).
         continuation.invokeOnCancellation {
             sensorManager.unregisterListener(listener)
             Log.d(TAG, "Sensor listener unregistered")

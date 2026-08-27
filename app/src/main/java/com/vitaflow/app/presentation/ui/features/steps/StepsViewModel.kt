@@ -41,18 +41,24 @@ class StepsViewModel @Inject constructor(
         getStepsTarget()
     }
 
+    private var savedTargetSteps: Int? = null
+
     fun getStepsTarget() {
         viewModelScope.launch {
-            getStepsTarget.invoke()?.let { target ->
-                _uiState.value = when (val currentState = _uiState.value) {
-                    is StepsUiState.Success -> {
-                        StepsUiState.Success(
-                            currentState.data.copy(targetSteps = target)
-                        )
-                    }
-                    else -> currentState
-                }
+            savedTargetSteps = getStepsTarget.invoke()
+            applySavedTarget()
+        }
+    }
+
+    private fun applySavedTarget() {
+        val target = savedTargetSteps ?: return
+        _uiState.value = when (val currentState = _uiState.value) {
+            is StepsUiState.Success -> {
+                StepsUiState.Success(
+                    currentState.data.copy(targetSteps = target)
+                )
             }
+            else -> currentState
         }
     }
 
@@ -105,6 +111,7 @@ class StepsViewModel @Inject constructor(
                             }
                         }
                     }
+                    applySavedTarget()
                 }
         }
     }
@@ -165,7 +172,6 @@ class StepsViewModel @Inject constructor(
 
     fun openHealthConnectInstall(context: Context) {
         try {
-            // UI concern: build the Play Store intent in the presentation layer
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
