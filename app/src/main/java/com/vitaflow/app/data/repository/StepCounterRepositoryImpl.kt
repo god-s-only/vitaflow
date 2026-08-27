@@ -5,9 +5,10 @@ import androidx.annotation.RequiresApi
 import com.vitaflow.app.common.Resource
 import com.vitaflow.app.data.local.StepsDAO
 import com.vitaflow.app.data.local.StepsPreferences
+import com.vitaflow.app.data.local.entity.DailyStepsEntity
+import com.vitaflow.app.data.mappers.local.toDomain
 import com.vitaflow.app.data.remote.HealthConnectService
 import com.vitaflow.app.domain.models.DailySteps
-import com.vitaflow.app.domain.models.DailyStepsEntity
 import com.vitaflow.app.domain.models.StepsData
 import com.vitaflow.app.domain.repository.StepCounterRepository
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +37,7 @@ class StepCounterRepositoryImpl @Inject constructor(
                 emit(Resource.Error("No data available. Please sync your data."))
             } else {
                 val todayEntity = entities.lastOrNull { it.date == today.toString() }
-                val domainModels = entities.map { it.toDomainModel() }
+                val domainModels = entities.map { it.toDomain() }
 
                 emit(
                     Resource.Success(
@@ -69,7 +70,7 @@ class StepCounterRepositoryImpl @Inject constructor(
             if (entities.isEmpty()) {
                 emit(Resource.Error("No data available"))
             } else {
-                emit(Resource.Success(entities.map { it.toDomainModel() }))
+                emit(Resource.Success(entities.map { it.toDomain() }))
             }
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "Unknown error occurred"))
@@ -116,7 +117,7 @@ class StepCounterRepositoryImpl @Inject constructor(
         return try {
             val entity = dao.getStepsByDate(date.toString())
             if (entity != null) {
-                Resource.Success(entity.toDomainModel())
+                Resource.Success(entity.toDomain())
             } else {
                 Resource.Error("No data for this date")
             }
@@ -153,13 +154,4 @@ class StepCounterRepositoryImpl @Inject constructor(
     override suspend fun getStepsTarget(): Int? {
         return stepsPreferences.getStepsTarget()
     }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-private fun DailyStepsEntity.toDomainModel(): DailySteps {
-    return DailySteps(
-        date = LocalDate.parse(this.date),
-        steps = this.steps,
-        targetSteps = this.targetSteps
-    )
 }

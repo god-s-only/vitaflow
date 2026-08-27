@@ -1,11 +1,10 @@
 package com.vitaflow.app.data.local
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.vitaflow.app.domain.models.DailyStepsEntity
+import com.vitaflow.app.data.local.entity.DailyStepsEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

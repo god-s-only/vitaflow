@@ -1,7 +1,7 @@
 package com.vitaflow.app.domain.usecase.nutrition
 
-import com.vitaflow.app.data.repository.getTodayDate
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
+import com.vitaflow.app.domain.repository.getTodayDate
 import javax.inject.Inject
 
 class UpdateWaterIntakeUseCase @Inject constructor(

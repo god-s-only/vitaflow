@@ -1,6 +1,11 @@
-package com.vitaflow.app.domain.models
+package com.vitaflow.app.data.local.entity
 
-data class Food(
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "Food")
+data class FoodEntity(
+    @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val name: String,
     val caloriesPer100g: Double,

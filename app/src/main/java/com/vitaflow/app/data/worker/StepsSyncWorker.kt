@@ -6,8 +6,8 @@ import androidx.annotation.RequiresApi
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.vitaflow.app.data.local.StepsDAO
+import com.vitaflow.app.data.local.entity.DailyStepsEntity
 import com.vitaflow.app.data.remote.HealthConnectService
-import com.vitaflow.app.domain.models.DailyStepsEntity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers

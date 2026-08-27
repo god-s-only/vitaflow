@@ -1,4 +1,4 @@
-package com.vitaflow.app.domain.models
+package com.vitaflow.app.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

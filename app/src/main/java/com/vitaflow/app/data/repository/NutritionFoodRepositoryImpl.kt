@@ -7,28 +7,29 @@ import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
 import com.vitaflow.app.data.local.NutritionDao
 import com.vitaflow.app.data.local.NutritionPreferences
+import com.vitaflow.app.data.local.entity.DailyNutritionEntity
+import com.vitaflow.app.data.mappers.local.toDomain
+import com.vitaflow.app.data.mappers.local.toEntity
 import com.vitaflow.app.data.mappers.recipe.toDomain
 import com.vitaflow.app.data.remote.SpoonacularAPI
 import com.vitaflow.app.data.remote.dto.NutritionFoodDetailDTO
 import com.vitaflow.app.domain.models.DailyNutrition
 import com.vitaflow.app.domain.models.Food
 import com.vitaflow.app.domain.models.FoodEntry
+import com.vitaflow.app.domain.models.FoodAnalysisResult
 import com.vitaflow.app.domain.models.NutritionFood
 import com.vitaflow.app.domain.models.RecipeModel
 import com.vitaflow.app.domain.repository.NutritionFoodRepository
 import com.vitaflow.app.data.mappers.recipe.toDomainList
 import com.vitaflow.app.domain.models.RecipeDetail
-import com.vitaflow.app.presentation.ui.features.capture.FoodAnalysisResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -81,23 +82,23 @@ class NutritionFoodRepositoryImpl @Inject constructor(
 
 
     override suspend fun insertNutrition(dailyNutrition: DailyNutrition) {
-        dao.insertNutrition(dailyNutrition)
+        dao.insertNutrition(dailyNutrition.toEntity())
     }
 
     override suspend fun deleteNutrition(dailyNutrition: DailyNutrition) {
-        dao.deleteNutrition(dailyNutrition)
+        dao.deleteNutrition(dailyNutrition.toEntity())
     }
 
     override suspend fun insertFoodEntry(foodEntry: FoodEntry) {
-        dao.insertFoodEntry(foodEntry)
+        dao.insertFoodEntry(foodEntry.toEntity())
     }
 
     override suspend fun insertFood(food: Food): Long {
-        return dao.insertFood(food)
+        return dao.insertFood(food.toEntity())
     }
 
     override suspend fun deleteFood(food: Food) {
-        dao.deleteFood(food)
+        dao.deleteFood(food.toEntity())
     }
 
     override suspend fun removeFoodEntry(entryId: Long) {
@@ -105,34 +106,34 @@ class NutritionFoodRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getFoodEntriesForDate(date: String): Flow<List<FoodEntry>> {
-        return dao.getFoodEntriesForDate(date)
+        return dao.getFoodEntriesForDate(date).map { entries -> entries.map { it.toDomain() } }
     }
 
     override suspend fun getFoodEntriesForMealType(
         date: String,
         mealType: String
     ): Flow<List<FoodEntry>> {
-        return dao.getFoodEntriesForMealType(date, mealType)
+        return dao.getFoodEntriesForMealType(date, mealType).map { entries -> entries.map { it.toDomain() } }
     }
 
     override suspend fun getFoodById(foodId: String): Food? {
-        return dao.getFoodById(foodId)
+        return dao.getFoodById(foodId)?.toDomain()
     }
 
     override suspend fun getRecentFoods(limit: Int): Flow<List<Food>> {
-        return dao.getRecentFoods(limit)
+        return dao.getRecentFoods(limit).map { foods -> foods.map { it.toDomain() } }
     }
 
     override suspend fun searchFoods(query: String): Flow<List<Food>> {
-        return dao.searchFoods(query)
+        return dao.searchFoods(query).map { foods -> foods.map { it.toDomain() } }
     }
 
     override suspend fun getDailyNutrition(date: String): Flow<DailyNutrition?> {
-        return dao.getDailyNutrition(date)
+        return dao.getDailyNutrition(date).map { it?.toDomain() }
     }
 
     override suspend fun updateDailyNutrition(dailyNutrition: DailyNutrition) {
-        dao.insertNutrition(dailyNutrition)
+        dao.insertNutrition(dailyNutrition.toEntity())
     }
 
     override suspend fun calculateAndSaveDailyNutrition(date: String) {
@@ -141,7 +142,7 @@ class NutritionFoodRepositoryImpl @Inject constructor(
             val existingNutrition = dao.getDailyNutritionSync(date)
             val existingWater = existingNutrition?.water ?: 0.0
 
-            val dailyNutrition = DailyNutrition(
+            val dailyNutrition = DailyNutritionEntity(
                 name = "Daily Summary",
                 date = date,
                 calories = totals.totalCalories,
@@ -166,7 +167,7 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         if (existing != null) {
             dao.updateWaterIntake(date, amount)
         } else {
-            val dailyNutrition = DailyNutrition(
+            val dailyNutrition = DailyNutritionEntity(
                 name = "Daily Summary",
                 date = date,
                 calories = 0.0,
@@ -250,7 +251,7 @@ class NutritionFoodRepositoryImpl @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     override suspend fun getDailyNutritionSync(date: String): DailyNutrition? {
-        return dao.getDailyNutritionSync(date)
+        return dao.getDailyNutritionSync(date)?.toDomain()
     }
 
     override suspend fun analyzeFoodImage(bitmap: Bitmap): Result<FoodAnalysisResult> {
@@ -451,5 +452,3 @@ class NutritionFoodRepositoryImpl @Inject constructor(
         )
     }
 }
-
-fun getTodayDate(): String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())

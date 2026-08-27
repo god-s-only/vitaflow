@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.domain.models.Food
+import com.vitaflow.app.domain.models.FoodAnalysisResult
 import com.vitaflow.app.domain.usecase.nutrition.AddFoodEntryUseCase
 import com.vitaflow.app.domain.usecase.nutrition.AnalyzeFoodImageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -159,20 +160,6 @@ data class PhotoCaptureState(
     val isAnalyzing: Boolean = false,
     val selectedMealType: String = "breakfast",
     val quantity: Double = 100.0
-)
-
-// Analysis Result
-data class FoodAnalysisResult(
-    val foodName: String,
-    val calories: Int,
-    val carbs: Int,
-    val protein: Int,
-    val fat: Int,
-    val caloriesPer100g: Double,
-    val carbsPer100g: Double?,
-    val proteinPer100g: Double,
-    val fatPer100g: Double,
-    val confidence: Float = 0.85f
 )
 
 // Events

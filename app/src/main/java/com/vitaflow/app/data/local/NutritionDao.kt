@@ -1,63 +1,62 @@
 package com.vitaflow.app.data.local
 
 import androidx.room.*
-import com.vitaflow.app.domain.models.DailyNutrition
-import com.vitaflow.app.domain.models.Food
-import com.vitaflow.app.domain.models.FoodEntry
+import com.vitaflow.app.data.local.entity.DailyNutritionEntity
+import com.vitaflow.app.data.local.entity.FoodEntity
+import com.vitaflow.app.data.local.entity.FoodEntryEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NutritionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertNutrition(dailyNutrition: DailyNutrition)
+    suspend fun insertNutrition(dailyNutrition: DailyNutritionEntity)
 
     @Delete
-    suspend fun deleteNutrition(dailyNutrition: DailyNutrition)
+    suspend fun deleteNutrition(dailyNutrition: DailyNutritionEntity)
 
     @Query("SELECT * FROM DailyNutrition WHERE date = :date")
-    fun getDailyNutrition(date: String): Flow<DailyNutrition?>
+    fun getDailyNutrition(date: String): Flow<DailyNutritionEntity?>
 
     @Query("UPDATE DailyNutrition SET water = :water WHERE date = :date")
-
     suspend fun updateWaterIntake(date: String, water: Double)
     @Query("SELECT * FROM DailyNutrition WHERE date = :date")
-    suspend fun getDailyNutritionSync(date: String): DailyNutrition?
+    suspend fun getDailyNutritionSync(date: String): DailyNutritionEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFoodEntry(entry: FoodEntry)
+    suspend fun insertFoodEntry(entry: FoodEntryEntity)
 
     @Delete
-    suspend fun deleteFoodEntry(entry: FoodEntry)
+    suspend fun deleteFoodEntry(entry: FoodEntryEntity)
 
     @Query("DELETE FROM FoodEntry WHERE id = :entryId")
     suspend fun deleteFoodEntryById(entryId: Long)
 
     @Query("SELECT * FROM FoodEntry WHERE date = :date ORDER BY timestamp DESC")
-    fun getFoodEntriesForDate(date: String): Flow<List<FoodEntry>>
+    fun getFoodEntriesForDate(date: String): Flow<List<FoodEntryEntity>>
 
     @Query("SELECT * FROM FoodEntry WHERE date = :date AND mealType = :mealType ORDER BY timestamp DESC")
-    fun getFoodEntriesForMealType(date: String, mealType: String): Flow<List<FoodEntry>>
+    fun getFoodEntriesForMealType(date: String, mealType: String): Flow<List<FoodEntryEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFood(food: Food): Long
+    suspend fun insertFood(food: FoodEntity): Long
 
     @Delete
-    suspend fun deleteFood(food: Food)
+    suspend fun deleteFood(food: FoodEntity)
 
     @Query("SELECT * FROM Food WHERE CAST(id AS TEXT) = :foodId")
-    suspend fun getFoodById(foodId: String): Food?
+    suspend fun getFoodById(foodId: String): FoodEntity?
 
     @Query("""
-        SELECT DISTINCT f.* FROM Food f 
-        INNER JOIN FoodEntry fe ON CAST(f.id AS TEXT) = fe.foodId 
-        ORDER BY fe.timestamp DESC 
+        SELECT DISTINCT f.* FROM Food f
+        INNER JOIN FoodEntry fe ON CAST(f.id AS TEXT) = fe.foodId
+        ORDER BY fe.timestamp DESC
         LIMIT :limit
     """)
-    fun getRecentFoods(limit: Int): Flow<List<Food>>
+    fun getRecentFoods(limit: Int): Flow<List<FoodEntity>>
 
     @Query("SELECT * FROM Food WHERE name LIKE '%' || :query || '%'")
-    fun searchFoods(query: String): Flow<List<Food>>
+    fun searchFoods(query: String): Flow<List<FoodEntity>>
 
     @Query("""
         SELECT 
