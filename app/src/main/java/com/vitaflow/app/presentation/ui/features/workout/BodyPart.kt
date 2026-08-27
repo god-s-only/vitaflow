@@ -1,4 +1,4 @@
-package com.vitaflow.app.domain.models
+package com.vitaflow.app.presentation.ui.features.workout
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun

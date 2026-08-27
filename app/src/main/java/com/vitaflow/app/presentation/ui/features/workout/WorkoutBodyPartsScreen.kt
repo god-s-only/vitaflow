@@ -29,8 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.vitaflow.app.common.UIEvent
-import com.vitaflow.app.domain.models.BodyPart
-import com.vitaflow.app.domain.models.toBodyPart
+import com.vitaflow.app.common.Routes
 import kotlinx.coroutines.flow.collectLatest
 
 // Color Palette

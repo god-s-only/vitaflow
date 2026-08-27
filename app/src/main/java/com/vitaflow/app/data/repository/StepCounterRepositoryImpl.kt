@@ -151,6 +151,10 @@ class StepCounterRepositoryImpl @Inject constructor(
         return healthConnectService.isAvailable()
     }
 
+    override suspend fun isHealthConnectInstalled(): Boolean {
+        return healthConnectService.isHealthConnectInstalled()
+    }
+
     override suspend fun getStepsTarget(): Int? {
         return stepsPreferences.getStepsTarget()
     }

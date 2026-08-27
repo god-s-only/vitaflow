@@ -1,12 +1,14 @@
 package com.vitaflow.app.presentation.ui.features.steps
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitaflow.app.common.Resource
-import com.vitaflow.app.data.remote.HealthConnectService
 import com.vitaflow.app.domain.models.StepsData
 import com.vitaflow.app.domain.usecase.steps.CheckHealthConnectAvailabilityUseCase
+import com.vitaflow.app.domain.usecase.steps.CheckHealthConnectInstalledUseCase
 import com.vitaflow.app.domain.usecase.steps.CheckHealthConnectPermissionsUseCase
 import com.vitaflow.app.domain.usecase.steps.GetStepsTarget
 import com.vitaflow.app.domain.usecase.steps.GetTodayStepsUseCase
@@ -24,7 +26,7 @@ class StepsViewModel @Inject constructor(
     private val updateTargetStepsUseCase: UpdateTargetStepsUseCase,
     private val checkHealthConnectPermissionsUseCase: CheckHealthConnectPermissionsUseCase,
     private val checkHealthConnectAvailabilityUseCase: CheckHealthConnectAvailabilityUseCase,
-    private val healthConnectService: HealthConnectService,
+    private val checkHealthConnectInstalledUseCase: CheckHealthConnectInstalledUseCase,
     private val getStepsTarget: GetStepsTarget
 ) : ViewModel() {
 
@@ -57,7 +59,8 @@ class StepsViewModel @Inject constructor(
     fun checkHealthConnectAvailability() {
         viewModelScope.launch {
             // Step 1: Check if Health Connect is installed
-            if (!healthConnectService.isHealthConnectInstalled()) {
+            val isInstalled = checkHealthConnectInstalledUseCase()
+            if (!isInstalled) {
                 _uiState.value = StepsUiState.HealthConnectUnavailable
                 return@launch
             }
@@ -162,7 +165,11 @@ class StepsViewModel @Inject constructor(
 
     fun openHealthConnectInstall(context: Context) {
         try {
-            val intent = healthConnectService.getHealthConnectInstallIntent()
+            // UI concern: build the Play Store intent in the presentation layer
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
             context.startActivity(intent)
         } catch (e: Exception) {
             _uiState.value = StepsUiState.Error("Could not open Play Store")

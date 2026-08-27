@@ -14,6 +14,7 @@ interface StepCounterRepository {
     suspend fun updateTargetSteps(targetSteps: Int): Resource<Boolean>
     fun hasHealthConnectPermissions(): Flow<Boolean>
     suspend fun isHealthConnectAvailable(): Boolean
+    suspend fun isHealthConnectInstalled(): Boolean
 
     suspend fun getStepsTarget(): Int?
 }
