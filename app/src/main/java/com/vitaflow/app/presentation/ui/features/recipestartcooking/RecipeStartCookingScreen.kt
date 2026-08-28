@@ -2,6 +2,7 @@ package com.vitaflow.app.presentation.ui.features.recipestartcooking
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,15 +41,15 @@ import com.vitaflow.app.presentation.ui.features.recipedetail.RecipeDetailViewMo
 
 // Color Palette
 object CookingColors {
-    val Primary = Color(0xFF2D6A4F)
-    val PrimaryLight = Color(0xFF40916C)
-    val PrimaryLighter = Color(0xFF52B788)
-    val Surface = Color(0xFFFAFAFA)
-    val OnSurface = Color(0xFF1A1A1A)
-    val OnSurfaceVariant = Color(0xFF6B6B6B)
-    val CardBg = Color(0xFFFFFFFF)
-    val CompletedBg = Color(0xFFE8F5E9)
-    val AccentOrange = Color(0xFFFF9800)
+    val Primary: Color @Composable get() = MaterialTheme.colorScheme.primary
+    val PrimaryLight: Color @Composable get() = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+    val PrimaryLighter: Color @Composable get() = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+    val Surface: Color @Composable get() = MaterialTheme.colorScheme.background
+    val OnSurface: Color @Composable get() = MaterialTheme.colorScheme.onSurface
+    val OnSurfaceVariant: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+    val CardBg: Color @Composable get() = MaterialTheme.colorScheme.surface
+    val CompletedBg: Color @Composable get() = MaterialTheme.colorScheme.primaryContainer
+    val AccentOrange: Color @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFFB74D) else Color(0xFFFF9800)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -303,7 +304,7 @@ fun IngredientCard(
             .wrapContentHeight(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isCompleted) CookingColors.CompletedBg else Color.White
+            containerColor = if (isCompleted) CookingColors.CompletedBg else CookingColors.CardBg
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {

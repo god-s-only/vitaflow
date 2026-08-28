@@ -2,6 +2,7 @@ package com.vitaflow.app.presentation.ui.features.workout
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -34,19 +35,19 @@ import kotlinx.coroutines.flow.collectLatest
 
 // Color Palette
 object WorkoutColors {
-    val Primary = Color(0xFF2D6A4F)
-    val PrimaryLight = Color(0xFF40916C)
-    val PrimaryLighter = Color(0xFF52B788)
-    val Surface = Color(0xFFFAFAFA)
-    val OnSurface = Color(0xFF1A1A1A)
-    val OnSurfaceVariant = Color(0xFF6B6B6B)
-    val CardBg = Color(0xFFFFFFFF)
-    val AccentOrange = Color(0xFFFF9800)
-    val AccentBlue = Color(0xFF2196F3)
-    val AccentPurple = Color(0xFF9C27B0)
-    val AccentRed = Color(0xFFE53935)
-    val SkeletonBase = Color(0xFFE0E0E0)
-    val SkeletonHighlight = Color(0xFFF5F5F5)
+    val Primary: Color @Composable get() = MaterialTheme.colorScheme.primary
+    val PrimaryLight: Color @Composable get() = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+    val PrimaryLighter: Color @Composable get() = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+    val Surface: Color @Composable get() = MaterialTheme.colorScheme.background
+    val OnSurface: Color @Composable get() = MaterialTheme.colorScheme.onSurface
+    val OnSurfaceVariant: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+    val CardBg: Color @Composable get() = MaterialTheme.colorScheme.surface
+    val AccentOrange: Color @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFFB74D) else Color(0xFFFF9800)
+    val AccentBlue: Color @Composable get() = if (isSystemInDarkTheme()) Color(0xFF64B5F6) else Color(0xFF2196F3)
+    val AccentPurple: Color @Composable get() = Color(0xFF9C27B0)
+    val AccentRed: Color @Composable get() = Color(0xFFE53935)
+    val SkeletonBase: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+    val SkeletonHighlight: Color @Composable get() = MaterialTheme.colorScheme.surface
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,7 +95,7 @@ fun WorkoutBodyPartsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = WorkoutColors.CardBg
                 ),
                 actions = {
                     IconButton(onClick = { /* Filter/Settings */ }) {

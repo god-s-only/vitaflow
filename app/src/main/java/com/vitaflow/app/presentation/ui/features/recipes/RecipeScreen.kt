@@ -44,14 +44,14 @@ import kotlinx.coroutines.flow.collectLatest
 
 // Color Palette
 object RecipeColors {
-    val Primary = Color(0xFF2D6A4F) // Deep forest green
-    val PrimaryLight = Color(0xFF40916C) // Leaf green
-    val Surface = Color(0xFFFAFAFA)
-    val OnSurface = Color(0xFF1A1A1A)
-    val OnSurfaceVariant = Color(0xFF6B6B6B)
-    val NutritionBg = Color(0xFFE8F5E9)
-    val SkeletonBase = Color(0xFFE0E0E0)
-    val SkeletonHighlight = Color(0xFFF5F5F5)
+    val Primary: Color @Composable get() = MaterialTheme.colorScheme.primary
+    val PrimaryLight: Color @Composable get() = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+    val Surface: Color @Composable get() = MaterialTheme.colorScheme.background
+    val OnSurface: Color @Composable get() = MaterialTheme.colorScheme.onSurface
+    val OnSurfaceVariant: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+    val NutritionBg: Color @Composable get() = MaterialTheme.colorScheme.primaryContainer
+    val SkeletonBase: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+    val SkeletonHighlight: Color @Composable get() = MaterialTheme.colorScheme.surface
 }
 
 @Composable
@@ -322,7 +322,7 @@ fun RecipeCardSkeleton() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = RecipeColors.Surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -431,7 +431,7 @@ fun RecipeCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = RecipeColors.Surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {

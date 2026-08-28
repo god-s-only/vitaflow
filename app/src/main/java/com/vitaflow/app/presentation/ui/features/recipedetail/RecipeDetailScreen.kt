@@ -3,6 +3,7 @@ package com.vitaflow.app.presentation.ui.features.recipedetail
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -37,17 +38,17 @@ import kotlinx.coroutines.flow.collectLatest
 
 // Color Palette
 object RecipeColors {
-    val Primary = Color(0xFF2D6A4F)
-    val PrimaryLight = Color(0xFF40916C)
-    val Surface = Color(0xFFFAFAFA)
-    val OnSurface = Color(0xFF1A1A1A)
-    val OnSurfaceVariant = Color(0xFF6B6B6B)
-    val CardBg = Color(0xFFFFFFFF)
-    val NutritionBg = Color(0xFFE8F5E9)
-    val AccentOrange = Color(0xFFFF9800)
-    val AccentRed = Color(0xFFE53935)
-    val SkeletonBase = Color(0xFFE0E0E0)
-    val SkeletonHighlight = Color(0xFFF5F5F5)
+    val Primary: Color @Composable get() = MaterialTheme.colorScheme.primary
+    val PrimaryLight: Color @Composable get() = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+    val Surface: Color @Composable get() = MaterialTheme.colorScheme.background
+    val OnSurface: Color @Composable get() = MaterialTheme.colorScheme.onSurface
+    val OnSurfaceVariant: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+    val CardBg: Color @Composable get() = MaterialTheme.colorScheme.surface
+    val NutritionBg: Color @Composable get() = MaterialTheme.colorScheme.primaryContainer
+    val AccentOrange: Color @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFFB74D) else Color(0xFFFF9800)
+    val AccentRed: Color @Composable get() = Color(0xFFE53935)
+    val SkeletonBase: Color @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+    val SkeletonHighlight: Color @Composable get() = MaterialTheme.colorScheme.surface
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -213,7 +214,7 @@ fun RecipeDetailScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(Color.White)
+                                    .background(RecipeColors.CardBg)
                                     .padding(20.dp)
                             ) {
                                 Text(
@@ -264,7 +265,7 @@ fun RecipeDetailScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(Color.White)
+                                    .background(RecipeColors.CardBg)
                                     .padding(horizontal = 20.dp, vertical = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
@@ -579,7 +580,7 @@ fun RecipeDetailSkeleton(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(RecipeColors.CardBg)
                     .padding(20.dp)
             ) {
                 Box(
@@ -613,7 +614,7 @@ fun RecipeDetailSkeleton(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(RecipeColors.CardBg)
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -791,7 +792,7 @@ fun IngredientItem(ingredient: Ingredient) {
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 6.dp),
         shape = RoundedCornerShape(12.dp),
-        color = if (isChecked) RecipeColors.NutritionBg else Color.White,
+        color = if (isChecked) RecipeColors.NutritionBg else RecipeColors.CardBg,
         tonalElevation = if (isChecked) 0.dp else 1.dp
     ) {
         Row(
