@@ -503,7 +503,7 @@ fun ErrorCard(error: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -513,12 +513,12 @@ fun ErrorCard(error: String) {
             Icon(
                 imageVector = Icons.Filled.Warning,
                 contentDescription = "Error",
-                tint = Color(0xFFD32F2F)
+                tint = MaterialTheme.colorScheme.error
             )
             Text(
                 text = error,
                 fontSize = 14.sp,
-                color = Color(0xFFD32F2F)
+                color = MaterialTheme.colorScheme.error
             )
         }
     }

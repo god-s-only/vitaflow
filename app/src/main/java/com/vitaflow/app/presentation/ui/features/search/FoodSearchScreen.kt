@@ -28,7 +28,7 @@ import com.vitaflow.app.presentation.ui.features.nutrition.NutritionViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-private val PrimaryGreen = Color(0xFF00C853)
+private val PrimaryGreen: Color @Composable get() = MaterialTheme.colorScheme.primary
 
 @Composable
 private fun cardBackgroundColor() = MaterialTheme.colorScheme.surface

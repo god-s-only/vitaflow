@@ -443,7 +443,7 @@ fun ReviewScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Top bar
         Row(
@@ -473,7 +473,7 @@ fun ReviewScreen(
                 Icon(
                     imageVector = Icons.Filled.Refresh,
                     contentDescription = "Retake",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -505,7 +505,7 @@ fun ReviewScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -513,7 +513,7 @@ fun ReviewScreen(
                             text = analysisResult.foodName,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -534,7 +534,7 @@ fun ReviewScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(
@@ -545,7 +545,7 @@ fun ReviewScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { showMealTypeDialog = true }
-                                .background(Color(0xFFF8F9FA), RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
@@ -554,7 +554,7 @@ fun ReviewScreen(
                                 Text(
                                     text = "Meal Type",
                                     fontSize = 12.sp,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
                                     text = selectedMealType.replaceFirstChar {
@@ -564,7 +564,7 @@ fun ReviewScreen(
                                     },
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color.Black
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             Icon(
@@ -578,7 +578,7 @@ fun ReviewScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { showQuantityDialog = true }
-                                .background(Color(0xFFF8F9FA), RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
@@ -587,13 +587,13 @@ fun ReviewScreen(
                                 Text(
                                     text = "Portion Size",
                                     fontSize = 12.sp,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
                                     text = "${quantity.toInt()}g",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color.Black
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             Icon(
@@ -727,12 +727,12 @@ fun NutrientInfo(label: String, value: String, unit: String, color: Color) {
         Text(
             text = unit,
             fontSize = 10.sp,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Medium
         )
     }
