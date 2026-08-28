@@ -2,6 +2,7 @@ package com.vitaflow.app.presentation.ui.features.steps
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,14 +26,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 
-private val PrimaryGreen = Color(0xFF4CAF50)
-private val SecondaryBlue = Color(0xFF2196F3)
-private val OrangeAccent = Color(0xFFFF9800)
-private val PurpleAccent = Color(0xFF9C27B0)
-private val BackgroundWhite = Color(0xFFF8F9FA)
-private val CardWhite = Color.White
-private val TextPrimary = Color(0xFF1A1A1A)
-private val TextSecondary = Color(0xFF666666)
+private val PrimaryGreen: Color @Composable get() = MaterialTheme.colorScheme.primary
+private val SecondaryBlue: Color @Composable get() = MaterialTheme.colorScheme.secondary
+private val OrangeAccent: Color @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFFB74D) else Color(0xFFFF9800)
+private val PurpleAccent: Color @Composable get() = MaterialTheme.colorScheme.tertiary
+private val BackgroundWhite: Color @Composable get() = MaterialTheme.colorScheme.background
+private val CardWhite: Color @Composable get() = MaterialTheme.colorScheme.surface
+private val TextPrimary: Color @Composable get() = MaterialTheme.colorScheme.onSurface
+private val TextSecondary: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

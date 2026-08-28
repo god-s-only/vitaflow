@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -35,18 +36,18 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.cos
 import kotlin.math.sin
 
-// Color Palette
+// Color Palette (theme-aware)
 object StepsColors {
-    val Primary = Color(0xFF2D6A4F)
-    val PrimaryLight = Color(0xFF40916C)
-    val PrimaryLighter = Color(0xFF52B788)
-    val Surface = Color(0xFFFAFAFA)
-    val OnSurface = Color(0xFF1A1A1A)
-    val OnSurfaceVariant = Color(0xFF6B6B6B)
-    val CardBg = Color(0xFFFFFFFF)
-    val ProgressBg = Color(0xFFE8F5E9)
-    val AccentOrange = Color(0xFFFF9800)
-    val AccentBlue = Color(0xFF2196F3)
+    val Primary: Color @Composable get() = MaterialTheme.colorScheme.primary
+    val PrimaryLight: Color @Composable get() = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+    val PrimaryLighter: Color @Composable get() = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+    val Surface: Color @Composable get() = MaterialTheme.colorScheme.background
+    val OnSurface: Color @Composable get() = MaterialTheme.colorScheme.onSurface
+    val OnSurfaceVariant: Color @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+    val CardBg: Color @Composable get() = MaterialTheme.colorScheme.surface
+    val ProgressBg: Color @Composable get() = MaterialTheme.colorScheme.primaryContainer
+    val AccentOrange: Color @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFFB74D) else Color(0xFFFF9800)
+    val AccentBlue: Color @Composable get() = if (isSystemInDarkTheme()) Color(0xFF64B5F6) else Color(0xFF2196F3)
 }
 
 
@@ -80,7 +81,7 @@ fun StepsTrackerScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = StepsColors.CardBg),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
@@ -217,7 +218,7 @@ fun StepsTrackerScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = StepsColors.CardBg),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
@@ -280,28 +281,26 @@ fun CircularProgressIndicator(
     progress: Float,
     stepsData: StepsData
 ) {
+    val trackColor = StepsColors.ProgressBg
+    val gradientColors = listOf(
+        StepsColors.PrimaryLighter,
+        StepsColors.PrimaryLight,
+        StepsColors.Primary
+    )
     Canvas(modifier = Modifier.size(240.dp)) {
         val strokeWidth = 24.dp.toPx()
         val radius = (size.minDimension - strokeWidth) / 2
         val center = Offset(size.width / 2, size.height / 2)
 
-        // Background circle
         drawCircle(
-            color = StepsColors.ProgressBg,
+            color = trackColor,
             radius = radius,
             center = center,
             style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
         )
 
-        // Progress arc
         drawArc(
-            brush = Brush.sweepGradient(
-                colors = listOf(
-                    StepsColors.PrimaryLighter,
-                    StepsColors.PrimaryLight,
-                    StepsColors.Primary
-                )
-            ),
+            brush = Brush.sweepGradient(colors = gradientColors),
             startAngle = -90f,
             sweepAngle = 360f * progress,
             useCenter = false,
@@ -326,7 +325,7 @@ fun StatCard(
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = StepsColors.CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -440,7 +439,7 @@ fun DailyStepsItem(dailySteps: DailySteps) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isToday) StepsColors.ProgressBg else Color.White
+            containerColor = if (isToday) StepsColors.ProgressBg else StepsColors.CardBg
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = if (isToday) 0.dp else 1.dp)
     ) {
