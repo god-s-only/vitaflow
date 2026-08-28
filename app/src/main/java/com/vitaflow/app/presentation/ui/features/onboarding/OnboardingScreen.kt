@@ -31,7 +31,7 @@ import com.vitaflow.app.presentation.ui.theme.*
 import kotlinx.coroutines.launch
 
 
-val BackgroundWhite = Color.White
+val BackgroundWhite: Color @Composable get() = MaterialTheme.colorScheme.background
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(
@@ -92,7 +92,7 @@ fun OnboardingScreen(
                                 .height(6.dp)
                                 .width(if (isSelected) 24.dp else 6.dp)
                                 .clip(CircleShape)
-                                .background(if (isSelected) PrimaryGreen else Color.LightGray)
+                                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
                                 .animateContentSize()
                         )
                     }
@@ -112,8 +112,8 @@ fun OnboardingScreen(
                                 }
                             },
                             modifier = Modifier.size(48.dp),
-                            containerColor = Color.White,
-                            contentColor = PrimaryGreen,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.primary,
                             shape = CircleShape,
                             elevation = FloatingActionButtonDefaults.elevation(2.dp)
                         ) {
@@ -136,14 +136,14 @@ fun OnboardingScreen(
                             }
                         },
                         modifier = Modifier.size(56.dp),
-                        containerColor = PrimaryGreen,
-                        contentColor = Color.White,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                         shape = CircleShape
                     ) {
                         if (state.isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                         } else {
                             Icon(
@@ -179,7 +179,7 @@ private fun WelcomePage() {
             modifier = Modifier
                 .size(240.dp)
                 .background(
-                    Brush.radialGradient(listOf(PrimaryGreen.copy(0.15f), Color.Transparent)),
+                    Brush.radialGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), Color.Transparent)),
                     CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -188,7 +188,7 @@ private fun WelcomePage() {
                 imageVector = Icons.Default.Favorite,
                 contentDescription = null,
                 modifier = Modifier.size(100.dp),
-                tint = PrimaryGreen
+                tint = MaterialTheme.colorScheme.primary
             )
         }
 
@@ -201,7 +201,7 @@ private fun WelcomePage() {
                 lineHeight = 40.sp
             ),
             textAlign = TextAlign.Center,
-            color = TextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -210,7 +210,7 @@ private fun WelcomePage() {
             text = "Let's personalize your journey to reach your fitness peaks without the guesswork.",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 20.dp)
         )
     }
@@ -228,12 +228,12 @@ private fun PersonalInfoPage(state: OnboardingState, viewModel: OnboardingViewMo
             text = "About You",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = TextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = "Help us understand your body and create personalized targets",
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -306,12 +306,12 @@ private fun GoalsAndActivityPage(state: OnboardingState, viewModel: OnboardingVi
             text = "Your Goals",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = TextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = "What brings you here?",
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -396,12 +396,12 @@ private fun NutritionTargetsPage(state: OnboardingState, viewModel: OnboardingVi
             text = "Nutrition Targets",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = TextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = "Based on your profile, we recommend these daily targets",
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -429,7 +429,7 @@ private fun NutritionTargetsPage(state: OnboardingState, viewModel: OnboardingVi
             steps = 49,
             unit = "g",
             icon = Icons.Default.Settings,
-            color = PrimaryGreen
+            color = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -491,7 +491,7 @@ private fun StepsTargetPage(state: OnboardingState, viewModel: OnboardingViewMod
             imageVector = Icons.Default.Settings,
             contentDescription = null,
             modifier = Modifier.size(80.dp),
-            tint = PrimaryGreen
+            tint = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -500,12 +500,12 @@ private fun StepsTargetPage(state: OnboardingState, viewModel: OnboardingViewMod
             text = "Daily Activity Goal",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = TextPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = "Movement is medicine. Set a step goal that challenges you.",
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 32.dp)
         )
@@ -518,7 +518,7 @@ private fun StepsTargetPage(state: OnboardingState, viewModel: OnboardingViewMod
                 .clip(RoundedCornerShape(24.dp))
                 .background(
                     Brush.verticalGradient(
-                        listOf(PrimaryGreen.copy(0.1f), PrimaryGreen.copy(0.05f))
+                        listOf(MaterialTheme.colorScheme.primary.copy(0.1f), MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
                     )
                 )
                 .padding(32.dp),
@@ -528,7 +528,7 @@ private fun StepsTargetPage(state: OnboardingState, viewModel: OnboardingViewMod
                 Text(
                     "Daily Step Goal",
                     style = MaterialTheme.typography.labelLarge,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -537,12 +537,12 @@ private fun StepsTargetPage(state: OnboardingState, viewModel: OnboardingViewMod
                         fontWeight = FontWeight.Black,
                         fontSize = 56.sp
                     ),
-                    color = PrimaryGreen
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     "steps",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -553,9 +553,9 @@ private fun StepsTargetPage(state: OnboardingState, viewModel: OnboardingViewMod
                     valueRange = 2000f..20000f,
                     steps = 35,
                     colors = SliderDefaults.colors(
-                        thumbColor = PrimaryGreen,
-                        activeTrackColor = PrimaryGreen,
-                        inactiveTrackColor = PrimaryGreen.copy(0.2f)
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.primary.copy(0.2f)
                     )
                 )
 
@@ -565,8 +565,8 @@ private fun StepsTargetPage(state: OnboardingState, viewModel: OnboardingViewMod
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("2,000", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
-                    Text("20,000", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Text("2,000", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("20,000", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -582,7 +582,7 @@ private fun StepsTargetPage(state: OnboardingState, viewModel: OnboardingViewMod
                 ActivityLevel.EXTREMELY_ACTIVE -> "15,000"
             }} steps based on your activity level",
             style = MaterialTheme.typography.bodySmall,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
     }
@@ -599,16 +599,16 @@ private fun SelectableChip(
         onClick = onClick,
         modifier = modifier.height(48.dp),
         shape = RoundedCornerShape(12.dp),
-        color = if (selected) PrimaryGreen else Color.White,
+        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
         border = BorderStroke(
             width = 2.dp,
-            color = if (selected) PrimaryGreen else Color.LightGray
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
         )
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
                 text = label,
-                color = if (selected) Color.White else TextSecondary,
+                color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
             )
         }
@@ -639,8 +639,8 @@ private fun InputField(
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors().copy(
-                focusedIndicatorColor = PrimaryGreen,
-                unfocusedIndicatorColor = Color.LightGray
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.outlineVariant
             )
         )
     }
@@ -659,11 +659,11 @@ private fun GoalCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) PrimaryGreen.copy(0.1f) else Color.White
+            containerColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(
             width = 2.dp,
-            color = if (selected) PrimaryGreen else Color.LightGray
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
         ),
         elevation = CardDefaults.cardElevation(if (selected) 4.dp else 1.dp)
     ) {
@@ -675,13 +675,13 @@ private fun GoalCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(if (selected) PrimaryGreen else Color.LightGray.copy(0.3f)),
+                    .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(0.3f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (selected) Color.White else TextSecondary,
+                    tint = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -691,19 +691,19 @@ private fun GoalCard(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = if (selected) PrimaryGreen else TextPrimary
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             if (selected) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
-                    tint = PrimaryGreen
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -722,11 +722,11 @@ private fun ActivityLevelCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) PrimaryGreen.copy(0.1f) else Color.White
+            containerColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(
             width = 2.dp,
-            color = if (selected) PrimaryGreen else Color.LightGray
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
         )
     ) {
         Row(
@@ -738,19 +738,19 @@ private fun ActivityLevelCard(
                     text = title,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (selected) PrimaryGreen else TextPrimary
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             if (selected) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
-                    tint = PrimaryGreen
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }

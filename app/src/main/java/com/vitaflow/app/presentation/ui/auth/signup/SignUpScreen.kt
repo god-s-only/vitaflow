@@ -1,5 +1,11 @@
 package com.vitaflow.app.presentation.ui.auth.signup
 
+import com.vitaflow.app.presentation.ui.auth.AuthBrandColor
+import com.vitaflow.app.presentation.ui.auth.AuthFieldBackground
+import com.vitaflow.app.presentation.ui.auth.AuthOnBrandColor
+import com.vitaflow.app.presentation.ui.auth.AuthTextPrimary
+import com.vitaflow.app.presentation.ui.auth.AuthTextSecondary
+import com.vitaflow.app.presentation.ui.auth.AuthTextFieldBorder
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -77,7 +83,7 @@ fun SignUpScreen(
                 .verticalScroll(scrollState)
                 .fillMaxSize()
                 .padding(it)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -88,15 +94,15 @@ fun SignUpScreen(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .border(2.dp, Color(0xFF00C853), RoundedCornerShape(16.dp))
-                    .background(Color.White),
+                    .border(2.dp, AuthBrandColor, RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "V",
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF00C853)
+                    color = AuthBrandColor
                 )
             }
 
@@ -107,7 +113,7 @@ fun SignUpScreen(
                 text = "Create your account",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.Black,
+                color = AuthTextPrimary,
                 textAlign = TextAlign.Center
             )
 
@@ -122,7 +128,7 @@ fun SignUpScreen(
                     text = "Name",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black,
+                    color = AuthTextPrimary,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -132,19 +138,19 @@ fun SignUpScreen(
                     placeholder = {
                         Text(
                             text = "ex: jon smith",
-                            color = Color.Gray,
+                            color = AuthTextSecondary,
                             fontSize = 14.sp
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color(0xFFE0E0E0),
-                        focusedBorderColor = Color(0xFF00C853),
-                        unfocusedContainerColor = Color(0xFFF8F9FA),
-                        focusedContainerColor = Color(0xFFF8F9FA),
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
+                        unfocusedBorderColor = AuthTextFieldBorder,
+                        focusedBorderColor = AuthBrandColor,
+                        unfocusedContainerColor = AuthFieldBackground,
+                        focusedContainerColor = AuthFieldBackground,
+                        focusedTextColor = AuthTextPrimary,
+                        unfocusedTextColor = AuthTextPrimary
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                 )
@@ -161,7 +167,7 @@ fun SignUpScreen(
                     text = "Email",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black,
+                    color = AuthTextPrimary,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -171,19 +177,19 @@ fun SignUpScreen(
                     placeholder = {
                         Text(
                             text = "ex: jon.smith@email.com",
-                            color = Color.Gray,
+                            color = AuthTextSecondary,
                             fontSize = 14.sp
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color(0xFFE0E0E0),
-                        focusedBorderColor = Color(0xFF00C853),
-                        unfocusedContainerColor = Color(0xFFF8F9FA),
-                        focusedContainerColor = Color(0xFFF8F9FA),
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
+                        unfocusedBorderColor = AuthTextFieldBorder,
+                        focusedBorderColor = AuthBrandColor,
+                        unfocusedContainerColor = AuthFieldBackground,
+                        focusedContainerColor = AuthFieldBackground,
+                        focusedTextColor = AuthTextPrimary,
+                        unfocusedTextColor = AuthTextPrimary
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
@@ -200,7 +206,7 @@ fun SignUpScreen(
                     text = "Password",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black,
+                    color = AuthTextPrimary,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -210,19 +216,19 @@ fun SignUpScreen(
                     placeholder = {
                         Text(
                             text = "••••••••••",
-                            color = Color.Gray,
+                            color = AuthTextSecondary,
                             fontSize = 14.sp
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color(0xFFE0E0E0),
-                        focusedBorderColor = Color(0xFF00C853),
-                        unfocusedContainerColor = Color(0xFFF8F9FA),
-                        focusedContainerColor = Color(0xFFF8F9FA),
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
+                        unfocusedBorderColor = AuthTextFieldBorder,
+                        focusedBorderColor = AuthBrandColor,
+                        unfocusedContainerColor = AuthFieldBackground,
+                        focusedContainerColor = AuthFieldBackground,
+                        focusedTextColor = AuthTextPrimary,
+                        unfocusedTextColor = AuthTextPrimary
                     ),
                     visualTransformation = if (viewModel.isPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -262,7 +268,7 @@ fun SignUpScreen(
                     text = "Confirm password",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black,
+                    color = AuthTextPrimary,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -278,19 +284,19 @@ fun SignUpScreen(
                     placeholder = {
                         Text(
                             text = "••••••••••",
-                            color = Color.Gray,
+                            color = AuthTextSecondary,
                             fontSize = 14.sp
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color(0xFFE0E0E0),
-                        focusedBorderColor = Color(0xFF00C853),
-                        unfocusedContainerColor = Color(0xFFF8F9FA),
-                        focusedContainerColor = Color(0xFFF8F9FA),
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
+                        unfocusedBorderColor = AuthTextFieldBorder,
+                        focusedBorderColor = AuthBrandColor,
+                        unfocusedContainerColor = AuthFieldBackground,
+                        focusedContainerColor = AuthFieldBackground,
+                        focusedTextColor = AuthTextPrimary,
+                        unfocusedTextColor = AuthTextPrimary
                     ),
                     visualTransformation = if (viewModel.isConfirmPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -336,8 +342,8 @@ fun SignUpScreen(
                         )
                     },
                     colors = CheckboxDefaults.colors(
-                        checkedColor = Color(0xFF00C853),
-                        uncheckedColor = Color.Gray
+                        checkedColor = AuthBrandColor,
+                        uncheckedColor = AuthTextSecondary
                     )
                 )
 
@@ -347,7 +353,7 @@ fun SignUpScreen(
                     append("I understood the ")
                     withStyle(
                         style = SpanStyle(
-                            color = Color(0xFF00C853),
+                            color = AuthBrandColor,
                             fontWeight = FontWeight.Medium
                         )
                     ) {
@@ -385,12 +391,12 @@ fun SignUpScreen(
                     .height(52.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00C853)
+                    containerColor = AuthBrandColor
                 )
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(
-                        color = Color(0xFF00C853),
+                        color = AuthBrandColor,
                         modifier = Modifier.size(20.dp)
                     )
                 } else {
@@ -398,7 +404,7 @@ fun SignUpScreen(
                         text = "SIGN UP",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.White
+                        color = AuthOnBrandColor
                     )
                 }
             }
@@ -409,7 +415,7 @@ fun SignUpScreen(
             Text(
                 text = "or sign up with",
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = AuthTextSecondary,
                 textAlign = TextAlign.Center
             )
 
@@ -423,7 +429,7 @@ fun SignUpScreen(
                 // Google
                 Button(
                     onClick = {},
-                    border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp),
@@ -444,7 +450,7 @@ fun SignUpScreen(
                         Text(
                             text = "Sign up with Google",
                             fontSize = 16.sp,
-                            color = Color.Black
+                            color = AuthTextPrimary
                         )
                     }
                 }
@@ -461,13 +467,13 @@ fun SignUpScreen(
                 Text(
                     text = "Have an account? ",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = AuthTextSecondary
                 )
                 Text(
                     text = "SIGN IN",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF00C853),
+                    color = AuthBrandColor,
                     modifier = Modifier.clickable {
                         viewModel.onEvent(SignUpScreenEvent.OnSignInButtonClicked)
                     }
